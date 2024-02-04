@@ -1,4 +1,4 @@
-package utils_generic
+package utils_common
 
 import (
 	"github.com/stretchr/testify/require"

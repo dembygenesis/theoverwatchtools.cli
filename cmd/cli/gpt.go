@@ -6,7 +6,7 @@ import (
 )
 
 var copyGptCodePrefaceToClipboardCommand = &cobra.Command{
-	Use:   clipGptPreface,
+	Use:   clipGptPreface.string(),
 	Short: "Copies a code preface for chat GPT that ensures code quality.",
 	Long: `
 		Copies a code preface for chat GPT that ensures code quality.

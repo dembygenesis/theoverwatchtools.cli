@@ -1,8 +1,7 @@
-package utils_generic
+package utils_common
 
 import (
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -48,7 +47,7 @@ func testCreateFilesAndFolders(t *testing.T, outFolder []string, files []fileDet
 
 // TestCopyDir_FailInvalidDirectoryA tests that the invalid
 func TestCopyDir_FailInvalidDirectoryA(t *testing.T) {
-	opts := models.CopyOptions{
+	opts := CopyOptions{
 		Source:                    "abc",
 		SourceExclusions:          nil,
 		Destination:               "def",
@@ -56,7 +55,7 @@ func TestCopyDir_FailInvalidDirectoryA(t *testing.T) {
 		WipeDestinationExclusions: nil,
 	}
 
-	err := CopyDir(&opts)
+	err := CopyDirToAnother(&opts)
 	require.Error(t, err, "error expected")
 }
 
@@ -125,7 +124,7 @@ func TestCopyDir_Success(t *testing.T) {
 	sourceExclusions := []string{".git", ".idea"}
 	wipeDestinationExclusions := []string{".git2"}
 
-	opts := models.CopyOptions{
+	opts := CopyOptions{
 		Source:                    folderA,
 		SourceExclusions:          sourceExclusions,
 		Destination:               folderB,
@@ -133,7 +132,7 @@ func TestCopyDir_Success(t *testing.T) {
 		WipeDestinationExclusions: wipeDestinationExclusions,
 	}
 
-	err = CopyDir(&opts)
+	err = CopyDirToAnother(&opts)
 	require.NoError(t, err, "copy files")
 
 	// Do assertions

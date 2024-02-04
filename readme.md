@@ -8,10 +8,9 @@ Hola! I made this utility CLI to assist/expedite the use-cases of my day to day 
 - This command will copy the provided root path's contents recursively into the clipboard, except for .GIT, IDE generator (e.g _.git_, _.idea_), or irrelevant files
 not inclusive to human generated content.
 - It adds a header that identifies the filename associated with the contents.
-- 
 
 **[Clip GPT Code Standards Preface]** ✅ <br/>
-- Command: **clip-file-contents**
+- Command: **clip-gpt-preface**
 - This command copies a **code preface for Chat GPT** that improves code quality.
   ChatGPT code is usually "decent/passable" if configured to run on **version 4**, but the good engineering
   foundations usually still has something to be desired.
@@ -33,3 +32,4 @@ not inclusive to human generated content.
 - bash scripts to compile the binaries, and integrate into _.zshrc_, _.bashrc_
 - Improved CLI docs (long, and short) in the Viper commands
 - Automated testing CI on PRs, and merge requests (this is probably what I want to do next)
+- Docker configuration (likely if we're going to evolve to have a backend)

@@ -44,6 +44,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(copyToClipboardCmd)
 	rootCmd.AddCommand(copyGptCodePrefaceToClipboardCommand)
+	rootCmd.AddCommand(copyFolderAToBCommand)
 }
 
 func main() {

@@ -1,0 +1,33 @@
+/**
+tests the copy function of the CLI
+*/
+go run ./cmd/cli copy-folder-a-to-b /Users/dembygenesisabella/apps/infophmesasix/jarvis-reports-refactored /Users/dembygenesisabella/apps/infophmesasix/scripts/jarvis-reports-refactored
+
+/**
+creates a symlink for sublime text as: "subl", main use-case
+is for open zshrc with sublime text.
+*/
+ln -s "/Users/dembygenesisabella/Downloads/Sublime Text.app/Contents/SharedSupport/bin/subl" /usr/local/bin/subl
+
+/**
+(Oh, sweet scripts of mine!)
+These are personal bash scripts loaded onto my system to easily access
+the Go CLI.
+
+Obviously the program will evolve to be less crude than this in the future :)
+*/
+function custom_migrate_jarvis_reports_refactored_codebases_from_prod_to_dev() {
+  cd /Users/dembygenesisabella/apps/utils && sudo go run ./cmd/cli copy-folder-a-to-b "/Users/dembygenesisabella/apps/infophmesasix/jarvis-reports-refactored" "/Users/dembygenesisabella/apps/infophmesasix/scripts/jarvis-reports-refactored"
+}
+
+function custom_clip_gpt_coding_standards_preface() {
+  cd /Users/dembygenesisabella/apps/utils && sudo go run ./cmd/cli clip-gpt-preface
+}
+
+function custom_open_zshrc() {
+  subl ~/.zshrc
+}
+
+function custom_reset_zshrc() {
+  source ~/.zshrc
+}

@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/config"
 	"github.com/dembygenesis/local.tools/internal/models"
+	"github.com/dembygenesis/local.tools/internal/utils_common"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
 type FileUtils interface {
-	CopyDir(opts *models.CopyOptions) error
+	CopyDirToAnother(opts *utils_common.CopyOptions) error
 }
 
 //counterfeiter:generate . osLayer
 type osLayer interface {
-	CopyDir(opts *models.CopyOptions) error
+	CopyDirToAnother(opts *utils_common.CopyOptions) error
 }
 
 func New(conf *config.Config, osLayer osLayer) (FileUtils, error) {
@@ -33,15 +34,16 @@ type fileUtils struct {
 	osLayer osLayer
 }
 
-func (g *fileUtils) CopyDir(opts *models.CopyOptions) error {
+func (g *fileUtils) CopyDirToAnother(opts *utils_common.CopyOptions) error {
 	if opts == nil {
 		return fmt.Errorf("opts nil")
 	}
 
 	opts.WipeDestination = true
-	opts.WipeDestinationExclusions = g.conf.TransferFiles.Exclusions
+	opts.SourceExclusions = g.conf.FolderAToFolderB.GenericExclusions
+	opts.WipeDestinationExclusions = g.conf.FolderAToFolderB.GenericExclusions
 
-	err := g.osLayer.CopyDir(opts)
+	err := g.osLayer.CopyDirToAnother(opts)
 	if err != nil {
 		return fmt.Errorf("os: %v", err)
 	}

@@ -5,7 +5,7 @@ import (
 )
 
 var copyToClipboardCmd = &cobra.Command{
-	Use:   clipFileContents,
+	Use:   clipFileContents.string(),
 	Short: "Copy to clipboard copies from the directory provided.",
 	Long:  `Copies files contents from the root path provided.`,
 	Args:  cobra.ExactArgs(1),
