@@ -1,0 +1,1 @@
+go run ./di/gen/main.go ./di/ctn
