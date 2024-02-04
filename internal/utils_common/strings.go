@@ -1,4 +1,4 @@
-package utils_generic
+package utils_common
 
 import (
 	"encoding/json"
@@ -9,41 +9,9 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 )
-
-func GetJSONAndCopyToClipboard(i ...interface{}) string {
-	_json := GetJSON(i)
-	err := clipboard.WriteAll(_json)
-	if err != nil {
-		fmt.Println(err, "error writing to clipboard")
-	}
-	return _json
-}
-
-// GetJSON return an interface as type json
-// Returns a generic error formatted string if fails
-func GetJSON(i ...interface{}) string {
-	if len(i) > 1 {
-		d := make([]interface{}, 0)
-		for _, v := range i {
-			d = append(d, v)
-		}
-		j, err := json.Marshal(d)
-		if err != nil {
-			return "Error dumping to json"
-		} else {
-			return string(j)
-		}
-	} else {
-		j, err := json.Marshal(i)
-		if err != nil {
-			return "Error dumping to json"
-		} else {
-			return string(j)
-		}
-	}
-}
 
 // DecodeToStruct decodes the "in", into the "out".
 // Basically this is the equivalent, or marshalling something to JSON,
@@ -135,4 +103,58 @@ func CopyRootPathToClipboard(root string, exclude []string) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+func IsValidFilename(filename string) error {
+	// Define constraints
+	const maxFilenameLength = 255
+	reservedNames := []string{
+		"CON", "PRN", "AUX", "NUL",
+		"COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+		"LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+	}
+	illegalCharacters := []string{
+		"<", ">", ":", "\"", "/", "\\", "|", "?", "*", string(rune(0)),
+	}
+
+	// Check for empty filename
+	if filename == "" {
+		return errors.New("filename cannot be empty")
+	}
+
+	// Check length
+	if len(filename) > maxFilenameLength {
+		return errors.New("filename exceeds maximum length")
+	}
+
+	// Check for reserved names
+	baseFilename := strings.ToUpper(strings.TrimSuffix(filename, filepath.Ext(filename)))
+	for _, reservedName := range reservedNames {
+		if baseFilename == reservedName {
+			return errors.New("filename uses a reserved name")
+		}
+	}
+
+	// Check for illegal characters
+	for _, char := range illegalCharacters {
+		if strings.Contains(filename, char) {
+			return errors.New("filename contains illegal characters")
+		}
+	}
+
+	// Check for reserved filenames specific to Unix-like systems
+	if filename == "." || filename == ".." {
+		return errors.New("filename uses a reserved name for Unix-like systems")
+	}
+
+	return nil
+}
+
+func IsValidEmail(email string) bool {
+	var emailRegex = regexp.MustCompile("(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])")
+
+	if len(email) < 3 && len(email) > 254 {
+		return false
+	}
+	return emailRegex.MatchString(email)
 }
