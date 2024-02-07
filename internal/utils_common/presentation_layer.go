@@ -4,68 +4,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/atotto/clipboard"
-	"regexp"
-	"strings"
+	"reflect"
 )
 
+// GetJSONAndCopyToClipboard generates a JSON string from the input and copies it to the clipboard.
 func GetJSONAndCopyToClipboard(i ...interface{}) string {
 	var jsonStr string
-	if getInterfaceArgLength(i) > 1 {
-		jsonStr = GetJSON(i)
-	} else {
-		jsonStr = GetJSON(i[0])
-	}
+	jsonStr = GetJSON(i...) // Simplified call
 
 	err := clipboard.WriteAll(jsonStr)
 	if err != nil {
-
+		// Consider logging the error or handling it as needed.
+		fmt.Printf("Error copying to clipboard: %v\n", err)
 	}
 	return jsonStr
 }
 
-func prettifyJSON(s string) string {
-	s = strings.ReplaceAll(s, `\t`, " ")
-	s = strings.ReplaceAll(s, `\n`, "")
-
-	reLeadCloseWhiteSpace := regexp.MustCompile(`^[\s\p{Zs}]+|[\s\p{Zs}]+$`)
-	reInsideWhiteSpace := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
-
-	formattedStr := reLeadCloseWhiteSpace.ReplaceAllString(s, "")
-	formattedStr = reInsideWhiteSpace.ReplaceAllString(s, " ")
-
-	return formattedStr
-}
-
-func getInterfaceArgLength(i ...interface{}) int {
-	items := make([]interface{}, 0)
-	for _, v := range i {
-		items = append(items, v)
-	}
-	return len(items)
-}
-
-// GetJSON return an interface as type json
-// Returns a generic error formatted string if fails
+// GetJSON returns the input as a JSON string. It directly returns strings to keep markdown compatibility.
 func GetJSON(i ...interface{}) string {
-	if getInterfaceArgLength(i) > 1 {
-		d := make([]interface{}, 0)
-		for _, v := range i {
-			d = append(d, v)
-		}
-		j, err := json.Marshal(d)
-		if err != nil {
-			return fmt.Sprintf("Error dumping to json: %v", err)
-		} else {
-			return string(j)
-			return prettifyJSON(string(j))
-		}
-	} else {
-		j, err := json.Marshal(i[0])
-		if err != nil {
-			return fmt.Sprintf("Error dumping to json: %v", err)
-		} else {
-			return string(j)
-			return prettifyJSON(string(j))
-		}
+	// Check if the input is a single string to avoid unnecessary JSON encoding.
+	if len(i) == 1 && reflect.TypeOf(i[0]).Kind() == reflect.String {
+		return i[0].(string) // Return the string directly.
 	}
+
+	// Handle general case where input needs JSON encoding.
+	j, err := json.Marshal(i)
+	if err != nil {
+		return fmt.Sprintf("Error converting to JSON: %v", err)
+	}
+	return string(j)
 }
