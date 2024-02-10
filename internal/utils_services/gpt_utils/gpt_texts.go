@@ -8,6 +8,8 @@ const (
 	// - Thoroughly validate their work, ensuring top-notch quality.
 	// - Confirm the rigor of their checks after each submission.
 	// - Provide revisions that are immediately usable (copy paste-able).
+	// - Use defensive programming, and catch all errors immediately.
+	// - Return the full code, and not just partial edits (very important).
 	//
 	// This commitment is crucial for the project's integrity and excellence.
 	preface = `

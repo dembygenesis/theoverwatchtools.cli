@@ -4,35 +4,35 @@ package file_utilsfakes
 import (
 	"sync"
 
-	"github.com/dembygenesis/local.tools/internal/models"
+	"github.com/dembygenesis/local.tools/internal/utils_common"
 )
 
 type FakeOsLayer struct {
-	CopyDirStub        func(*models.CopyOptions) error
-	copyDirMutex       sync.RWMutex
-	copyDirArgsForCall []struct {
-		arg1 *models.CopyOptions
+	CopyDirToAnotherStub        func(*utils_common.CopyOptions) error
+	copyDirToAnotherMutex       sync.RWMutex
+	copyDirToAnotherArgsForCall []struct {
+		arg1 *utils_common.CopyOptions
 	}
-	copyDirReturns struct {
+	copyDirToAnotherReturns struct {
 		result1 error
 	}
-	copyDirReturnsOnCall map[int]struct {
+	copyDirToAnotherReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeOsLayer) CopyDir(arg1 *models.CopyOptions) error {
-	fake.copyDirMutex.Lock()
-	ret, specificReturn := fake.copyDirReturnsOnCall[len(fake.copyDirArgsForCall)]
-	fake.copyDirArgsForCall = append(fake.copyDirArgsForCall, struct {
-		arg1 *models.CopyOptions
+func (fake *FakeOsLayer) CopyDirToAnother(arg1 *utils_common.CopyOptions) error {
+	fake.copyDirToAnotherMutex.Lock()
+	ret, specificReturn := fake.copyDirToAnotherReturnsOnCall[len(fake.copyDirToAnotherArgsForCall)]
+	fake.copyDirToAnotherArgsForCall = append(fake.copyDirToAnotherArgsForCall, struct {
+		arg1 *utils_common.CopyOptions
 	}{arg1})
-	stub := fake.CopyDirStub
-	fakeReturns := fake.copyDirReturns
-	fake.recordInvocation("CopyDir", []interface{}{arg1})
-	fake.copyDirMutex.Unlock()
+	stub := fake.CopyDirToAnotherStub
+	fakeReturns := fake.copyDirToAnotherReturns
+	fake.recordInvocation("CopyDirToAnother", []interface{}{arg1})
+	fake.copyDirToAnotherMutex.Unlock()
 	if stub != nil {
 		return stub(arg1)
 	}
@@ -42,44 +42,44 @@ func (fake *FakeOsLayer) CopyDir(arg1 *models.CopyOptions) error {
 	return fakeReturns.result1
 }
 
-func (fake *FakeOsLayer) CopyDirCallCount() int {
-	fake.copyDirMutex.RLock()
-	defer fake.copyDirMutex.RUnlock()
-	return len(fake.copyDirArgsForCall)
+func (fake *FakeOsLayer) CopyDirToAnotherCallCount() int {
+	fake.copyDirToAnotherMutex.RLock()
+	defer fake.copyDirToAnotherMutex.RUnlock()
+	return len(fake.copyDirToAnotherArgsForCall)
 }
 
-func (fake *FakeOsLayer) CopyDirCalls(stub func(*models.CopyOptions) error) {
-	fake.copyDirMutex.Lock()
-	defer fake.copyDirMutex.Unlock()
-	fake.CopyDirStub = stub
+func (fake *FakeOsLayer) CopyDirToAnotherCalls(stub func(*utils_common.CopyOptions) error) {
+	fake.copyDirToAnotherMutex.Lock()
+	defer fake.copyDirToAnotherMutex.Unlock()
+	fake.CopyDirToAnotherStub = stub
 }
 
-func (fake *FakeOsLayer) CopyDirArgsForCall(i int) *models.CopyOptions {
-	fake.copyDirMutex.RLock()
-	defer fake.copyDirMutex.RUnlock()
-	argsForCall := fake.copyDirArgsForCall[i]
+func (fake *FakeOsLayer) CopyDirToAnotherArgsForCall(i int) *utils_common.CopyOptions {
+	fake.copyDirToAnotherMutex.RLock()
+	defer fake.copyDirToAnotherMutex.RUnlock()
+	argsForCall := fake.copyDirToAnotherArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeOsLayer) CopyDirReturns(result1 error) {
-	fake.copyDirMutex.Lock()
-	defer fake.copyDirMutex.Unlock()
-	fake.CopyDirStub = nil
-	fake.copyDirReturns = struct {
+func (fake *FakeOsLayer) CopyDirToAnotherReturns(result1 error) {
+	fake.copyDirToAnotherMutex.Lock()
+	defer fake.copyDirToAnotherMutex.Unlock()
+	fake.CopyDirToAnotherStub = nil
+	fake.copyDirToAnotherReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeOsLayer) CopyDirReturnsOnCall(i int, result1 error) {
-	fake.copyDirMutex.Lock()
-	defer fake.copyDirMutex.Unlock()
-	fake.CopyDirStub = nil
-	if fake.copyDirReturnsOnCall == nil {
-		fake.copyDirReturnsOnCall = make(map[int]struct {
+func (fake *FakeOsLayer) CopyDirToAnotherReturnsOnCall(i int, result1 error) {
+	fake.copyDirToAnotherMutex.Lock()
+	defer fake.copyDirToAnotherMutex.Unlock()
+	fake.CopyDirToAnotherStub = nil
+	if fake.copyDirToAnotherReturnsOnCall == nil {
+		fake.copyDirToAnotherReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.copyDirReturnsOnCall[i] = struct {
+	fake.copyDirToAnotherReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -87,8 +87,8 @@ func (fake *FakeOsLayer) CopyDirReturnsOnCall(i int, result1 error) {
 func (fake *FakeOsLayer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.copyDirMutex.RLock()
-	defer fake.copyDirMutex.RUnlock()
+	fake.copyDirToAnotherMutex.RLock()
+	defer fake.copyDirToAnotherMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
