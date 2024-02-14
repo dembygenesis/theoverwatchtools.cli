@@ -33,7 +33,11 @@ func ValidateStructParams(p interface{}, exclusions ...string) error {
 					translatedErr = strings.ReplaceAll(translatedErr, "__VAL__", val)
 				}
 			}
-			errMsgs = append(errMsgs, errors.New(translatedErr))
+			if translatedErr != "" {
+				errMsgs = append(errMsgs, errors.New(translatedErr))
+			} else {
+				errMsgs = append(errMsgs, err)
+			}
 		}
 	}
 

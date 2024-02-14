@@ -79,7 +79,7 @@ func CopyRootPathToClipboard(root string, exclude []string) ([]string, error) {
 
 	err := filepath.Walk(root, visit(&files, root, exclude))
 	if err != nil {
-		logger.Warnf("File walk error: %s\n", err)
+		logger.Warnf("file walk error: %s\n", err)
 		return files, fmt.Errorf("file walk: %v", err)
 	}
 
