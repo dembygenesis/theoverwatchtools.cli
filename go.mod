@@ -8,6 +8,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/golang-module/carbon/v2 v2.3.8
+	github.com/mattn/go-runewidth v0.0.15
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.8.1
 	github.com/pkg/errors v0.9.1
 	github.com/sarulabs/di/v2 v2.4.2
@@ -27,6 +28,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/sqlboiler v3.7.1+incompatible // indirect
