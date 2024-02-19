@@ -3,8 +3,8 @@ package file_utils
 import (
 	"errors"
 	"github.com/dembygenesis/local.tools/internal/config"
+	"github.com/dembygenesis/local.tools/internal/services/file_utils/file_utilsfakes"
 	"github.com/dembygenesis/local.tools/internal/utils_common"
-	"github.com/dembygenesis/local.tools/internal/utils_services/file_utils/file_utilsfakes"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

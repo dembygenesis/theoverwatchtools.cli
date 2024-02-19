@@ -12,7 +12,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// err := dingo.GenerateContainer((*provider.Provider)(nil), os.Args[1])
 	err := dingo.GenerateContainer((*cfg.Provider)(nil), os.Args[1])
 	if err != nil {
 		log.Println("error generating container: ", err)
