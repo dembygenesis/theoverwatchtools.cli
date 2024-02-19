@@ -2,15 +2,15 @@ package string_utils
 
 import (
 	"errors"
+	"github.com/dembygenesis/local.tools/internal/cli/clifakes"
 	"github.com/dembygenesis/local.tools/internal/config"
-	"github.com/dembygenesis/local.tools/internal/services/servicesfakes"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func Test_New_Success(t *testing.T) {
 	conf := config.Config{}
-	osLayer := servicesfakes.FakeStringUtils{}
+	osLayer := clifakes.FakeStringUtils{}
 
 	osLayer.CopyRootPathToClipboardReturns(nil, nil)
 
@@ -23,7 +23,7 @@ func Test_CopyRootPathToClipboard_Success(t *testing.T) {
 	conf.CopyToClipboard = config.CopyToClipboard{
 		Exclusions: []string{"ab", "cd"},
 	}
-	osLayer := servicesfakes.FakeStringUtils{}
+	osLayer := clifakes.FakeStringUtils{}
 
 	osLayer.CopyRootPathToClipboardReturns(nil, nil)
 
@@ -36,7 +36,7 @@ func Test_CopyRootPathToClipboard_Success(t *testing.T) {
 
 func Test_CopyRootPathToClipboard_Fail_Empty_Root(t *testing.T) {
 	conf := config.Config{}
-	osLayer := servicesfakes.FakeStringUtils{}
+	osLayer := clifakes.FakeStringUtils{}
 
 	osLayer.CopyRootPathToClipboardReturns(nil, errors.New("mock error"))
 

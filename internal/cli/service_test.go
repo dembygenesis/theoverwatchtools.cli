@@ -1,18 +1,18 @@
-package services
+package cli
 
 import (
 	"errors"
-	"github.com/dembygenesis/local.tools/internal/services/servicesfakes"
+	"github.com/dembygenesis/local.tools/internal/cli/clifakes"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestServices_CopyToClipboard_Success(t *testing.T) {
-	mockStringUtils := servicesfakes.FakeStringUtils{}
-	mockGptUtils := servicesfakes.FakeGptUtils{}
-	mockFileUtils := servicesfakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringUtils{}
+	mockGptUtils := clifakes.FakeGptUtils{}
+	mockFileUtils := clifakes.FakeFileUtils{}
 
-	srv := Services{
+	srv := Service{
 		stringUtils: &mockStringUtils,
 		gptUtils:    &mockGptUtils,
 		fileUtils:   &mockFileUtils,
@@ -23,13 +23,13 @@ func TestServices_CopyToClipboard_Success(t *testing.T) {
 }
 
 func TestServices_CopyToClipboard_Fail(t *testing.T) {
-	mockStringUtils := servicesfakes.FakeStringUtils{}
-	mockGptUtils := servicesfakes.FakeGptUtils{}
-	mockFileUtils := servicesfakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringUtils{}
+	mockGptUtils := clifakes.FakeGptUtils{}
+	mockFileUtils := clifakes.FakeFileUtils{}
 
 	mockStringUtils.CopyRootPathToClipboardReturns(nil, errors.New("mock error"))
 
-	srv := Services{
+	srv := Service{
 		stringUtils: &mockStringUtils,
 		gptUtils:    &mockGptUtils,
 		fileUtils:   &mockFileUtils,
@@ -42,11 +42,11 @@ func TestServices_CopyToClipboard_Fail(t *testing.T) {
 }
 
 func TestServices_ClipCodingStandardsPreface_Success(t *testing.T) {
-	mockStringUtils := servicesfakes.FakeStringUtils{}
-	mockGptUtils := servicesfakes.FakeGptUtils{}
-	mockFileUtils := servicesfakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringUtils{}
+	mockGptUtils := clifakes.FakeGptUtils{}
+	mockFileUtils := clifakes.FakeFileUtils{}
 
-	srv := Services{
+	srv := Service{
 		stringUtils: &mockStringUtils,
 		gptUtils:    &mockGptUtils,
 		fileUtils:   &mockFileUtils,
@@ -57,11 +57,11 @@ func TestServices_ClipCodingStandardsPreface_Success(t *testing.T) {
 }
 
 func TestServices_New(t *testing.T) {
-	mockStringUtils := servicesfakes.FakeStringUtils{}
-	mockGptUtils := servicesfakes.FakeGptUtils{}
-	mockFileUtils := servicesfakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringUtils{}
+	mockGptUtils := clifakes.FakeGptUtils{}
+	mockFileUtils := clifakes.FakeFileUtils{}
 
-	_ = NewServices(
+	_ = NewService(
 		&mockStringUtils,
 		&mockGptUtils,
 		&mockFileUtils,
@@ -69,13 +69,13 @@ func TestServices_New(t *testing.T) {
 }
 
 func TestServices_ClipCodingStandardsPreface_Fail(t *testing.T) {
-	mockStringUtils := servicesfakes.FakeStringUtils{}
-	mockGptUtils := servicesfakes.FakeGptUtils{}
-	mockFileUtils := servicesfakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringUtils{}
+	mockGptUtils := clifakes.FakeGptUtils{}
+	mockFileUtils := clifakes.FakeFileUtils{}
 
 	mockGptUtils.ClipCodingStandardsPrefaceReturns(errors.New("mock error"))
 
-	srv := Services{
+	srv := Service{
 		stringUtils: &mockStringUtils,
 		gptUtils:    &mockGptUtils,
 		fileUtils:   &mockFileUtils,

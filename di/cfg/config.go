@@ -14,7 +14,7 @@ func getConfigLayer() []dingo.Def {
 		{
 			Name: configLayer,
 			Build: func() (*config.Config, error) {
-				return config.New()
+				return config.New(".env")
 			},
 		},
 	}

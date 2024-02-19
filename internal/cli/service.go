@@ -1,29 +1,29 @@
-package services
+package cli
 
 import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/utils_common"
 )
 
-type Services struct {
+type Service struct {
 	stringUtils stringUtils
 	gptUtils    gptUtils
 	fileUtils   fileUtils
 }
 
-func NewServices(
+func NewService(
 	stringUtils stringUtils,
 	gptUtils gptUtils,
 	fileUtils fileUtils,
-) *Services {
-	return &Services{
+) *Service {
+	return &Service{
 		stringUtils,
 		gptUtils,
 		fileUtils,
 	}
 }
 
-func (s *Services) CopyToClipboard(root string, exclude []string) ([]string, error) {
+func (s *Service) CopyToClipboard(root string, exclude []string) ([]string, error) {
 	files, err := s.stringUtils.CopyRootPathToClipboard(root, exclude)
 	if err != nil {
 		return nil, fmt.Errorf("copy to clipboard: %v", err)
@@ -31,7 +31,7 @@ func (s *Services) CopyToClipboard(root string, exclude []string) ([]string, err
 	return files, nil
 }
 
-func (s *Services) ClipCodingStandardsPreface() error {
+func (s *Service) ClipCodingStandardsPreface() error {
 	err := s.gptUtils.ClipCodingStandardsPreface()
 	if err != nil {
 		return fmt.Errorf("clip coding standards: %v", err)
@@ -39,7 +39,7 @@ func (s *Services) ClipCodingStandardsPreface() error {
 	return nil
 }
 
-func (s *Services) CopyDirToAnother(opts *utils_common.CopyOptions) error {
+func (s *Service) CopyDirToAnother(opts *utils_common.CopyOptions) error {
 	if err := opts.Validate(); err != nil {
 		return fmt.Errorf("validate: %v", err)
 	}

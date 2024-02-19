@@ -1,5 +1,4 @@
 # Generated bins
-bins
 builds/*
 
 #
@@ -7,3 +6,5 @@ cmd/work_related/*
 di/ctn/*
 .idea/*
 internal/text_extractor/clipper
+
+.env
