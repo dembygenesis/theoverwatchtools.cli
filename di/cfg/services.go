@@ -2,11 +2,11 @@ package cfg
 
 import (
 	"github.com/dembygenesis/local.tools/di/cfg/wrappers"
+	"github.com/dembygenesis/local.tools/internal/cli"
 	"github.com/dembygenesis/local.tools/internal/config"
-	"github.com/dembygenesis/local.tools/internal/services"
-	"github.com/dembygenesis/local.tools/internal/utils_services/file_utils"
-	"github.com/dembygenesis/local.tools/internal/utils_services/gpt_utils"
-	"github.com/dembygenesis/local.tools/internal/utils_services/string_utils"
+	"github.com/dembygenesis/local.tools/internal/services/file_utils"
+	"github.com/dembygenesis/local.tools/internal/services/gpt_utils"
+	"github.com/dembygenesis/local.tools/internal/services/string_utils"
 	"github.com/sarulabs/dingo/v4"
 )
 
@@ -20,7 +20,7 @@ func getServicesLayer() []dingo.Def {
 			Name: servicesLayer,
 			Build: func(
 				cfg *config.Config,
-			) (*services.Services, error) {
+			) (*cli.Service, error) {
 				fileUtils, err := file_utils.New(cfg, wrappers.NewFileUtilsWrapper())
 				if err != nil {
 					return nil, err
@@ -31,7 +31,7 @@ func getServicesLayer() []dingo.Def {
 					return nil, err
 				}
 
-				return services.NewServices(
+				return cli.NewService(
 					stringUtils,
 					gpt_utils.New(),
 					fileUtils,

@@ -17,7 +17,7 @@ type CopyOptions struct {
 }
 
 func (c *CopyOptions) Validate() error {
-	return ValidateStructParams(c)
+	return ValidateStruct(c)
 }
 
 func wipeDestinationDir(destination string, exclusions []string) ([]string, error) {

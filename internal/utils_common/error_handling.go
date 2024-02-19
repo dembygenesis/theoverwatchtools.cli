@@ -52,8 +52,15 @@ func (e *ErrorList) Single() error {
 			continue
 		}
 		bs = append(bs, []byte(err.Error())...)
-		bs = append(bs, ',', '\n')
+		bs = append(bs, ',', ' ')
 	}
 
 	return errors.New(string(bs))
+}
+
+func (e *ErrorList) HasErrors() bool {
+	if e == nil {
+		return false
+	}
+	return len(*e) != 0
 }

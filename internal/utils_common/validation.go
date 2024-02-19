@@ -13,7 +13,7 @@ var (
 	trans    ut.Translator
 )
 
-func ValidateStructParams(p interface{}, exclusions ...string) error {
+func ValidateStruct(p interface{}, exclusions ...string) error {
 	var errMsgs ErrorList
 
 	structVal, err := GetStructAsValue(p)

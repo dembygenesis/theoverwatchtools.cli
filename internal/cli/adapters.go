@@ -1,4 +1,4 @@
-package services
+package cli
 
 import (
 	"github.com/dembygenesis/local.tools/internal/utils_common"
