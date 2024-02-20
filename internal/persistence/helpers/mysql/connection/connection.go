@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/models"
 	"github.com/dembygenesis/local.tools/internal/persistence/helpers/mysql"
 	"github.com/dembygenesis/local.tools/internal/utils_common"
 	"github.com/jmoiron/sqlx"
@@ -31,7 +32,7 @@ func (c *Settings) validate() (*sqlx.DB, error) {
 		return nil, fmt.Errorf("required: %s", err)
 	}
 
-	db, err := mysql.GetClient(c.Parameters)
+	db, err := mysql.GetClient(c.Parameters.GetConnectionString(false))
 	if err != nil {
 		return nil, fmt.Errorf("get client: %w", err)
 	}
@@ -70,7 +71,7 @@ func New(settings *Settings) (*Connection, error) {
 
 func (c *Connection) GetDBx() (*sqlx.DB, error) {
 	if c.db == nil {
-		return nil, errors.New("hahaha")
+		return nil, models.ErrDatabaseNil
 	}
 	return c.db, nil
 }
@@ -86,19 +87,140 @@ func (c *Connection) Exec(ctx context.Context, query string, args ...interface{}
 	return result, nil
 }
 
-// Query executes a query with respect to the
-// timeout.
-func (c *Connection) Query(
-	ctx context.Context,
-	dest interface{},
-	query string,
-	args ...interface{},
-) error {
+type QueryIntoStructFilter struct {
+	Dest       any
+	Args       []interface{}
+	Stmt       string             `mapstructure:"stmt" json:"stmt" validate:"required"`
+	Pagination *models.Pagination `mapstructure:"pagination" json:"pagination"`
+}
+
+func (q *QueryIntoStructFilter) Validate() error {
+	if err := utils_common.ValidateStruct(q); err != nil {
+		return fmt.Errorf("validate: %v", err)
+	}
+
+	if q.Pagination == nil {
+		// Assign defaults
+		q.Pagination = models.NewPagination()
+	} else {
+		if err := q.Pagination.Validate(); err != nil {
+			return fmt.Errorf("pagination: %v", err)
+		}
+	}
+
+	return nil
+}
+
+type QueryAsArrFilter struct {
+	Stmt       string             `mapstructure:"stmt" json:"stmt" validate:"required"`
+	Pagination *models.Pagination `mapstructure:"pagination" json:"pagination"`
+}
+
+func (q *QueryAsArrFilter) Validate() error {
+	if err := utils_common.ValidateStruct(q); err != nil {
+		return fmt.Errorf("validate: %v", err)
+	}
+
+	if q.Pagination == nil {
+		// Assign defaults
+		q.Pagination = models.NewPagination()
+	} else {
+		if err := q.Pagination.Validate(); err != nil {
+			return fmt.Errorf("pagination: %v", err)
+		}
+	}
+
+	return nil
+}
+
+// QueryAsArr executes a query with respect to the timeout.
+func (c *Connection) QueryAsArr(ctx context.Context, f *QueryAsArrFilter) ([][]string, *models.Pagination, error) {
+	if err := f.Validate(); err != nil {
+		return nil, nil, fmt.Errorf("filter: %v", err)
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, c.settings.QueryTimeout)
 	defer cancel()
-	err := c.db.SelectContext(ctx, dest, query, args...)
+
+	res, err := queryAsStringArrays(ctx, c.db, f.Stmt, f.Pagination)
 	if err != nil {
-		return fmt.Errorf("query: %v", err)
+		return nil, nil, fmt.Errorf("query as arr: %v", err)
 	}
+
+	return res, f.Pagination, nil
+}
+
+type PaginateSettings struct {
+	Stmt            string             `json:"stmt" validate:"required"`
+	Pagination      *models.Pagination `json:"pagination" validate:"required"`
+	Args            []interface{}      `json:"args"`
+	timeoutDuration time.Duration
+	db              *sqlx.DB
+}
+
+func (c *PaginateSettings) setDefaults(conn *Connection) {
+	c.db = conn.db
+	c.timeoutDuration = conn.settings.QueryTimeout
+
+	if c.Pagination == nil {
+		c.Pagination = models.NewPagination()
+	}
+}
+
+// GetPaginateSettings wraps on PaginateSettings, and applies defaults.
+func (c *Connection) GetPaginateSettings(p *PaginateSettings) *PaginateSettings {
+	if p == nil {
+		return nil
+	}
+	p.setDefaults(c)
+	return p
+}
+
+func (c *PaginateSettings) Validate() error {
+	err := utils_common.ValidateStruct(c)
+	if err != nil {
+		return fmt.Errorf("validate: %v", err)
+	}
+
+	// We have to check internal attributes manually
+	if c.db == nil {
+		return models.ErrDatabaseNil
+	}
+	if c.timeoutDuration == 0 {
+		return models.ErrTimeoutNil
+	}
+
 	return nil
+}
+
+func Paginate[T any](
+	ctx context.Context,
+	dest *[]T,
+	settings *PaginateSettings,
+) error {
+	if err := settings.Validate(); err != nil {
+		return fmt.Errorf("validate: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, settings.timeoutDuration)
+	defer cancel()
+
+	return paginate(ctx, settings.db, dest, settings.Stmt, settings.Pagination, settings.Args...)
+}
+
+// QueryIntoStructSettings fetches context, and pagination filters.
+func (c *Connection) QueryIntoStructSettings(ctx context.Context, f *QueryAsArrFilter) ([][]string, *models.Pagination, error) {
+	if err := f.Validate(); err != nil {
+		return nil, nil, fmt.Errorf("filter: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, c.settings.QueryTimeout)
+	defer cancel()
+
+	res, err := queryAsStringArrays(ctx, c.db, f.Stmt, f.Pagination)
+	if err != nil {
+		return nil, nil, fmt.Errorf("query as arr: %v", err)
+	}
+
+	return res, f.Pagination, nil
 }
