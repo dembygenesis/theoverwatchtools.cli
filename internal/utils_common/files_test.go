@@ -20,41 +20,14 @@ type fileDetail struct {
 	Name string
 }
 
-// FileRemover defines the interface for removing files.
-type FileRemover interface {
-	RemoveAll(path string) error
-}
-
-// deletePaths removes paths using the provided FileRemover.
-func deletePaths2(paths []string, remover FileRemover) (int, error) {
-	deletedCount := 0
-	for _, path := range paths {
-		if err := remover.RemoveAll(path); err != nil {
-			return deletedCount, fmt.Errorf("failed to remove %s: %v", path, err)
-		}
-		deletedCount++
-	}
-	return deletedCount, nil
-}
-
-// MockFileRemover is a mock implementation of FileRemover.
-type MockFileRemover struct {
-	RemovedPaths []string
-}
-
-// RemoveAll mocks the RemoveAll method.
-func (m *MockFileRemover) RemoveAll(path string) error {
-	m.RemovedPaths = append(m.RemovedPaths, path)
-	return nil
-}
-
 func Test_deletePaths(t *testing.T) {
-	// Create temporary files and directories for testing
 	dir, err := ioutil.TempDir("", "testdir")
+
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
-	defer os.RemoveAll(dir) // Clean up
+
+	defer os.RemoveAll(dir)
 
 	file1 := filepath.Join(dir, "file1.txt")
 	file2 := filepath.Join(dir, "file2.txt")
@@ -63,6 +36,7 @@ func Test_deletePaths(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temporary file: %v", err)
 	}
+
 	_, err = os.Create(file2)
 	if err != nil {
 		t.Fatalf("Failed to create temporary file: %v", err)
@@ -70,19 +44,17 @@ func Test_deletePaths(t *testing.T) {
 
 	paths := []string{file1, file2}
 
-	// Call the function under test
 	deletedCount, err := deletePaths(paths)
 	if err != nil {
 		t.Errorf("deletePaths returned an unexpected error: %v", err)
 	}
 
-	// Assert that the number of deleted paths matches the expected count
+	fmt.Println("deletedCount --- ", deletedCount)
 	expectedDeletedCount := len(paths)
 	if deletedCount != expectedDeletedCount {
 		t.Errorf("deletePaths deleted %d paths, expected %d", deletedCount, expectedDeletedCount)
 	}
 
-	// Assert that the paths were deleted
 	for _, path := range paths {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
 			t.Errorf("deletePaths did not remove path: %s", path)
@@ -91,52 +63,46 @@ func Test_deletePaths(t *testing.T) {
 }
 
 func TestCopyOptions_Validate(t *testing.T) {
-	// Set up the test cases with input data and expected validation results
-	testCases := []struct {
-		InputData     *CopyOptions
-		ExpectedError string
-		TestCaseID    int
-	}{
-		// Test case 1: Valid input data
+	type testCase struct {
+		name        string
+		inputData   *CopyOptions
+		expectedErr string
+	}
+
+	testCases := []testCase{
 		{
-			InputData: &CopyOptions{
+			name: "Valid Input Data",
+			inputData: &CopyOptions{
 				Source:      "valid_source",
 				Destination: "valid_destination",
 			},
-			ExpectedError: "", // Expect no validation errors
-			TestCaseID:    1,
+			expectedErr: "",
 		},
-		// Test case 2: Missing source
 		{
-			InputData: &CopyOptions{
+			name: "Missing Source",
+			inputData: &CopyOptions{
 				Source:      "",
 				Destination: "valid_destination",
 			},
-			ExpectedError: "'source' must have a value",
-			TestCaseID:    2,
+			expectedErr: "'source' must have a value",
 		},
-		// Test case 3: Missing destination
 		{
-			InputData: &CopyOptions{
+			name: "Missing Destination",
+			inputData: &CopyOptions{
 				Source:      "valid_source",
 				Destination: "",
 			},
-			ExpectedError: "'destination' must have a value",
-			TestCaseID:    3,
+			expectedErr: "'destination' must have a value",
 		},
-		// Add more test cases as needed
 	}
 
-	// Loop through the test cases
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("TestCaseID=%d", tc.TestCaseID), func(t *testing.T) {
-			// Call the Validate method with the test data
-			err := tc.InputData.Validate()
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.inputData.Validate()
 
-			// Assert that the error message matches the expected error message
-			if tc.ExpectedError != "" {
+			if tc.expectedErr != "" {
 				require.Error(t, err)
-				assert.EqualError(t, err, tc.ExpectedError)
+				assert.EqualError(t, err, tc.expectedErr)
 			} else {
 				assert.NoError(t, err)
 			}

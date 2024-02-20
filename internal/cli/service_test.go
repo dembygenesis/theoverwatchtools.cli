@@ -103,13 +103,12 @@ func TestServices_CopyDirToAnother_Success(t *testing.T) {
 		Source:                    "./testA",
 		SourceExclusions:          nil,
 		Destination:               "./testB",
-		WipeDestination:           false, // or true, depending on your test scenario
+		WipeDestination:           false,
 		WipeDestinationExclusions: nil,
 	}
 
 	err := srv.CopyDirToAnother(opts)
 
-	// Assert that no error occurred during the function call
 	require.NoError(t, err, "should have no error")
 }
 
@@ -128,7 +127,6 @@ func TestServices_CopyDirToAnother_Validate_Fail(t *testing.T) {
 
 	err := srv.CopyDirToAnother(opts)
 
-	// Assert that an error occurred during the function call
 	require.Error(t, err, "expected an error due to missing source and destination")
 	require.Contains(t, err.Error(), "validate:")
 	require.Contains(t, err.Error(), "'source' must have a value")
@@ -141,8 +139,6 @@ func TestServices_CopyDirToAnother_Opts_Fail(t *testing.T) {
 	mockFileUtils := clifakes.FakeFileUtils{}
 
 	mockFileUtils.CopyDirToAnotherReturns(errors.New("forced error in copy operation"))
-	//Hello!
-	//Goodbye!
 	srv := Service{
 		stringUtils: &mockStringUtils,
 		gptUtils:    &mockGptUtils,
@@ -153,7 +149,7 @@ func TestServices_CopyDirToAnother_Opts_Fail(t *testing.T) {
 		Source:                    "./testA",
 		SourceExclusions:          nil,
 		Destination:               "./testB",
-		WipeDestination:           false, // Adjust based on your scenario
+		WipeDestination:           false,
 		WipeDestinationExclusions: nil,
 	}
 
