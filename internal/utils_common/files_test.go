@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -17,6 +18,96 @@ const (
 type fileDetail struct {
 	Type int
 	Name string
+}
+
+func Test_deletePaths(t *testing.T) {
+	dir, err := ioutil.TempDir("", "testdir")
+
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+
+	defer os.RemoveAll(dir)
+
+	file1 := filepath.Join(dir, "file1.txt")
+	file2 := filepath.Join(dir, "file2.txt")
+
+	_, err = os.Create(file1)
+	if err != nil {
+		t.Fatalf("Failed to create temporary file: %v", err)
+	}
+
+	_, err = os.Create(file2)
+	if err != nil {
+		t.Fatalf("Failed to create temporary file: %v", err)
+	}
+
+	paths := []string{file1, file2}
+
+	deletedCount, err := deletePaths(paths)
+	if err != nil {
+		t.Errorf("deletePaths returned an unexpected error: %v", err)
+	}
+
+	fmt.Println("deletedCount --- ", deletedCount)
+	expectedDeletedCount := len(paths)
+	if deletedCount != expectedDeletedCount {
+		t.Errorf("deletePaths deleted %d paths, expected %d", deletedCount, expectedDeletedCount)
+	}
+
+	for _, path := range paths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			t.Errorf("deletePaths did not remove path: %s", path)
+		}
+	}
+}
+
+func TestCopyOptions_Validate(t *testing.T) {
+	type testCase struct {
+		name        string
+		inputData   *CopyOptions
+		expectedErr string
+	}
+
+	testCases := []testCase{
+		{
+			name: "Valid Input Data",
+			inputData: &CopyOptions{
+				Source:      "valid_source",
+				Destination: "valid_destination",
+			},
+			expectedErr: "",
+		},
+		{
+			name: "Missing Source",
+			inputData: &CopyOptions{
+				Source:      "",
+				Destination: "valid_destination",
+			},
+			expectedErr: "'source' must have a value",
+		},
+		{
+			name: "Missing Destination",
+			inputData: &CopyOptions{
+				Source:      "valid_source",
+				Destination: "",
+			},
+			expectedErr: "'destination' must have a value",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.inputData.Validate()
+
+			if tc.expectedErr != "" {
+				require.Error(t, err)
+				assert.EqualError(t, err, tc.expectedErr)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
 
 func testCreateFilesAndFolders(t *testing.T, outFolder []string, files []fileDetail) {
@@ -45,7 +136,6 @@ func testCreateFilesAndFolders(t *testing.T, outFolder []string, files []fileDet
 	}
 }
 
-// TestCopyDir_FailInvalidDirectoryA tests that the invalid
 func TestCopyDir_FailInvalidDirectoryA(t *testing.T) {
 	opts := CopyOptions{
 		Source:                    "abc",
@@ -59,8 +149,6 @@ func TestCopyDir_FailInvalidDirectoryA(t *testing.T) {
 	require.Error(t, err, "error expected")
 }
 
-// TestCopyDir_Success tests that we can successfully copy one folder
-// onto another with respect to the exclusions provided.
 func TestCopyDir_Success(t *testing.T) {
 	var (
 		err error
