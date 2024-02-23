@@ -13,8 +13,14 @@ type Provider struct {
 func getServices() ([]dingo.Def, error) {
 	var services []dingo.Def
 
-	services = append(services, getServicesLayer()...)
-	services = append(services, getConfigLayer()...)
+	layers := [][]dingo.Def{
+		getServicesLayer(),
+		getConfigLayer(),
+	}
+
+	for _, layer := range layers {
+		services = append(services, layer...)
+	}
 
 	return services, nil
 }

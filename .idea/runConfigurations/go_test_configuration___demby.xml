@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go test configuration - demby" type="GoTestRunConfiguration" factoryName="Go Test">
+    <module name="utils" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="-parallel 10" />
+    <envs>
+      <env name="TEST_DB_HOST" value="localhost" />
+      <env name="TEST_DB_USER" value="demby" />
+      <env name="TEST_DB_PASS" value="secret" />
+      <env name="TEST_DB_PORT" value="3339" />
+    </envs>
+    <kind value="DIRECTORY" />
+    <package value="github.com/dembygenesis/local.tools/internal/persistence/helpers" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <framework value="gotest" />
+    <method v="2" />
+  </configuration>
+</component>

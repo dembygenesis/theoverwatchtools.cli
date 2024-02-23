@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/atotto/clipboard"
 	"github.com/dembygenesis/local.tools/internal/common"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
@@ -12,6 +13,10 @@ import (
 	"regexp"
 	"strings"
 )
+
+func GetUuidUnderscore() string {
+	return strings.ReplaceAll(uuid.New().String(), "-", "_")
+}
 
 // DecodeToStruct decodes the "in", into the "out".
 // Basically this is the equivalent, or marshalling something to JSON,
