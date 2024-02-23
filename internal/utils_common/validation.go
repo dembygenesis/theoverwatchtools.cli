@@ -2,6 +2,7 @@ package utils_common
 
 import (
 	"errors"
+	"fmt"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"strings"
@@ -13,7 +14,15 @@ var (
 	trans    ut.Translator
 )
 
+var (
+	ErrStructNil = errors.New("error, struct is nil")
+)
+
 func ValidateStruct(p interface{}, exclusions ...string) error {
+	if p != nil && fmt.Sprintf("%v", p) == "<nil>" {
+		return ErrStructNil
+	}
+
 	var errMsgs ErrorList
 
 	structVal, err := GetStructAsValue(p)

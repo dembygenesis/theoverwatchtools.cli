@@ -1,17 +1,20 @@
 package mysql
 
 import (
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"strconv"
 )
 
-func GetClient(connectionParameters *ConnectionParameters) (*sqlx.DB, error) {
-	connString :=
-		connectionParameters.User + ":" +
-			connectionParameters.Pass + "@tcp(" +
-			connectionParameters.Host + ":" +
-			strconv.Itoa(connectionParameters.Port) + ")/" +
-			connectionParameters.Database + "?charset=utf8&parseTime=true"
-	return sqlx.Open("mysql", connString)
+func GetClient(connString string) (*sqlx.DB, error) {
+	db, err := sqlx.Open("mysql", connString)
+	if err != nil {
+		return nil, fmt.Errorf("err: %v, with conn string: %s", err, connString)
+	}
+
+	if err = db.Ping(); err != nil {
+		return nil, fmt.Errorf("ping: %v", err)
+	}
+
+	return db, nil
 }
