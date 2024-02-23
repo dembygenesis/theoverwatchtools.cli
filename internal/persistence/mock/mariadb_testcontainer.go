@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/common"
-	"github.com/dembygenesis/local.tools/internal/persistence/helpers"
 	"github.com/dembygenesis/local.tools/internal/persistence/helpers/mysql"
+	"github.com/dembygenesis/local.tools/internal/utils_common"
 	"github.com/docker/go-connections/nat"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/require"
@@ -139,7 +139,7 @@ func testGetExistingMysqlConnection(t *testing.T) (*mysql.ConnectionParameters, 
 	db, err := mysql.GetClient(cp.GetConnectionString(true))
 	require.NoError(t, err, "unexpected error getting client from database")
 
-	databaseName := helpers.GetUuidUnderscore()
+	databaseName := utils_common.GetUuidUnderscore()
 
 	createStmt := fmt.Sprintf("CREATE DATABASE `%s`;", databaseName)
 	_, err = db.Exec(createStmt)
@@ -158,7 +158,7 @@ func testGetExistingMysqlConnection(t *testing.T) (*mysql.ConnectionParameters, 
 func testSpawnMysqlContainer(t *testing.T) (*mysql.ConnectionParameters, func()) {
 	ctx := context.Background()
 
-	databaseName := helpers.GetUuidUnderscore()
+	databaseName := utils_common.GetUuidUnderscore()
 
 	req := testcontainers.ContainerRequest{
 		Image:        "mariadb:latest",
@@ -190,7 +190,7 @@ func testSpawnMysqlContainer(t *testing.T) (*mysql.ConnectionParameters, func())
 func testGetMysqlContainer(t *testing.T) (*mysql.ConnectionParameters, func()) {
 	ctx := context.Background()
 
-	databaseName := helpers.GetUuidUnderscore()
+	databaseName := utils_common.GetUuidUnderscore()
 
 	req := testcontainers.ContainerRequest{
 		Image:        "mariadb:latest",

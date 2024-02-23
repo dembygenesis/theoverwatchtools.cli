@@ -245,3 +245,12 @@ func TestCopyDir_Success(t *testing.T) {
 		assert.True(t, true, hashFilesInFolderB[fileName])
 	}
 }
+
+func Test_deletePaths_OsRemove_fail(t *testing.T) {
+	filePath := []string{
+		".",
+	}
+
+	_, err := deletePaths(filePath)
+	require.Error(t, err)
+}
