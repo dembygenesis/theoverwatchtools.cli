@@ -1,5 +1,5 @@
 name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+run-name: 🛠️ Running tests for ${{ github.actor }}'s PR.
 on:
   pull_request:
     types: [ opened, labeled, unlabeled, synchronize, edited, reopened ]
