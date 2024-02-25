@@ -50,26 +50,12 @@ func ValidateStruct(p interface{}, exclusions ...string) error {
 		}
 	}
 
-	if len(exclusions) > 0 {
-		filtered := make([]string, 0)
-		excludeHash := makeHashVariadic(exclusions...)
-		for _, errMsg := range errMsgs {
-			if !excludeHash[errMsg] {
-				filtered = append(filtered, errMsg.Error())
-			}
-		}
-	}
-
 	return errMsgs.Single()
 }
 
 // makeHashVariadic removes an element specified by index for any type of slice
 func makeHashVariadic[T any](variadic ...T) map[any]bool {
-	arr := make([]T, 0)
-	for _, val := range variadic {
-		arr = append(arr, val)
-	}
-	return makeHash(arr)
+	return makeHash(append(make([]T, 0), variadic...))
 }
 
 // makeHash removes an element specified by index for any type of slice

@@ -3,6 +3,7 @@ package docker_testenv
 import (
 	"context"
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/utils_common"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
@@ -51,18 +52,20 @@ func (dm *DockerManager) Cleanup(ctx context.Context) error {
 		return fmt.Errorf("container ID is missing")
 	}
 
-	if err := dm.client.ContainerRemove(ctx, dm.ContainerID, types.ContainerRemoveOptions{Force: true}); err != nil {
+	if err := dm.client.ContainerRemove(ctx, dm.ContainerID, container.RemoveOptions{Force: true}); err != nil {
 		return fmt.Errorf("remove: %v", err)
 	}
 
 	return nil
 }
 
+// UpsertContainer upserts a new container, be careful with this function
+// because it will remove other running instances with colliding port, OR names.
 func (dm *DockerManager) UpsertContainer(ctx context.Context, recreate bool) (string, error) {
 	m.Lock()
 	defer m.Unlock()
 
-	allContainers, err := dm.client.ContainerList(ctx, types.ContainerListOptions{All: true})
+	allContainers, err := dm.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
 		return "", err
 	}
@@ -70,33 +73,31 @@ func (dm *DockerManager) UpsertContainer(ctx context.Context, recreate bool) (st
 	targetHostPort := strconv.Itoa(dm.cfg.HostPort)
 
 	for _, ctn := range allContainers {
+		hasContainerNameCollision := utils_common.Contains(ctn.Names, func(name string) bool {
+			return name == "/"+dm.cfg.Name
+		})
+		if hasContainerNameCollision {
+			if !recreate {
+				dm.ContainerID = ctn.ID
+				return ctn.ID, nil
+			}
 
-		// Check if a similar name already exists
-		for _, name := range ctn.Names {
-			if name == "/"+dm.cfg.Name {
-				if !recreate {
-					dm.ContainerID = ctn.ID
-					return ctn.ID, nil
-				}
-
-				if err := dm.client.ContainerRemove(ctx, ctn.ID, types.ContainerRemoveOptions{Force: true}); err != nil {
-					return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to name collision: %w", ctn.ID, err)
-				}
-				break
+			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
+				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to name collision: %w", ctn.ID, err)
 			}
 		}
 
-		// Check if port already exists
-		for _, portBinding := range ctn.Ports {
-			if strconv.Itoa(int(portBinding.PublicPort)) == targetHostPort && portBinding.Type == "tcp" {
-				if !recreate {
-					dm.ContainerID = ctn.ID
-					return ctn.ID, nil
-				}
-				if err := dm.client.ContainerRemove(ctx, ctn.ID, types.ContainerRemoveOptions{Force: true}); err != nil {
-					return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to port collision: %w", ctn.ID, err)
-				}
-				break
+		hasPortBindingCollision := utils_common.Contains(ctn.Ports, func(port types.Port) bool {
+			return strconv.Itoa(int(port.PublicPort)) == targetHostPort && port.Type == "tcp"
+		})
+		if hasPortBindingCollision {
+			if !recreate {
+				dm.ContainerID = ctn.ID
+				return ctn.ID, nil
+			}
+
+			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
+				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to port collision: %w", ctn.ID, err)
 			}
 		}
 	}
@@ -131,7 +132,7 @@ func (dm *DockerManager) createContainer(ctx context.Context) (string, error) {
 
 	dm.ContainerID = resp.ID
 
-	if err := dm.client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := dm.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return "", err
 	}
 

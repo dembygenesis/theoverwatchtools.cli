@@ -82,10 +82,7 @@ var customValidations = []CustomValidation{
 					return false
 				}
 				_, err := url.ParseRequestURI(val)
-				if err != nil {
-					return false
-				}
-				return true
+				return err != nil
 			},
 		},
 		Response: null.String{

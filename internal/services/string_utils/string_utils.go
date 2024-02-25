@@ -40,9 +40,7 @@ func (s *stringUtils) CopyRootPathToClipboard(root string, exclude []string) ([]
 		exclude = make([]string, 0)
 	}
 
-	for _, exclusion := range s.conf.CopyToClipboard.Exclusions {
-		exclude = append(exclude, exclusion)
-	}
+	exclude = append(exclude, s.conf.CopyToClipboard.Exclusions...)
 
 	files, err := s.osLayer.CopyRootPathToClipboard(root, exclude)
 	if err != nil {

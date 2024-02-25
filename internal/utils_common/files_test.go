@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,8 +20,7 @@ type fileDetail struct {
 }
 
 func Test_deletePaths(t *testing.T) {
-	dir, err := ioutil.TempDir("", "testdir")
-
+	dir, err := os.MkdirTemp("", "testdir")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
@@ -125,11 +123,9 @@ func testCreateFilesAndFolders(t *testing.T, outFolder []string, files []fileDet
 
 			err = f.Close()
 			require.NoError(t, err, "close fileDetail")
-			break
 		case fileTypeFolder:
 			err := os.MkdirAll(fullFilePath, 0755)
 			require.NoError(t, err, "create folder A fileDetail")
-			break
 		default:
 			require.Error(t, fmt.Errorf("fileType: %v is undefined", fileDetails.Type))
 		}

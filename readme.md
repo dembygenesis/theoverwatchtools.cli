@@ -1,6 +1,9 @@
 # Preface 
 Hola! I made this utility CLI to assist/expedite the use-cases of my day to day work. :) 
 
+# Installation
+- Install pre-commit hooks: **pre-commit install --allow-missing-config**
+
 ## Features: <br/> 
 
 **[Copy root path to clipboard]** ✅ <br/>

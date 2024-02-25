@@ -28,20 +28,18 @@ type Settings struct {
 
 // validate validates the Connection settings
 func (c *Settings) validate() (*sqlx.DB, error) {
+
 	if err := utils_common.ValidateStruct(c); err != nil {
 		return nil, fmt.Errorf("required: %s", err)
 	}
 
-	db, err := mysql.GetClient(c.Parameters.GetConnectionString(false))
+	db, err := mysql.GetClient(&mysql.ClientOptions{
+		PingTimeout: c.ConnectTimeout,
+		ConnString:  c.Parameters.GetConnectionString(false),
+		Close:       false,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("get client: %w", err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), c.ConnectTimeout)
-	defer cancel()
-
-	if err = db.PingContext(ctx); err != nil {
-		return nil, fmt.Errorf("ping ctx: %w", err)
 	}
 
 	return db, nil
