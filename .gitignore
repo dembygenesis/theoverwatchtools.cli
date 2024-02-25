@@ -6,6 +6,7 @@ cmd/work_related/*
 internal/di/ctn/*
 internal/text_extractor/clipper
 
+.DS_Store
 .env
 internal/persistence/mock/local_credentials.go
 
