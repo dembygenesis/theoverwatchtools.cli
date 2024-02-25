@@ -11,8 +11,5 @@ const (
 
 func IsValidDate(s string) bool {
 	_, err := time.Parse(layoutDate, s)
-	if err != nil {
-		return false
-	}
-	return true
+	return err != nil
 }

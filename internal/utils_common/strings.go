@@ -1,6 +1,7 @@
 package utils_common
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/atotto/clipboard"
@@ -79,7 +80,7 @@ func visit(files *[]string, root string, ignoredPrefixed []string) filepath.Walk
 }
 
 func CopyRootPathToClipboard(root string, exclude []string) ([]string, error) {
-	logger := common.GetLogger(nil)
+	logger := common.GetLogger(context.TODO())
 	var files []string
 
 	err := filepath.Walk(root, visit(&files, root, exclude))

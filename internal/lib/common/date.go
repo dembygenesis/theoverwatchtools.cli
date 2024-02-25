@@ -17,7 +17,7 @@ func isValidStartAndEndDates(start, end string) error {
 	if t2.IsInvalid() {
 		errs.Add("end is invalid")
 	}
-	if t1.Compare(">", t2) && (t1.IsValid() && t1.IsValid()) {
+	if t1.Compare(">", t2) && (t1.IsValid() && t2.IsValid()) {
 		errs.Add("start is greater than end")
 	}
 

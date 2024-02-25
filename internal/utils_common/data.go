@@ -22,3 +22,13 @@ func GetStructAsValue(_struct interface{}) (interface{}, error) {
 	}
 	return rawValue, nil
 }
+
+// Contains checks if a slice contains a particular element.
+func Contains[T comparable](slice []T, compare func(v T) bool) bool {
+	for _, v := range slice {
+		if compare(v) {
+			return true
+		}
+	}
+	return false
+}

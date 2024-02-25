@@ -1,0 +1,7 @@
+repos:
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.56.2 # Use the latest golangci-lint version
+    hooks:
+      - id: golangci-lint
+        args: ['--fix']
+

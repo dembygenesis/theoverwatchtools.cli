@@ -2,12 +2,9 @@
   <configuration default="false" name="go test configuration - demby" type="GoTestRunConfiguration" factoryName="Go Test">
     <module name="utils" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="-parallel 10" />
+    <parameters value="-parallel 100" />
     <envs>
-      <env name="TEST_DB_HOST" value="localhost" />
-      <env name="TEST_DB_USER" value="demby" />
-      <env name="TEST_DB_PASS" value="secret" />
-      <env name="TEST_DB_PORT" value="3339" />
+      <env name="TEST_ENV_USE_EXISTING_MARIADB" value="1" />
     </envs>
     <kind value="DIRECTORY" />
     <package value="github.com/dembygenesis/local.tools/internal/persistence/helpers" />

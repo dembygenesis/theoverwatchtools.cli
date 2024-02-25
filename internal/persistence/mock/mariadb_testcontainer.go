@@ -13,7 +13,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	"os"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 )
@@ -26,14 +25,10 @@ const (
 	host          = "localhost"
 	user          = "demby"
 	pass          = "secret"
-	/*host          = "localhost"
-	user          = "demby"
-	pass          = "secret"*/
 )
 
 var (
-	m      sync.Mutex
-	logger = common.GetLogger(nil)
+	logger = common.GetLogger(context.TODO())
 )
 
 func startContainerAndPingDB(ctx context.Context, req testcontainers.ContainerRequest, databaseName string) (*mysql.ConnectionParameters, testcontainers.Container, error) {
@@ -71,7 +66,10 @@ func startContainerAndPingDB(ctx context.Context, req testcontainers.ContainerRe
 			Port:     port.Int(),
 			Database: databaseName,
 		}
-		db, err = mysql.GetClient(connectionParameters.GetConnectionString(false))
+		db, err = mysql.GetClient(&mysql.ClientOptions{
+			ConnString: connectionParameters.GetConnectionString(false),
+			Close:      false,
+		})
 		if err != nil {
 			logger.Println("Failed to get DB client:", err)
 			continue
@@ -100,7 +98,7 @@ func startContainerAndPingDB(ctx context.Context, req testcontainers.ContainerRe
 func TestGetMockMariaDBFromTestcontainers(t *testing.T) (*mysql.ConnectionParameters, func()) {
 	// Old code for using an existing connection if
 	// ENV vars are provided. No longer needed because
-	// the function `TestGetMockMariaDBFromDocker` exists.
+	// the function `TestGetMockMariaDB` exists.
 	// But still keeping them here while continuing to refine.
 	/*testDBKeys := []string{
 		"TEST_DB_HOST",
@@ -136,7 +134,10 @@ func testGetExistingMysqlConnection(t *testing.T) (*mysql.ConnectionParameters, 
 	err = cp.Validate(false)
 	require.NoError(t, err, "unexpected test database validation error")
 
-	db, err := mysql.GetClient(cp.GetConnectionString(true))
+	db, err := mysql.GetClient(&mysql.ClientOptions{
+		ConnString: cp.GetConnectionString(true),
+		Close:      false,
+	})
 	require.NoError(t, err, "unexpected error getting client from database")
 
 	databaseName := utils_common.GetUuidUnderscore()
@@ -254,7 +255,11 @@ func startContainerAndPingDBV2(ctx context.Context, req testcontainers.Container
 			Pass: pass,
 			Port: port.Int(),
 		}
-		db, err = mysql.GetClient(connectionParameters.GetConnectionString(false))
+
+		db, err = mysql.GetClient(&mysql.ClientOptions{
+			ConnString: connectionParameters.GetConnectionString(false),
+			Close:      false,
+		})
 		if err != nil {
 			logger.Println("Failed to get DB client:", err)
 			continue
