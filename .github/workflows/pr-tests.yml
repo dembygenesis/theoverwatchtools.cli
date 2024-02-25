@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: Integration tests
 run-name: 🛠️ Running tests for ${{ github.actor }}'s PR.
 on:
   pull_request:
