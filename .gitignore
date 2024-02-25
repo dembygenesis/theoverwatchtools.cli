@@ -6,19 +6,10 @@ cmd/work_related/*
 internal/di/ctn/*
 internal/text_extractor/clipper
 
+.DS_Store
 .env
 internal/persistence/mock/local_credentials.go
 
 # idea
-.idea/dataSources*
-.idea/sqldialects.xml
-.idea/runConfigurations.xml
-.idea/runConfigurations/*_local.xml
-.idea/inspectionProfiles/Project_Default.xml
-.idea/watcherTasks.xml
-.idea/git_toolbox_prj.xml
-.idea/codeStyles
-.idea/shelf
-.idea/misc.xml
-.idea/golinter.xml
-.idea/workspace.xml
+.idea/*
+!.idea/runConfigurations/
