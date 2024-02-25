@@ -1,1 +1,1 @@
-go run ./di/gen/main.go ./di/ctn
+go run ./internal/di/gen/main.go ./internal/di/ctn

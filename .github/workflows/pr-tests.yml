@@ -1,0 +1,65 @@
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: [ push ]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+
+  tests:
+    name: Run Go tests
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3341:3341
+        env:
+          MYSQL_ROOT_HOST: "%"
+          MYSQL_ROOT_PASSWORD: "secret"
+          MYSQL_TCP_PORT: "3341"
+    steps:
+      - name: Checkout repository.
+        uses: actions/checkout@v2
+
+      - name: Install go
+        uses: actions/setup-go@v4
+        with: { go-version: 1.21 }
+
+      - name: Build dependencies
+        run: |
+          sh ./scripts/build-di.sh
+
+      - name: Run go mod tidy
+        run: |
+          go mod tidy   
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: v1.56.2
+          skip-go-installation: true
+          skip-pkg-cache: true
+
+      - name: Run golangci-lint
+        run: |
+          golangci-lint run ./...
+
+      - name: Run go vet
+        run: |
+          go vet ./...
+          
+      - name: Run go test
+        run: |
+          go test ./...

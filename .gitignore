@@ -3,7 +3,7 @@ builds/*
 
 #
 cmd/work_related/*
-di/ctn/*
+internal/di/ctn/*
 internal/text_extractor/clipper
 
 .env

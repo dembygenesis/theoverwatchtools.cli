@@ -16,7 +16,7 @@ import (
 )
 
 func Test_connection_Exec_Success(t *testing.T) {
-	connectionParameters, cleanup := mock.TestGetMockMariaDBFromDocker(t)
+	connectionParameters, cleanup := mock.TestGetMockMariaDB(t)
 	defer cleanup()
 
 	settings := Settings{
@@ -41,7 +41,7 @@ func Test_connection_Exec_Success(t *testing.T) {
 }
 
 func Test_connection_Exec_Fail(t *testing.T) {
-	connectionParameters, cleanup := mock.TestGetMockMariaDBFromDocker(t)
+	connectionParameters, cleanup := mock.TestGetMockMariaDB(t)
 	defer cleanup()
 
 	settings := Settings{
@@ -62,7 +62,7 @@ func Test_connection_Exec_Fail(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	connectionParameters, cleanup := mock.TestGetMockMariaDBFromDocker(t)
+	connectionParameters, cleanup := mock.TestGetMockMariaDB(t)
 	defer cleanup()
 
 	type args struct {
@@ -217,8 +217,12 @@ func TestConnection_QueryAsArr(t *testing.T) {
 				},
 			},
 			getDB: func(t *testing.T) (*sqlx.DB, func()) {
-				connectionParameters, cleanup := mock.TestGetMockMariaDBFromDocker(t)
-				db, err := mysql.GetClient(connectionParameters.GetConnectionString(true))
+				connectionParameters, cleanup := mock.TestGetMockMariaDB(t)
+
+				db, err := mysql.GetClient(&mysql.ClientOptions{
+					ConnString: connectionParameters.GetConnectionString(true),
+					Close:      false,
+				})
 				require.NoError(t, err, "unexpected connection error")
 				return db, cleanup
 			},
@@ -254,8 +258,11 @@ func TestConnection_QueryAsArr(t *testing.T) {
 				}(),
 			},
 			getDB: func(t *testing.T) (*sqlx.DB, func()) {
-				connectionParameters, cleanup := mock.TestGetMockMariaDBFromDocker(t)
-				db, err := mysql.GetClient(connectionParameters.GetConnectionString(true))
+				connectionParameters, cleanup := mock.TestGetMockMariaDB(t)
+				db, err := mysql.GetClient(&mysql.ClientOptions{
+					ConnString: connectionParameters.GetConnectionString(true),
+					Close:      false,
+				})
 				require.NoError(t, err, "unexpected connection error")
 				return db, cleanup
 			},
@@ -295,10 +302,13 @@ func TestConnection_QueryAsArr(t *testing.T) {
 }
 
 func TestConnection_QueryIntoStruct(t *testing.T) {
-	connectionParameters, cleanup := mock.TestGetMockMariaDBFromDocker(t)
+	connectionParameters, cleanup := mock.TestGetMockMariaDB(t)
 	defer cleanup()
 
-	client, err := mysql.GetClient(connectionParameters.GetConnectionString(false))
+	client, err := mysql.GetClient(&mysql.ClientOptions{
+		ConnString: connectionParameters.GetConnectionString(false),
+		Close:      false,
+	})
 	require.NoError(t, err, "unexpected client error")
 
 	settings := Settings{
