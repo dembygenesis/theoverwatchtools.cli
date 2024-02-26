@@ -20,10 +20,10 @@ func Test_connection_Exec_Success(t *testing.T) {
 	defer cleanup()
 
 	settings := Settings{
-		ConnectTimeout: 10 * time.Second,
-		QueryTimeout:   30 * time.Second,
-		ExecTimeout:    10 * time.Second,
-		Parameters:     connectionParameters,
+		ConnectTimeout:       10 * time.Second,
+		QueryTimeout:         30 * time.Second,
+		ExecTimeout:          10 * time.Second,
+		ConnectionParameters: connectionParameters,
 	}
 
 	conn, err := New(&settings)
@@ -45,10 +45,10 @@ func Test_connection_Exec_Fail(t *testing.T) {
 	defer cleanup()
 
 	settings := Settings{
-		ConnectTimeout: 10 * time.Second,
-		QueryTimeout:   30 * time.Second,
-		ExecTimeout:    10 * time.Second,
-		Parameters:     connectionParameters,
+		ConnectTimeout:       10 * time.Second,
+		QueryTimeout:         30 * time.Second,
+		ExecTimeout:          10 * time.Second,
+		ConnectionParameters: connectionParameters,
 	}
 
 	conn, err := New(&settings)
@@ -95,7 +95,7 @@ func TestNew(t *testing.T) {
 				ConnectTimeout: 1 * time.Second,
 				QueryTimeout:   1 * time.Second,
 				ExecTimeout:    1 * time.Second,
-				Parameters: &mysql.ConnectionParameters{
+				ConnectionParameters: &mysql.ConnectionParameters{
 					Host:     connectionParameters.Host,
 					User:     connectionParameters.User,
 					Pass:     connectionParameters.Pass,
@@ -113,7 +113,7 @@ func TestNew(t *testing.T) {
 				ConnectTimeout: 1 * time.Second,
 				QueryTimeout:   1 * time.Second,
 				ExecTimeout:    1 * time.Second,
-				Parameters: &mysql.ConnectionParameters{
+				ConnectionParameters: &mysql.ConnectionParameters{
 					Host:     connectionParameters.Host,
 					User:     connectionParameters.User + "wrong user",
 					Pass:     connectionParameters.Pass + "wrong password",
@@ -194,10 +194,10 @@ func TestConnection_QueryAsArr(t *testing.T) {
 			},
 			fields: fields{
 				settings: &Settings{
-					ConnectTimeout: 1 * time.Second,
-					QueryTimeout:   1 * time.Second,
-					ExecTimeout:    1 * time.Second,
-					Parameters:     &mysql.ConnectionParameters{},
+					ConnectTimeout:       1 * time.Second,
+					QueryTimeout:         1 * time.Second,
+					ExecTimeout:          1 * time.Second,
+					ConnectionParameters: &mysql.ConnectionParameters{},
 				},
 			},
 			assertions: func(t *testing.T, res [][]string, pagination *models.Pagination, err error) {
@@ -219,7 +219,7 @@ func TestConnection_QueryAsArr(t *testing.T) {
 			getDB: func(t *testing.T) (*sqlx.DB, func()) {
 				connectionParameters, cleanup := mock.TestGetMockMariaDB(t)
 
-				db, err := mysql.GetClient(&mysql.ClientOptions{
+				db, err := mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 					ConnString: connectionParameters.GetConnectionString(true),
 					Close:      false,
 				})
@@ -228,10 +228,10 @@ func TestConnection_QueryAsArr(t *testing.T) {
 			},
 			fields: fields{
 				settings: &Settings{
-					ConnectTimeout: 1 * time.Second,
-					QueryTimeout:   1 * time.Second,
-					ExecTimeout:    1 * time.Second,
-					Parameters:     &mysql.ConnectionParameters{},
+					ConnectTimeout:       1 * time.Second,
+					QueryTimeout:         1 * time.Second,
+					ExecTimeout:          1 * time.Second,
+					ConnectionParameters: &mysql.ConnectionParameters{},
 				},
 			},
 			assertions: func(t *testing.T, res [][]string, pagination *models.Pagination, err error) {
@@ -259,7 +259,7 @@ func TestConnection_QueryAsArr(t *testing.T) {
 			},
 			getDB: func(t *testing.T) (*sqlx.DB, func()) {
 				connectionParameters, cleanup := mock.TestGetMockMariaDB(t)
-				db, err := mysql.GetClient(&mysql.ClientOptions{
+				db, err := mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 					ConnString: connectionParameters.GetConnectionString(true),
 					Close:      false,
 				})
@@ -268,10 +268,10 @@ func TestConnection_QueryAsArr(t *testing.T) {
 			},
 			fields: fields{
 				settings: &Settings{
-					ConnectTimeout: 1 * time.Second,
-					QueryTimeout:   1 * time.Second,
-					ExecTimeout:    1 * time.Second,
-					Parameters:     &mysql.ConnectionParameters{},
+					ConnectTimeout:       1 * time.Second,
+					QueryTimeout:         1 * time.Second,
+					ExecTimeout:          1 * time.Second,
+					ConnectionParameters: &mysql.ConnectionParameters{},
 				},
 			},
 			assertions: func(t *testing.T, res [][]string, pagination *models.Pagination, err error) {
@@ -305,17 +305,17 @@ func TestConnection_QueryIntoStruct(t *testing.T) {
 	connectionParameters, cleanup := mock.TestGetMockMariaDB(t)
 	defer cleanup()
 
-	client, err := mysql.GetClient(&mysql.ClientOptions{
+	client, err := mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 		ConnString: connectionParameters.GetConnectionString(false),
 		Close:      false,
 	})
 	require.NoError(t, err, "unexpected client error")
 
 	settings := Settings{
-		ConnectTimeout: 10 * time.Second,
-		QueryTimeout:   30 * time.Second,
-		ExecTimeout:    10 * time.Second,
-		Parameters:     connectionParameters,
+		ConnectTimeout:       10 * time.Second,
+		QueryTimeout:         30 * time.Second,
+		ExecTimeout:          10 * time.Second,
+		ConnectionParameters: connectionParameters,
 	}
 
 	c := Connection{

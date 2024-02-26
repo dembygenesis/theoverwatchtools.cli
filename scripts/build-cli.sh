@@ -1,0 +1,1 @@
+go build -o ./builds/cli/main ./cmd/cli

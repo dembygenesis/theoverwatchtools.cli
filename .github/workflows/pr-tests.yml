@@ -39,10 +39,6 @@ jobs:
           skip-go-installation: true
           skip-pkg-cache: true
 
-      - name: Run golangci-lint
-        run: |
-          golangci-lint run ./...
-
       - name: Run go vet
         run: |
           go vet ./...

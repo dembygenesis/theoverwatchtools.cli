@@ -14,14 +14,14 @@ type ClientOptions struct {
 	Close       bool
 }
 
-func GetClient(o *ClientOptions) (*sqlx.DB, error) {
+func GetClient(ctx context.Context, o *ClientOptions) (*sqlx.DB, error) {
 	db, err := sqlx.Open("mysql", o.ConnString)
 	if err != nil {
-		return nil, fmt.Errorf("err: %v", err)
+		return nil, fmt.Errorf("open: %v", err)
 	}
 
 	if o.PingTimeout != 0 {
-		ctx, cancel := context.WithTimeout(context.Background(), o.PingTimeout)
+		ctx, cancel := context.WithTimeout(ctx, o.PingTimeout)
 		defer cancel()
 		if err = db.PingContext(ctx); err != nil {
 			return nil, fmt.Errorf("ping: %v", err)
