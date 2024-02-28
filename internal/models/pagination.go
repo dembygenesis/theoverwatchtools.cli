@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/utils_common"
+	"github.com/dembygenesis/local.tools/internal/utility"
 )
 
 type Pagination struct {
@@ -20,7 +20,7 @@ func NewPagination() *Pagination {
 }
 
 func (p *Pagination) Validate() error {
-	err := utils_common.ValidateStruct(p)
+	err := utility.ValidateStruct(p)
 	if err != nil {
 		return fmt.Errorf("validate: %v", err)
 	}

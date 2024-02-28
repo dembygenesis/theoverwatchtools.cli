@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/utils_common"
+	"github.com/dembygenesis/local.tools/internal/utility"
 	"github.com/spf13/viper"
 	"log"
 	"os"
@@ -23,7 +23,7 @@ type CopyToClipboard struct {
 }
 
 func (c *CopyToClipboard) ParseExclusions(s string) error {
-	err := utils_common.DecodeToStruct(s, &c.Exclusions)
+	err := utility.DecodeToStruct(s, &c.Exclusions)
 	if err != nil {
 		return fmt.Errorf("exclusions decode: %v", err)
 	}
@@ -38,7 +38,7 @@ type FolderAToFolderB struct {
 }
 
 func (c *FolderAToFolderB) ParseExclusions(s string) error {
-	err := utils_common.DecodeToStruct(s, &c.GenericExclusions)
+	err := utility.DecodeToStruct(s, &c.GenericExclusions)
 	if err != nil {
 		return fmt.Errorf("exclusions decode: %v", err)
 	}

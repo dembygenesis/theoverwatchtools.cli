@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/utils_common"
+	"github.com/dembygenesis/local.tools/internal/utility"
 )
 
 type Service struct {
@@ -39,7 +39,7 @@ func (s *Service) ClipCodingStandardsPreface() error {
 	return nil
 }
 
-func (s *Service) CopyDirToAnother(opts *utils_common.CopyOptions) error {
+func (s *Service) CopyDirToAnother(opts *utility.CopyOptions) error {
 	if err := opts.Validate(); err != nil {
 		return fmt.Errorf("validate: %v", err)
 	}

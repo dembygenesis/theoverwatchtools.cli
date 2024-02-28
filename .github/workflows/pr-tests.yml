@@ -24,10 +24,6 @@ jobs:
         uses: actions/setup-go@v4
         with: { go-version: 1.21 }
 
-      - name: Build dependencies
-        run: |
-          sh ./scripts/build-di.sh
-
       - name: Run go mod tidy
         run: |
           go mod tidy   
@@ -36,13 +32,14 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: v1.56.2
-          skip-go-installation: true
           skip-pkg-cache: true
 
       - name: Run go vet
         run: |
-          go vet ./...
-          
+          go vet ./... 
+
       - name: Run go test
+        env:
+          MIGRATION_DIR: ${{ github.workspace }}/internal/database/migrations
         run: |
-          go test ./...
+          go test ./... -v
