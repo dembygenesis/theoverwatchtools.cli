@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/dembygenesis/local.tools/di/ctn/dic"
 	"github.com/dembygenesis/local.tools/internal/cli"
 	"github.com/dembygenesis/local.tools/internal/common"
-	"github.com/dembygenesis/local.tools/internal/di/ctn/dic"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"log"

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dembygenesis/local.tools/internal/di/cfg"
+	"github.com/dembygenesis/local.tools/di/cfg"
 	"github.com/sarulabs/dingo/v4"
 	"log"
 	"os"

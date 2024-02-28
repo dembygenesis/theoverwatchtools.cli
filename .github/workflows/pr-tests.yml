@@ -32,16 +32,12 @@ jobs:
         run: |
           go mod tidy   
 
-      - name: golangci-lint
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
           version: v1.56.2
           skip-go-installation: true
           skip-pkg-cache: true
-
-      - name: Run golangci-lint
-        run: |
-          golangci-lint run ./...
 
       - name: Run go vet
         run: |

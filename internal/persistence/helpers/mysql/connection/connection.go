@@ -22,8 +22,8 @@ type Settings struct {
 	// ExecTimeout is the query execution timeout duration
 	ExecTimeout time.Duration `mapstructure:"exec_timeout" validate:"required"`
 
-	// Parameters holds the database credentials
-	Parameters *mysql.ConnectionParameters `mapstructure:"parameters"`
+	// ConnectionParameters holds the database credentials
+	ConnectionParameters *mysql.ConnectionParameters `mapstructure:"parameters"`
 }
 
 // validate validates the Connection settings
@@ -33,9 +33,9 @@ func (c *Settings) validate() (*sqlx.DB, error) {
 		return nil, fmt.Errorf("required: %s", err)
 	}
 
-	db, err := mysql.GetClient(&mysql.ClientOptions{
+	db, err := mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 		PingTimeout: c.ConnectTimeout,
-		ConnString:  c.Parameters.GetConnectionString(false),
+		ConnString:  c.ConnectionParameters.GetConnectionString(false),
 		Close:       false,
 	})
 	if err != nil {

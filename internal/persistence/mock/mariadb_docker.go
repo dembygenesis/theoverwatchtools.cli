@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"context"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/persistence/helpers/docker_testenv"
 	"github.com/dembygenesis/local.tools/internal/persistence/helpers/mysql"
@@ -37,7 +38,7 @@ func testSpawnMariaDB(t *testing.T, cp *mysql.ConnectionParameters) (*mysql.Conn
 	_, err := docker_testenv.NewMariaDB(&cfg)
 	require.NoError(t, err, "unexpected error spawning mariaDB")
 
-	db, err := mysql.GetClient(&mysql.ClientOptions{
+	db, err := mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 		ConnString: cp.GetConnectionString(true),
 		Close:      false,
 	})
@@ -47,7 +48,7 @@ func testSpawnMariaDB(t *testing.T, cp *mysql.ConnectionParameters) (*mysql.Conn
 	_, err = db.Exec(createStmt)
 	require.NoError(t, err, "unexpected error creating test database for localDB")
 
-	db, err = mysql.GetClient(&mysql.ClientOptions{
+	db, err = mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 		ConnString: cp.GetConnectionString(false),
 		Close:      false,
 	})
@@ -72,7 +73,7 @@ func testSpawnMariaDB(t *testing.T, cp *mysql.ConnectionParameters) (*mysql.Conn
 }
 
 func testExistingMariaDB(t *testing.T, cp *mysql.ConnectionParameters) (*mysql.ConnectionParameters, func()) {
-	db, err := mysql.GetClient(&mysql.ClientOptions{
+	db, err := mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 		ConnString: cp.GetConnectionString(true),
 		Close:      false,
 	})
@@ -82,7 +83,7 @@ func testExistingMariaDB(t *testing.T, cp *mysql.ConnectionParameters) (*mysql.C
 	_, err = db.Exec(createStmt)
 	require.NoError(t, err, "unexpected error creating test database for localDB")
 
-	db, err = mysql.GetClient(&mysql.ClientOptions{
+	db, err = mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 		ConnString: cp.GetConnectionString(false),
 		Close:      false,
 	})

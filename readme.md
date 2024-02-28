@@ -3,6 +3,7 @@ Hola! I made this utility CLI to assist/expedite the use-cases of my day to day 
 
 # Installation
 - Install pre-commit hooks: **pre-commit install --allow-missing-config**
+- Install sqlboiler
 
 ## Features: <br/> 
 
