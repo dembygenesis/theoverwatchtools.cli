@@ -66,7 +66,7 @@ func startContainerAndPingDB(ctx context.Context, req testcontainers.ContainerRe
 			Port:     port.Int(),
 			Database: databaseName,
 		}
-		db, err = mysql.GetClient(&mysql.ClientOptions{
+		db, err = mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 			ConnString: connectionParameters.GetConnectionString(false),
 			Close:      false,
 		})
@@ -134,7 +134,7 @@ func testGetExistingMysqlConnection(t *testing.T) (*mysql.ConnectionParameters, 
 	err = cp.Validate(false)
 	require.NoError(t, err, "unexpected test database validation error")
 
-	db, err := mysql.GetClient(&mysql.ClientOptions{
+	db, err := mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 		ConnString: cp.GetConnectionString(true),
 		Close:      false,
 	})
@@ -256,7 +256,7 @@ func startContainerAndPingDBV2(ctx context.Context, req testcontainers.Container
 			Port: port.Int(),
 		}
 
-		db, err = mysql.GetClient(&mysql.ClientOptions{
+		db, err = mysql.GetClient(context.TODO(), &mysql.ClientOptions{
 			ConnString: connectionParameters.GetConnectionString(false),
 			Close:      false,
 		})
