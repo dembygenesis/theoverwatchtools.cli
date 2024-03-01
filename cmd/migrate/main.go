@@ -4,12 +4,9 @@ import (
 	"context"
 	"github.com/dembygenesis/local.tools/internal/common"
 	"github.com/dembygenesis/local.tools/internal/config"
-	"github.com/dembygenesis/local.tools/internal/persistence/helpers/mysql"
-	"github.com/dembygenesis/local.tools/internal/persistence/helpers/mysql/migration"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/golang-migrate/migrate/v4/database/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"log"
+	"github.com/dembygenesis/local.tools/internal/globals"
+	"github.com/dembygenesis/local.tools/internal/persistence/mysql/helpers"
+	"os"
 )
 
 func main() {
@@ -18,15 +15,14 @@ func main() {
 		err error
 	)
 
-	ctx := context.Background()
-	logger := common.GetLogger(ctx)
+	logger := common.GetLogger(context.TODO())
 
 	cfg, err = config.New(".env")
 	if err != nil {
-		log.Fatalf("error trying to initialize the builder: %v", err.Error())
+		logger.Fatalf("cfg: %v", err.Error())
 	}
 
-	c := mysql.ConnectionParameters{
+	c := &helpers.ConnectionParameters{
 		Host:     cfg.MysqlDatabaseCredentials.Host,
 		User:     cfg.MysqlDatabaseCredentials.User,
 		Pass:     cfg.MysqlDatabaseCredentials.Pass,
@@ -34,10 +30,13 @@ func main() {
 		Port:     cfg.MysqlDatabaseCredentials.Port,
 	}
 
-	tables, err := migration.Migrate(ctx, &c, mysql.Recreate)
+	logger.Info("Migrating...")
+	ctx := context.Background()
+	migrationDir := os.Getenv(globals.OsEnvMigrationDir)
+	tables, err := helpers.Migrate(ctx, c, migrationDir, helpers.CreateIfNotExists)
 	if err != nil {
 		logger.Fatalf("migrate: %v", err)
 	}
 
-	logger.Info("Created tables", tables)
+	logger.Infof("Created tables: %v", tables)
 }

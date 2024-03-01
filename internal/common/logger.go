@@ -28,7 +28,7 @@ func GetRequestId(ctx context.Context) string {
 
 func createLogger(ctx context.Context) *logrus.Entry {
 	log := &logrus.Logger{
-		Out: os.Stderr,
+		Out: os.Stdout,
 		Formatter: &logrus.TextFormatter{
 			DisableQuote: true,
 			ForceColors:  true,

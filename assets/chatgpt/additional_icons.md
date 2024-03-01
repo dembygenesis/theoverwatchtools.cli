@@ -1,0 +1,40 @@
+- 🚀 Deploy
+- ✨ Feature
+- 🐛 Bug fix
+- 🔒 Security
+- 📝 Docs update
+- 💡 Tip
+- 🎉 Release
+- 🚧 WIP
+- ⚠️ Warning
+- 🛠 Refactor
+- 📦 Release/version
+- 🔥 Urgent
+- 🌐 Localization
+- ⚡ Performance
+- 🤖 Automation
+- 💬 Discussion
+- 📈 Improvement
+- 🚚 Move/rename
+- 🧪 Testing
+- 📚 Misc update
+- 👌 Improvement
+- 🎨 Design/UI
+- 🌟 Highlight
+- 🚑 Hotfix
+- 🎈 Feature
+- 💎 Quality
+- 🔧 Configuration
+- 📊 Analytics
+- 🗑️ Deprecation
+- 🔬 Experimental
+- 🛂 Authentication
+- ⏪ Revert
+- 🔄 Update/change
+- ✏️ Typo
+- 📖 Documentation
+- 🏗️ Infrastructure
+- 🌱 Initial commit
+- 🚩 Feature flag
+- 🧰 Toolbox/plugin
+- 📌 Pin dependencies

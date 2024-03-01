@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dembygenesis/local.tools/internal/utils_common"
+	"github.com/dembygenesis/local.tools/internal/utility"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ var copyFolderAToBCommand = &cobra.Command{
 		src := args[0]
 		dst := args[1]
 
-		opts := utils_common.CopyOptions{
+		opts := utility.CopyOptions{
 			Source:      args[0],
 			Destination: args[1],
 		}

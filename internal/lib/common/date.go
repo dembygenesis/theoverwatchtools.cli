@@ -1,12 +1,12 @@
 package common
 
 import (
-	"github.com/dembygenesis/local.tools/internal/utils_common"
+	"github.com/dembygenesis/local.tools/internal/utility"
 	"github.com/golang-module/carbon/v2"
 )
 
 func isValidStartAndEndDates(start, end string) error {
-	var errs utils_common.ErrorList
+	var errs utility.ErrorList
 
 	t1 := carbon.Parse(start)
 	t2 := carbon.Parse(end)
