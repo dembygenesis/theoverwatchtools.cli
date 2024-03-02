@@ -1,7 +1,7 @@
 package wrappers
 
 import (
-	"github.com/dembygenesis/local.tools/internal/utils_common"
+	"github.com/dembygenesis/local.tools/internal/utility"
 )
 
 func NewStringUtilsWrapper() *StringWrapper {
@@ -12,5 +12,5 @@ type StringWrapper struct {
 }
 
 func (f *StringWrapper) CopyRootPathToClipboard(root string, exclude []string) ([]string, error) {
-	return utils_common.CopyRootPathToClipboard(root, exclude)
+	return utility.CopyRootPathToClipboard(root, exclude)
 }

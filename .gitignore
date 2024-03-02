@@ -3,13 +3,15 @@ builds/*
 
 #
 cmd/work_related/*
-di/ctn/*
 internal/text_extractor/clipper
 
 .DS_Store
 .env
-internal/persistence/mock/local_credentials.go
+internal/persistence/mysql/helpers/mock/local_credentials.go
 
 # idea
 .idea/*
 !.idea/runConfigurations/
+
+# sqlboiler
+sqlboiler.toml

@@ -2,9 +2,9 @@
   <configuration default="false" name="Run all tests" type="GoTestRunConfiguration" factoryName="Go Test">
     <module name="utils" />
     <working_directory value="$PROJECT_DIR$" />
-    <go_parameters value="-parallel=100" />
-    <kind value="PACKAGE" />
-    <package value="github.com/dembygenesis/local.tools/internal/persistence/helpers/mysql/connection" />
+    <go_parameters value="-parallel=100 -count=1" />
+    <kind value="DIRECTORY" />
+    <package value="github.com/dembygenesis/local.tools" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$" />
     <framework value="gotest" />

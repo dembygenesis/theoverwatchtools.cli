@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/config"
 	"github.com/dembygenesis/local.tools/internal/models"
-	"github.com/dembygenesis/local.tools/internal/utils_common"
+	"github.com/dembygenesis/local.tools/internal/utility"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
 type FileUtils interface {
-	CopyDirToAnother(opts *utils_common.CopyOptions) error
+	CopyDirToAnother(opts *utility.CopyOptions) error
 }
 
 //counterfeiter:generate . osLayer
 type osLayer interface {
-	CopyDirToAnother(opts *utils_common.CopyOptions) error
+	CopyDirToAnother(opts *utility.CopyOptions) error
 }
 
 func New(conf *config.Config, osLayer osLayer) (FileUtils, error) {
@@ -34,7 +34,7 @@ type fileUtils struct {
 	osLayer osLayer
 }
 
-func (g *fileUtils) CopyDirToAnother(opts *utils_common.CopyOptions) error {
+func (g *fileUtils) CopyDirToAnother(opts *utility.CopyOptions) error {
 	if opts == nil {
 		return fmt.Errorf("opts nil")
 	}

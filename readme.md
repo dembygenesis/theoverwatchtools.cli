@@ -1,39 +1,46 @@
-# Preface 
-Hola! I made this utility CLI to assist/expedite the use-cases of my day to day work. :) 
+# Preface 🚀
+Hola! I created this utility CLI to streamline my daily tasks. It's grown to include backend support, with an API on the horizon! 🌐
 
-# Installation
-- Install pre-commit hooks: **pre-commit install --allow-missing-config**
-- Install sqlboiler
+# Pre-installation Requirements 📋
+### Software Needed
+- 🐳 [Docker](https://docs.docker.com/engine/install/)
+- 🐹 [Golang](https://go.dev/doc/install)
+    - 🔧 [sqlboiler CLI](https://github.com/volatiletech/sqlboiler)
+    - 🔧 [golang-migrate](https://github.com/golang-migrate/migrate)
+- 🪝 [pre-commit](https://pre-commit.com/)
 
-## Features: <br/> 
+### Environment Variables
+- 🌍 `MIGRATION_DIR`: Specify your app directory (e.g., `./internal/database/migrations`).
 
-**[Copy root path to clipboard]** ✅ <br/>
-- Command: **clip-file-contents**
-- This command will copy the provided root path's contents recursively into the clipboard, except for .GIT, IDE generator (e.g _.git_, _.idea_), or irrelevant files
-not inclusive to human generated content.
-- It adds a header that identifies the filename associated with the contents.
+# Installation Steps 🔧
+1. Execute migration and install pre-commit hooks:
+   ```sh
+   sh ./scripts/dev_setup.sh
+   ```
 
-**[Clip GPT Code Standards Preface]** ✅ <br/>
-- Command: **clip-gpt-preface**
-- This command copies a **code preface for Chat GPT** that improves code quality.
-  ChatGPT code is usually "decent/passable" if configured to run on **version 4**, but the good engineering
-  foundations usually still has something to be desired.
+# Script Commands 🛠️ (Context: Main Directory)
+- `sh ./scripts/build-cli.sh`: Compiles the CLI.
+- `sh ./scripts/build-di.sh`: Compiles the container.
+- `sh ./scripts/build-sqlboiler.sh`: Generates sqlboiler ORM files.
+- `sh ./scripts/migrate.sh`: Performs database migration.
 
+## Features 🌟
 
-- It attempts to remediate the lack of: <br/>
-  	_Defensive programming_, _testability_, _readability_, _modularity_ - and this
-  	preface attempts to achieve that. It obviously will not be perfect,
-  	but it gives tangible improvements (at least based on anecdotal experience).
+**Copy Root Path to Clipboard** ✅
+- **Command**: `clip-file-contents`
+- Copies the specified root path's contents to the clipboard, excluding `.GIT`, IDE configurations, and non-essential files. Each copy includes a header for file identification.
 
-**[Copy one folder to another]** ✅ <br/>
-- This command copies one folder's contents to another, and at least has (not 100% enumerated here) the ff constraints:
-  - **exclusions**: folder A may omit certain folders to copy into folder B
-  - **wipe folder B**: folder B may be wiped clean, before folder A is copied into it; but it also has constraints on files not to wipe
-- The main use-case for this feature is transferring one repository to another (folder A -> B), and preserving their respective trackers.
+**Clip GPT Code Standards Preface** ✅
+- **Command**: `clip-gpt-preface`
+- Enhances ChatGPT code quality by incorporating a preface that focuses on defensive programming, testability, readability, and modularity.
 
-### Todo roadmap: <br/>
-- Make files
-- bash scripts to compile the binaries, and integrate into _.zshrc_, _.bashrc_
-- Improved CLI docs (long, and short) in the Viper commands
-- Automated testing CI on PRs, and merge requests (this is probably what I want to do next)
-- Docker configuration (likely if we're going to evolve to have a backend)
+**Copy One Folder to Another** ✅
+- Facilitates folder content transfer with options for exclusions and pre-transfer cleanup, preserving essential metadata.
+
+### Todo Roadmap 🗺️
+- Implement a `Makefile` for rapid development setup in a Docker environment, including binary compilation and CLI integration into shell configurations.
+- Enhance CLI documentation with detailed command descriptions.
+- Introduce automated testing in CI workflows for pull requests and merges - ✅
+- Expand Docker configurations for backend development.
+
+This streamlined structure with emojis makes the document more engaging and easier to navigate, highlighting key features and steps visually.
