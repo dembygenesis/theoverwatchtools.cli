@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dembygenesis/local.tools/internal/utility"
+	"github.com/dembygenesis/local.tools/internal/lib/file_system"
 	"github.com/spf13/cobra"
 )
 
@@ -24,16 +24,16 @@ var copyFolderAToBCommand = &cobra.Command{
 		src := args[0]
 		dst := args[1]
 
-		opts := utility.CopyOptions{
+		opts := file_system.CopyOptions{
 			Source:      args[0],
 			Destination: args[1],
 		}
 
 		if err := srv.CopyDirToAnother(&opts); err != nil {
-			logger.Errorf("clip gpt preface: %v", err)
+			log.Errorf("clip gpt preface: %v", err)
 			return
 		}
 
-		logger.Infof("Copied '\033[1m%s\033[0m' to '\033[1m%s\033[0m'", src, dst)
+		log.Infof("Copied '\033[1m%s\033[0m' to '\033[1m%s\033[0m'", src, dst)
 	},
 }

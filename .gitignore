@@ -7,7 +7,7 @@ internal/text_extractor/clipper
 
 .DS_Store
 .env
-internal/persistence/mysql/helpers/mock/local_credentials.go
+internal/persistence/helpers/mock/local_credentials.go
 
 # idea
 .idea/*

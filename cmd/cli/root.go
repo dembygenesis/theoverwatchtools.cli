@@ -5,18 +5,16 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/di/ctn/dic"
 	"github.com/dembygenesis/local.tools/internal/cli"
-	"github.com/dembygenesis/local.tools/internal/common"
-	"github.com/sirupsen/logrus"
+	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/spf13/cobra"
-	"log"
 	"os"
 )
 
 var (
-	ctn    *dic.Container
-	err    error
-	srv    *cli.Service
-	logger *logrus.Entry
+	ctn *dic.Container
+	err error
+	srv *cli.Service
+	log = logger.New(context.TODO())
 )
 
 func init() {
@@ -29,8 +27,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("get services: %v", err)
 	}
-
-	logger = common.GetLogger(context.TODO())
 }
 
 var rootCmd = &cobra.Command{

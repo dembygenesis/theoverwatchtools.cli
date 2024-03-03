@@ -1,7 +1,7 @@
 package wrappers
 
 import (
-	"github.com/dembygenesis/local.tools/internal/utility"
+	"github.com/dembygenesis/local.tools/internal/lib/file_system"
 )
 
 func NewFileUtilsWrapper() *FileWrapper {
@@ -11,6 +11,6 @@ func NewFileUtilsWrapper() *FileWrapper {
 type FileWrapper struct {
 }
 
-func (f *FileWrapper) CopyDirToAnother(opts *utility.CopyOptions) error {
-	return utility.CopyDirToAnother(opts)
+func (f *FileWrapper) CopyDirToAnother(opts *file_system.CopyOptions) error {
+	return file_system.CopyDirToAnother(opts)
 }

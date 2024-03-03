@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/dembygenesis/local.tools/internal/common"
 	"github.com/dembygenesis/local.tools/internal/config"
 	"github.com/dembygenesis/local.tools/internal/globals"
-	"github.com/dembygenesis/local.tools/internal/persistence/mysql/helpers"
+	"github.com/dembygenesis/local.tools/internal/lib/logger"
+	helpers2 "github.com/dembygenesis/local.tools/internal/persistence/mysql_helpers"
 	"os"
 )
 
@@ -15,14 +15,14 @@ func main() {
 		err error
 	)
 
-	logger := common.GetLogger(context.TODO())
+	log := logger.New(context.TODO())
 
 	cfg, err = config.New(".env")
 	if err != nil {
-		logger.Fatalf("cfg: %v", err.Error())
+		log.Fatalf("cfg: %v", err.Error())
 	}
 
-	c := &helpers.ConnectionParameters{
+	c := &helpers2.ConnectionParameters{
 		Host:     cfg.MysqlDatabaseCredentials.Host,
 		User:     cfg.MysqlDatabaseCredentials.User,
 		Pass:     cfg.MysqlDatabaseCredentials.Pass,
@@ -30,13 +30,13 @@ func main() {
 		Port:     cfg.MysqlDatabaseCredentials.Port,
 	}
 
-	logger.Info("Migrating...")
+	log.Info("Migrating...")
 	ctx := context.Background()
 	migrationDir := os.Getenv(globals.OsEnvMigrationDir)
-	tables, err := helpers.Migrate(ctx, c, migrationDir, helpers.CreateIfNotExists)
+	tables, err := helpers2.Migrate(ctx, c, migrationDir, helpers2.CreateIfNotExists)
 	if err != nil {
-		logger.Fatalf("migrate: %v", err)
+		log.Fatalf("migrate: %v", err)
 	}
 
-	logger.Infof("Created tables: %v", tables)
+	log.Infof("Created tables: %v", tables)
 }

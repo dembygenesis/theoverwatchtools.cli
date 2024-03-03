@@ -42,5 +42,6 @@ Hola! I created this utility CLI to streamline my daily tasks. It's grown to inc
 - Enhance CLI documentation with detailed command descriptions.
 - Introduce automated testing in CI workflows for pull requests and merges - ✅
 - Expand Docker configurations for backend development.
+- Refactor utility package to be more idiomatic by creating sub-packages
 
 This streamlined structure with emojis makes the document more engaging and easier to navigate, highlighting key features and steps visually.

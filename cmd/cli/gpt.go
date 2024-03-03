@@ -22,7 +22,7 @@ var copyGptCodePrefaceToClipboardCommand = &cobra.Command{
 		if err := srv.ClipCodingStandardsPreface(); err != nil {
 			return fmt.Errorf("clip gpt preface: %v", err)
 		}
-		logger.Info("Copied gpt preface")
+		log.Info("Copied gpt preface")
 
 		return nil
 	},
