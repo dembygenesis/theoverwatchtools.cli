@@ -20,7 +20,7 @@ SET @user_types_ref_id = (SELECT id
 INSERT INTO `category` (`name`, category_type_ref_id)
 VALUES
     -- User Types
-    ('Complete', @user_types_ref_id),
-    ('Incomplete', @user_types_ref_id),
-    ('Enqueued', @user_types_ref_id)
+    ('Super Admin', @user_types_ref_id),
+    ('Admin', @user_types_ref_id),
+    ('Regular', @user_types_ref_id)
 ;

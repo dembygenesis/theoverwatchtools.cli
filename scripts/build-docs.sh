@@ -1,0 +1,1 @@
+swag init -o ./internal/docs/assets --parseDependency=true --outputTypes "yaml" --parseDepth 2

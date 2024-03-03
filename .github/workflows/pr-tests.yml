@@ -40,6 +40,6 @@ jobs:
 
       - name: Run go test
         env:
-          MIGRATION_DIR: ${{ github.workspace }}/internal/database/migrations
+          APP_DIR: ${{ github.workspace }}
         run: |
           go test ./... -v
