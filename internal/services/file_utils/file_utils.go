@@ -3,19 +3,19 @@ package file_utils
 import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/config"
+	"github.com/dembygenesis/local.tools/internal/lib/file_system"
 	"github.com/dembygenesis/local.tools/internal/models"
-	"github.com/dembygenesis/local.tools/internal/utility"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
 type FileUtils interface {
-	CopyDirToAnother(opts *utility.CopyOptions) error
+	CopyDirToAnother(opts *file_system.CopyOptions) error
 }
 
 //counterfeiter:generate . osLayer
 type osLayer interface {
-	CopyDirToAnother(opts *utility.CopyOptions) error
+	CopyDirToAnother(opts *file_system.CopyOptions) error
 }
 
 func New(conf *config.Config, osLayer osLayer) (FileUtils, error) {
@@ -34,7 +34,7 @@ type fileUtils struct {
 	osLayer osLayer
 }
 
-func (g *fileUtils) CopyDirToAnother(opts *utility.CopyOptions) error {
+func (g *fileUtils) CopyDirToAnother(opts *file_system.CopyOptions) error {
 	if opts == nil {
 		return fmt.Errorf("opts nil")
 	}

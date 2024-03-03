@@ -4,14 +4,14 @@ package clifakes
 import (
 	"sync"
 
-	"github.com/dembygenesis/local.tools/internal/utility"
+	"github.com/dembygenesis/local.tools/internal/lib/file_system"
 )
 
 type FakeFileUtils struct {
-	CopyDirToAnotherStub        func(*utility.CopyOptions) error
+	CopyDirToAnotherStub        func(*file_system.CopyOptions) error
 	copyDirToAnotherMutex       sync.RWMutex
 	copyDirToAnotherArgsForCall []struct {
-		arg1 *utility.CopyOptions
+		arg1 *file_system.CopyOptions
 	}
 	copyDirToAnotherReturns struct {
 		result1 error
@@ -23,11 +23,11 @@ type FakeFileUtils struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeFileUtils) CopyDirToAnother(arg1 *utility.CopyOptions) error {
+func (fake *FakeFileUtils) CopyDirToAnother(arg1 *file_system.CopyOptions) error {
 	fake.copyDirToAnotherMutex.Lock()
 	ret, specificReturn := fake.copyDirToAnotherReturnsOnCall[len(fake.copyDirToAnotherArgsForCall)]
 	fake.copyDirToAnotherArgsForCall = append(fake.copyDirToAnotherArgsForCall, struct {
-		arg1 *utility.CopyOptions
+		arg1 *file_system.CopyOptions
 	}{arg1})
 	stub := fake.CopyDirToAnotherStub
 	fakeReturns := fake.copyDirToAnotherReturns
@@ -48,13 +48,13 @@ func (fake *FakeFileUtils) CopyDirToAnotherCallCount() int {
 	return len(fake.copyDirToAnotherArgsForCall)
 }
 
-func (fake *FakeFileUtils) CopyDirToAnotherCalls(stub func(*utility.CopyOptions) error) {
+func (fake *FakeFileUtils) CopyDirToAnotherCalls(stub func(*file_system.CopyOptions) error) {
 	fake.copyDirToAnotherMutex.Lock()
 	defer fake.copyDirToAnotherMutex.Unlock()
 	fake.CopyDirToAnotherStub = stub
 }
 
-func (fake *FakeFileUtils) CopyDirToAnotherArgsForCall(i int) *utility.CopyOptions {
+func (fake *FakeFileUtils) CopyDirToAnotherArgsForCall(i int) *file_system.CopyOptions {
 	fake.copyDirToAnotherMutex.RLock()
 	defer fake.copyDirToAnotherMutex.RUnlock()
 	argsForCall := fake.copyDirToAnotherArgsForCall[i]

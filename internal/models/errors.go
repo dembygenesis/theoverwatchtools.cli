@@ -17,4 +17,5 @@ var (
 	ErrUnidentifiedTxType     = errors.New("unidentified tx type")
 	ErrNotATransactionHandler = errors.New("not a transaction handler")
 	ErrEmptyName              = errors.New("empty name")
+	ErrPersistorNil           = errors.New("persistor is nil")
 )
