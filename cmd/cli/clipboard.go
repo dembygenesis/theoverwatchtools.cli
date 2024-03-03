@@ -12,9 +12,9 @@ var copyToClipboardCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		files, err := srv.CopyToClipboard(args[0], nil)
 		if err != nil {
-			logger.Errorf("copy to clipboard: %v", err)
+			log.Errorf("copy to clipboard: %v", err)
 			return
 		}
-		logger.Infof("copied \033[1;34m%v\033[0m files to clipboard!", len(files))
+		log.Infof("copied \033[1;34m%v\033[0m files to clipboard!", len(files))
 	},
 }

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/dembygenesis/local.tools/internal/utility"
+	"github.com/dembygenesis/local.tools/internal/lib/file_system"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
@@ -18,5 +18,5 @@ type gptUtils interface {
 
 //counterfeiter:generate . fileUtils
 type fileUtils interface {
-	CopyDirToAnother(opts *utility.CopyOptions) error
+	CopyDirToAnother(opts *file_system.CopyOptions) error
 }

@@ -2,13 +2,13 @@ package models
 
 import (
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/utility"
+	"github.com/dembygenesis/local.tools/internal/lib/validation"
 )
 
 type Pagination struct {
 	Pages      []int `json:"pages"`
-	Rows       int   `mapstructure:"rows" validate:"required,int_greater_than_zero" json:"rows"`
-	Page       int   `mapstructure:"page" validate:"required,int_greater_than_zero" json:"page"`
+	Rows       int   `mapstructure:"rows" validate:"required,greater_than_zero" json:"rows"`
+	Page       int   `mapstructure:"page" validate:"required,greater_than_zero" json:"page"`
 	TotalCount int   `json:"total_count"`
 }
 
@@ -20,7 +20,7 @@ func NewPagination() *Pagination {
 }
 
 func (p *Pagination) Validate() error {
-	err := utility.ValidateStruct(p)
+	err := validation.Validate(p)
 	if err != nil {
 		return fmt.Errorf("validate: %v", err)
 	}

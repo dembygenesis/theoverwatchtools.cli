@@ -3,8 +3,8 @@ package file_utils
 import (
 	"errors"
 	"github.com/dembygenesis/local.tools/internal/config"
+	"github.com/dembygenesis/local.tools/internal/lib/file_system"
 	"github.com/dembygenesis/local.tools/internal/services/file_utils/file_utilsfakes"
-	"github.com/dembygenesis/local.tools/internal/utility"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -25,7 +25,7 @@ func Test_fileUtils_CopyDir_Fail_Os_Layer(t *testing.T) {
 
 	fakeOsLayer.CopyDirToAnotherReturns(errors.New("mock error"))
 
-	opts := utility.CopyOptions{}
+	opts := file_system.CopyOptions{}
 
 	err := fakeFileUtils.CopyDirToAnother(&opts)
 	require.Error(t, err, "expected opts nil error")
@@ -39,7 +39,7 @@ func Test_fileUtils_CopyDir_Success(t *testing.T) {
 
 	fakeFileUtils, _ := New(&conf, &fakeOsLayer)
 
-	opts := utility.CopyOptions{}
+	opts := file_system.CopyOptions{}
 
 	err := fakeFileUtils.CopyDirToAnother(&opts)
 	require.NoError(t, err, "expected opts has error")
