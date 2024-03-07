@@ -4,9 +4,9 @@ import (
 	"github.com/dembygenesis/local.tools/di/cfg/wrappers"
 	"github.com/dembygenesis/local.tools/internal/cli"
 	"github.com/dembygenesis/local.tools/internal/config"
-	"github.com/dembygenesis/local.tools/internal/services/file_utils"
-	"github.com/dembygenesis/local.tools/internal/services/gpt_utils"
-	"github.com/dembygenesis/local.tools/internal/services/string_utils"
+	"github.com/dembygenesis/local.tools/internal/services/fileutil"
+	"github.com/dembygenesis/local.tools/internal/services/gptutil"
+	"github.com/dembygenesis/local.tools/internal/services/strsrvutil"
 	"github.com/sarulabs/dingo/v4"
 )
 
@@ -21,19 +21,19 @@ func getServicesLayer() []dingo.Def {
 			Build: func(
 				cfg *config.Config,
 			) (*cli.Service, error) {
-				fileUtils, err := file_utils.New(cfg, wrappers.NewFileUtilsWrapper())
+				fileUtils, err := fileutil.New(cfg, wrappers.NewFileUtilsWrapper())
 				if err != nil {
 					return nil, err
 				}
 
-				stringUtils, err := string_utils.New(cfg, wrappers.NewStringUtilsWrapper())
+				stringUtils, err := strsrvutil.New(cfg, wrappers.NewStringUtilsWrapper())
 				if err != nil {
 					return nil, err
 				}
 
 				return cli.NewService(
 					stringUtils,
-					gpt_utils.New(),
+					gptutil.New(),
 					fileUtils,
 				), nil
 			},

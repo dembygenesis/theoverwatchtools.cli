@@ -3,14 +3,13 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/lib/validation"
-	"github.com/dembygenesis/local.tools/internal/utils/error_util"
-	"github.com/dembygenesis/local.tools/internal/utils/slice_util"
+	"github.com/dembygenesis/local.tools/internal/utilities/errutil"
+	"github.com/dembygenesis/local.tools/internal/utilities/sliceutil"
+	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/spf13/viper"
 	"log"
 	"os"
 	"strings"
-	"time"
 )
 
 type MysqlDatabaseCredentials struct {
@@ -26,7 +25,7 @@ type CopyToClipboard struct {
 }
 
 func (c *CopyToClipboard) ParseExclusions(s string) error {
-	err := slice_util.Decode(s, &c.Exclusions)
+	err := sliceutil.Decode(s, &c.Exclusions)
 	if err != nil {
 		return fmt.Errorf("exclusions decode: %v", err)
 	}
@@ -41,7 +40,7 @@ type FolderAToFolderB struct {
 }
 
 func (c *FolderAToFolderB) ParseExclusions(s string) error {
-	err := slice_util.Decode(s, &c.GenericExclusions)
+	err := sliceutil.Decode(s, &c.GenericExclusions)
 	if err != nil {
 		return fmt.Errorf("exclusions decode: %v", err)
 	}
@@ -52,15 +51,15 @@ func (c *FolderAToFolderB) ParseExclusions(s string) error {
 }
 
 type API struct {
-	Port           int           `json:"port" mapstructure:"API_PORT" validate:"required,greater_than_zero"`
-	ListenTimeout  time.Duration `json:"listen_timeout" mapstructure:"API_LISTEN_TIMEOUT_SECS" validate:"required,greater_than_zero"`
-	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"API_REQUEST_TIMEOUT_SECS" validate:"required,greater_than_zero"`
+	Port           int `json:"port" mapstructure:"API_PORT" validate:"required,greater_than_zero"`
+	ListenTimeout  int `json:"listen_timeout" mapstructure:"API_LISTEN_TIMEOUT_SECS" validate:"required,greater_than_zero"`
+	RequestTimeout int `json:"request_timeout" mapstructure:"API_REQUEST_TIMEOUT_SECS" validate:"required,greater_than_zero"`
 }
 
 type Config struct {
 	FolderAToFolderB         FolderAToFolderB         `json:"folder_a_to_folder_b"`
 	CopyToClipboard          CopyToClipboard          `json:"copy_to_clipboard"`
-	MysqlDatabaseCredentials MysqlDatabaseCredentials `json:"mysq_database_credentials"`
+	MysqlDatabaseCredentials MysqlDatabaseCredentials `json:"mysql_database_credentials"`
 	API                      API                      `json:"API"`
 }
 
@@ -112,9 +111,9 @@ func New(envFile string) (*Config, error) {
 		config.API,
 	}
 
-	var errs error_util.List
+	var errs errutil.List
 	for _, cfgProperty := range cfgProperties {
-		err = validation.Validate(cfgProperty)
+		err = validationutils.Validate(cfgProperty)
 		if err != nil {
 			errs.AddErr(err)
 		}

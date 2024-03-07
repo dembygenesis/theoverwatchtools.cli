@@ -3,10 +3,9 @@ package main
 import (
 	"context"
 	"github.com/dembygenesis/local.tools/internal/config"
-	"github.com/dembygenesis/local.tools/internal/globals"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
-	helpers2 "github.com/dembygenesis/local.tools/internal/persistence/mysql_helpers"
-	"os"
+	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlhelper"
+	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlutil"
 )
 
 func main() {
@@ -22,7 +21,7 @@ func main() {
 		log.Fatalf("cfg: %v", err.Error())
 	}
 
-	c := &helpers2.ConnectionParameters{
+	c := &mysqlutil.ConnectionSettings{
 		Host:     cfg.MysqlDatabaseCredentials.Host,
 		User:     cfg.MysqlDatabaseCredentials.User,
 		Pass:     cfg.MysqlDatabaseCredentials.Pass,
@@ -32,8 +31,7 @@ func main() {
 
 	log.Info("Migrating...")
 	ctx := context.Background()
-	migrationDir := os.Getenv(globals.OsEnvMigrationDir)
-	tables, err := helpers2.Migrate(ctx, c, migrationDir, helpers2.CreateIfNotExists)
+	tables, err := mysqlhelper.Migrate(ctx, c, mysqlhelper.CreateIfNotExists)
 	if err != nil {
 		log.Fatalf("migrate: %v", err)
 	}
