@@ -3,7 +3,7 @@ package cli
 import (
 	"errors"
 	"github.com/dembygenesis/local.tools/internal/cli/clifakes"
-	"github.com/dembygenesis/local.tools/internal/lib/file_system"
+	"github.com/dembygenesis/local.tools/internal/lib/fslib"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -99,7 +99,7 @@ func TestServices_CopyDirToAnother_Success(t *testing.T) {
 		fileUtils:   &mockFileUtils,
 	}
 
-	opts := &file_system.CopyOptions{
+	opts := &fslib.CopyOptions{
 		Source:                    "./testA",
 		SourceExclusions:          nil,
 		Destination:               "./testB",
@@ -123,7 +123,7 @@ func TestServices_CopyDirToAnother_Validate_Fail(t *testing.T) {
 		fileUtils:   &mockFileUtils,
 	}
 
-	opts := &file_system.CopyOptions{}
+	opts := &fslib.CopyOptions{}
 
 	err := srv.CopyDirToAnother(opts)
 
@@ -145,7 +145,7 @@ func TestServices_CopyDirToAnother_Opts_Fail(t *testing.T) {
 		fileUtils:   &mockFileUtils,
 	}
 
-	opts := &file_system.CopyOptions{
+	opts := &fslib.CopyOptions{
 		Source:                    "./testA",
 		SourceExclusions:          nil,
 		Destination:               "./testB",

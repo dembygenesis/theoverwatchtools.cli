@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dembygenesis/local.tools/internal/lib/file_system"
+	"github.com/dembygenesis/local.tools/internal/lib/fslib"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ var copyFolderAToBCommand = &cobra.Command{
 		src := args[0]
 		dst := args[1]
 
-		opts := file_system.CopyOptions{
+		opts := fslib.CopyOptions{
 			Source:      args[0],
 			Destination: args[1],
 		}
