@@ -36,11 +36,17 @@ func preparePagination(ctx context.Context, db *sqlx.DB, query string, paginatio
 	}
 
 	pagination.SetData(
+		pagination.Page,
+		pagination.Rows,
+		totalCount,
+	)
+
+	/*pagination.SetData(
 		pages,
 		pagination.Rows,
 		pagination.Page,
 		totalCount,
-	)
+	)*/
 
 	if err = pagination.ValidatePagination(); err != nil {
 		return "", fmt.Errorf("validate: %v", err)

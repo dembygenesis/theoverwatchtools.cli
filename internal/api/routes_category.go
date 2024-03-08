@@ -22,8 +22,8 @@ import (
 // @Failure 500 {object} model.Category
 // @Router /v1/category [get]
 func (a *Api) ListCategories(ctx *fiber.Ctx) error {
-	var filter model.CategoryFilters
-	if err := ctx.BodyParser(&filter); err != nil {
+	filter := model.CategoryFilters{}
+	if err := ctx.QueryParser(&filter); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(errutil.ToArr(err))
 	}
 
