@@ -9,8 +9,7 @@ func (a *Api) Routes() {
 
 	groupCategory := groupV1.Group("/category")
 
-	groupCategory.Name("List Categories").Post("", a.ListCategories)
-	// groupCategory.Name("List Categories").Get("", a.ListCategories)
+	groupCategory.Name("List Categories").Get("", a.ListCategories)
 	groupCategory.Name("Get Category").Get("", a.GetCategory)
 	groupCategory.Name("Create Category").Get("", a.CreateCategory)
 	groupCategory.Name("Update Categories").Get("", a.UpdateCategory)

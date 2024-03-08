@@ -49,8 +49,8 @@ func TestCategoryManager_MySQL_GetCategories(t *testing.T) {
 	require.NotNil(t, cm, "unexpected nil category manager")
 
 	filters := &model.CategoryFilters{}
-	categories, err := cm.GetCategories(testCtx, filters)
+	paginatedCategories, err := cm.GetCategories(testCtx, filters)
 	assert.NoError(t, err, "unexpected err fetching categories")
-	assert.NotNil(t, categories, "unexpected nil categories")
-	assert.True(t, len(categories) > 0, "unexpected categories to have a length less that 0")
+	assert.NotNil(t, paginatedCategories.Categories, "unexpected nil categories")
+	assert.True(t, len(paginatedCategories.Categories) > 0, "unexpected categories to have a length less that 0")
 }

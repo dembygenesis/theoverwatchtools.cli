@@ -12,7 +12,7 @@ type CategoryManager struct {
 	cfg *Config
 }
 
-func (c *CategoryManager) GetCategories(ctx context.Context, f *model.CategoryFilters) ([]model.Category, error) {
+func (c *CategoryManager) GetCategories(ctx context.Context, f *model.CategoryFilters) (*model.PaginatedCategories, error) {
 	db, err := c.cfg.TxProvider.Db(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get db: %v", err)

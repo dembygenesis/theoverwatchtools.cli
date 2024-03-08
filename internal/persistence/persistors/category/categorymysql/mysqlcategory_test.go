@@ -66,10 +66,10 @@ func Test_ReadCategories(t *testing.T) {
 	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-	categories, err := m.GetCategories(testContext, txHandlerDb, nil)
+	paginatedCategories, err := m.GetCategories(testContext, txHandlerDb, nil)
 	require.NoError(t, err, "unexpected error fetching the categories from the database")
 	require.NotNil(t, txHandlerDb, "unexpected nil categories")
-	require.True(t, len(categories) > 0, "unexpected empty categories")
+	require.True(t, len(paginatedCategories.Categories) > 0, "unexpected empty categories")
 }
 
 func Test_UpdateCategories_Success(t *testing.T) {
@@ -95,12 +95,12 @@ func Test_UpdateCategories_Success(t *testing.T) {
 	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-	categories, err := m.GetCategories(testContext, txHandlerDb, nil)
+	paginatedCategories, err := m.GetCategories(testContext, txHandlerDb, nil)
 	require.NoError(t, err, "unexpected error fetching the categories from the database")
 	require.NotNil(t, txHandlerDb, "unexpected nil categories")
-	require.True(t, len(categories) > 0, "unexpected empty categories")
+	require.True(t, len(paginatedCategories.Categories) > 0, "unexpected empty categories")
 
-	cat := &categories[0]
+	cat := &paginatedCategories.Categories[0]
 	cat.Name = "New Category name"
 	cat, err = m.UpdateCategory(testContext, txHandlerDb, cat)
 	require.NoError(t, err, "unexpected error fetching a conflicting category from the database")
@@ -130,13 +130,13 @@ func Test_UpdateCategories_Fail(t *testing.T) {
 	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-	categories, err := m.GetCategories(testContext, txHandlerDb, nil)
+	paginatedCategories, err := m.GetCategories(testContext, txHandlerDb, nil)
 	require.NoError(t, err, "unexpected error fetching the categories from the database")
 	require.NotNil(t, txHandlerDb, "unexpected nil categories")
-	require.True(t, len(categories) > 0, "unexpected empty categories")
+	require.True(t, len(paginatedCategories.Categories) > 0, "unexpected empty categories")
 
-	cat := &categories[0]
-	cat.Name = categories[1].Name
+	cat := &paginatedCategories.Categories[0]
+	cat.Name = paginatedCategories.Categories[1].Name
 	cat, err = m.UpdateCategory(testContext, txHandlerDb, cat)
 	require.Error(t, err, "unexpected error fetching a conflicting category from the database")
 	assert.Contains(t, err.Error(), "Duplicate entry")

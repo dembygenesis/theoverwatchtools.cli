@@ -9,5 +9,5 @@ import (
 
 //counterfeiter:generate . categoryManager
 type categoryManager interface {
-	GetCategories(ctx context.Context, f *model.CategoryFilters) ([]model.Category, error)
+	GetCategories(ctx context.Context, f *model.CategoryFilters) (*model.PaginatedCategories, error)
 }

@@ -9,25 +9,25 @@ import (
 )
 
 type FakeCategoryManager struct {
-	GetCategoriesStub        func(context.Context, *model.CategoryFilters) ([]model.Category, error)
+	GetCategoriesStub        func(context.Context, *model.CategoryFilters) (*model.PaginatedCategories, error)
 	getCategoriesMutex       sync.RWMutex
 	getCategoriesArgsForCall []struct {
 		arg1 context.Context
 		arg2 *model.CategoryFilters
 	}
 	getCategoriesReturns struct {
-		result1 []model.Category
+		result1 *model.PaginatedCategories
 		result2 error
 	}
 	getCategoriesReturnsOnCall map[int]struct {
-		result1 []model.Category
+		result1 *model.PaginatedCategories
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCategoryManager) GetCategories(arg1 context.Context, arg2 *model.CategoryFilters) ([]model.Category, error) {
+func (fake *FakeCategoryManager) GetCategories(arg1 context.Context, arg2 *model.CategoryFilters) (*model.PaginatedCategories, error) {
 	fake.getCategoriesMutex.Lock()
 	ret, specificReturn := fake.getCategoriesReturnsOnCall[len(fake.getCategoriesArgsForCall)]
 	fake.getCategoriesArgsForCall = append(fake.getCategoriesArgsForCall, struct {
@@ -53,7 +53,7 @@ func (fake *FakeCategoryManager) GetCategoriesCallCount() int {
 	return len(fake.getCategoriesArgsForCall)
 }
 
-func (fake *FakeCategoryManager) GetCategoriesCalls(stub func(context.Context, *model.CategoryFilters) ([]model.Category, error)) {
+func (fake *FakeCategoryManager) GetCategoriesCalls(stub func(context.Context, *model.CategoryFilters) (*model.PaginatedCategories, error)) {
 	fake.getCategoriesMutex.Lock()
 	defer fake.getCategoriesMutex.Unlock()
 	fake.GetCategoriesStub = stub
@@ -66,28 +66,28 @@ func (fake *FakeCategoryManager) GetCategoriesArgsForCall(i int) (context.Contex
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCategoryManager) GetCategoriesReturns(result1 []model.Category, result2 error) {
+func (fake *FakeCategoryManager) GetCategoriesReturns(result1 *model.PaginatedCategories, result2 error) {
 	fake.getCategoriesMutex.Lock()
 	defer fake.getCategoriesMutex.Unlock()
 	fake.GetCategoriesStub = nil
 	fake.getCategoriesReturns = struct {
-		result1 []model.Category
+		result1 *model.PaginatedCategories
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCategoryManager) GetCategoriesReturnsOnCall(i int, result1 []model.Category, result2 error) {
+func (fake *FakeCategoryManager) GetCategoriesReturnsOnCall(i int, result1 *model.PaginatedCategories, result2 error) {
 	fake.getCategoriesMutex.Lock()
 	defer fake.getCategoriesMutex.Unlock()
 	fake.GetCategoriesStub = nil
 	if fake.getCategoriesReturnsOnCall == nil {
 		fake.getCategoriesReturnsOnCall = make(map[int]struct {
-			result1 []model.Category
+			result1 *model.PaginatedCategories
 			result2 error
 		})
 	}
 	fake.getCategoriesReturnsOnCall[i] = struct {
-		result1 []model.Category
+		result1 *model.PaginatedCategories
 		result2 error
 	}{result1, result2}
 }
