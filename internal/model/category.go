@@ -13,9 +13,14 @@ type Category struct {
 
 type Categories []Category
 
+type PaginatedCategories struct {
+	Categories []Category  `json:"categories"`
+	Pagination *Pagination `json:"pagination"`
+}
+
 // CategoryFilters contains the category filters.
 type CategoryFilters struct {
-	IdsIn []int `json:"ids_in"`
+	IdsIn []int `query:"ids_in" json:"ids_in"`
 	Pagination
 }
 

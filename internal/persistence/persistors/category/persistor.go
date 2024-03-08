@@ -13,11 +13,7 @@ type Persistor interface {
 	DeleteCategory(ctx context.Context, tx persistence.TransactionHandler) error
 	UpdateCategory(ctx context.Context, tx persistence.TransactionHandler) error*/
 
-	GetCategories(
-		ctx context.Context,
-		tx persistence.TransactionHandler,
-		filters *model.CategoryFilters,
-	) ([]model.Category, error)
+	GetCategories(ctx context.Context, tx persistence.TransactionHandler, filters *model.CategoryFilters) (*model.PaginatedCategories, error)
 	UpdateCategory(ctx context.Context, tx persistence.TransactionHandler, cat *model.Category) (*model.Category, error)
 	/*CreateCategories(ctx context.Context, tx persistence.TransactionHandler) error
 	DeleteCategories(ctx context.Context, tx persistence.TransactionHandler) error

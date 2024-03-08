@@ -10,9 +10,5 @@ import (
 
 //counterfeiter:generate . categoryPersistor
 type categoryPersistor interface {
-	GetCategories(
-		ctx context.Context,
-		tx persistence.TransactionHandler,
-		filters *model.CategoryFilters,
-	) ([]model.Category, error)
+	GetCategories(ctx context.Context, tx persistence.TransactionHandler, filters *model.CategoryFilters) (*model.PaginatedCategories, error)
 }

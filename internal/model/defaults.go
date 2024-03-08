@@ -2,6 +2,6 @@ package model
 
 const (
 	defaultPaginationPage = 1
-	defaultPaginationRows = 100
+	defaultPaginationRows = 10
 	maxPaginationRows     = 100
 )

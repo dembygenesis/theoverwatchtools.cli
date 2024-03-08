@@ -101,11 +101,7 @@ func (m *MySQLCategory) updateCategory(
 
 // GetCategories attempts to fetch the category
 // entries using the given transaction layer.
-func (m *MySQLCategory) GetCategories(
-	ctx context.Context,
-	tx persistence.TransactionHandler,
-	filters *model.CategoryFilters,
-) ([]model.Category, error) {
+func (m *MySQLCategory) GetCategories(ctx context.Context, tx persistence.TransactionHandler, filters *model.CategoryFilters) (*model.PaginatedCategories, error) {
 	ctxExec, err := m.extractCtxExecutor(ctx, tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
@@ -125,10 +121,12 @@ func (m *MySQLCategory) getCategories(
 	ctx context.Context,
 	ctxExec boil.ContextExecutor,
 	filters *model.CategoryFilters,
-) ([]model.Category, error) {
+) (*model.PaginatedCategories, error) {
 	var (
-		res []model.Category
-		err error
+		paginated  model.PaginatedCategories
+		pagination = model.NewPagination()
+		res        []model.Category
+		err        error
 	)
 
 	ctx, cancel := context.WithTimeout(ctx, m.cfg.QueryTimeouts.Query)
@@ -142,9 +140,30 @@ func (m *MySQLCategory) getCategories(
 		}
 	}
 
-	if err = mysqlmodel.Categories(queryMods...).Bind(ctx, ctxExec, &res); err != nil {
+	q := mysqlmodel.Categories(queryMods...)
+	qCount, err := q.Count(ctx, ctxExec)
+	if err != nil {
+		return nil, fmt.Errorf("get categories count: %v", err)
+	}
+
+	rows := pagination.Rows
+	page := pagination.Page
+	if filters != nil {
+		rows = filters.Rows
+		page = filters.Page
+	}
+
+	pagination.SetData(page, rows, int(qCount))
+
+	queryMods = append(queryMods, qm.Limit(pagination.Rows), qm.Offset(pagination.Offset))
+	q = mysqlmodel.Categories(queryMods...)
+
+	if err = q.Bind(ctx, ctxExec, &res); err != nil {
 		return nil, fmt.Errorf("get categories: %v", err)
 	}
 
-	return res, nil
+	paginated.Categories = res
+	paginated.Pagination = pagination
+
+	return &paginated, nil
 }

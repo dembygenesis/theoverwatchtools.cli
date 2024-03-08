@@ -10,7 +10,7 @@ import (
 )
 
 type FakeCategoryPersistor struct {
-	GetCategoriesStub        func(context.Context, persistence.TransactionHandler, *model.CategoryFilters) ([]model.Category, error)
+	GetCategoriesStub        func(context.Context, persistence.TransactionHandler, *model.CategoryFilters) (*model.PaginatedCategories, error)
 	getCategoriesMutex       sync.RWMutex
 	getCategoriesArgsForCall []struct {
 		arg1 context.Context
@@ -18,18 +18,18 @@ type FakeCategoryPersistor struct {
 		arg3 *model.CategoryFilters
 	}
 	getCategoriesReturns struct {
-		result1 []model.Category
+		result1 *model.PaginatedCategories
 		result2 error
 	}
 	getCategoriesReturnsOnCall map[int]struct {
-		result1 []model.Category
+		result1 *model.PaginatedCategories
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCategoryPersistor) GetCategories(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.CategoryFilters) ([]model.Category, error) {
+func (fake *FakeCategoryPersistor) GetCategories(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.CategoryFilters) (*model.PaginatedCategories, error) {
 	fake.getCategoriesMutex.Lock()
 	ret, specificReturn := fake.getCategoriesReturnsOnCall[len(fake.getCategoriesArgsForCall)]
 	fake.getCategoriesArgsForCall = append(fake.getCategoriesArgsForCall, struct {
@@ -56,7 +56,7 @@ func (fake *FakeCategoryPersistor) GetCategoriesCallCount() int {
 	return len(fake.getCategoriesArgsForCall)
 }
 
-func (fake *FakeCategoryPersistor) GetCategoriesCalls(stub func(context.Context, persistence.TransactionHandler, *model.CategoryFilters) ([]model.Category, error)) {
+func (fake *FakeCategoryPersistor) GetCategoriesCalls(stub func(context.Context, persistence.TransactionHandler, *model.CategoryFilters) (*model.PaginatedCategories, error)) {
 	fake.getCategoriesMutex.Lock()
 	defer fake.getCategoriesMutex.Unlock()
 	fake.GetCategoriesStub = stub
@@ -69,28 +69,28 @@ func (fake *FakeCategoryPersistor) GetCategoriesArgsForCall(i int) (context.Cont
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeCategoryPersistor) GetCategoriesReturns(result1 []model.Category, result2 error) {
+func (fake *FakeCategoryPersistor) GetCategoriesReturns(result1 *model.PaginatedCategories, result2 error) {
 	fake.getCategoriesMutex.Lock()
 	defer fake.getCategoriesMutex.Unlock()
 	fake.GetCategoriesStub = nil
 	fake.getCategoriesReturns = struct {
-		result1 []model.Category
+		result1 *model.PaginatedCategories
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCategoryPersistor) GetCategoriesReturnsOnCall(i int, result1 []model.Category, result2 error) {
+func (fake *FakeCategoryPersistor) GetCategoriesReturnsOnCall(i int, result1 *model.PaginatedCategories, result2 error) {
 	fake.getCategoriesMutex.Lock()
 	defer fake.getCategoriesMutex.Unlock()
 	fake.GetCategoriesStub = nil
 	if fake.getCategoriesReturnsOnCall == nil {
 		fake.getCategoriesReturnsOnCall = make(map[int]struct {
-			result1 []model.Category
+			result1 *model.PaginatedCategories
 			result2 error
 		})
 	}
 	fake.getCategoriesReturnsOnCall[i] = struct {
-		result1 []model.Category
+		result1 *model.PaginatedCategories
 		result2 error
 	}{result1, result2}
 }

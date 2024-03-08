@@ -23,8 +23,7 @@ var (
 
 func TestGetCategories_Mock(t *testing.T) {
 	fakeCategoryManager := &apifakes.FakeCategoryManager{}
-
-	fakeCategoryManager.GetCategoriesReturns(factory.MockCategories, nil)
+	fakeCategoryManager.GetCategoriesReturns(factory.MockPaginatedCategories, nil)
 
 	cfg := &Config{
 		Port:            3000,
@@ -41,7 +40,7 @@ func TestGetCategories_Mock(t *testing.T) {
 	})
 	require.NoError(t, err, "unexpected error marshalling parameters")
 
-	req := httptest.NewRequest("POST", "/v1/category", bytes.NewBuffer(reqB))
+	req := httptest.NewRequest("GET", "/v1/category", bytes.NewBuffer(reqB))
 	req.Header = map[string][]string{
 		"Content-Type":    {"application/json"},
 		"Accept-Encoding": {"gzip", "deflate", "br"},
@@ -55,9 +54,9 @@ func TestGetCategories_Mock(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	var respCategories []model.Category
+	var respCategories *model.PaginatedCategories
 	err = json.Unmarshal(respBytes, &respCategories)
 	require.NoError(t, err, "unexpected error unmarshalling respBytes")
 
-	require.Equal(t, factory.MockCategories, respCategories)
+	require.Equal(t, factory.MockPaginatedCategories, respCategories)
 }
