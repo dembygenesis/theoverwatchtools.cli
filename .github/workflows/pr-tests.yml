@@ -16,6 +16,7 @@ jobs:
           MYSQL_ROOT_HOST: "%"
           MYSQL_ROOT_PASSWORD: "secret"
           MYSQL_TCP_PORT: "3341"
+          MYSQL_DATABASE: "theoverwatchtools"
     steps:
       - name: Checkout repository.
         uses: actions/checkout@v2
@@ -40,6 +41,19 @@ jobs:
 
       - name: Run go test
         env:
-          APP_DIR: ${{ github.workspace }}
+          THEOVERWATCHTOOLS_PRODUCTION: "true"
+          THEOVERWATCHTOOLS_APP_DIR: ${{ github.workspace }}
+          API_BASE_URL: "http://localhost:3004"
+          API_PORT: "3004"
+          API_LISTEN_TIMEOUT_SECS: "10s"
+          API_REQUEST_TIMEOUT_SECS: "10s"
+          TIMEOUT_DB_EXEC: "10s"
+          TIMEOUT_DB_QUERY: "10s"
+
+          DB_HOST: "localhost"
+          DB_USER: "root"
+          DB_PASS: "secret"
+          DB_PORT: "3341"
+          DB_DATABASE: "theoverwatchtools"
         run: |
           go test ./... -v

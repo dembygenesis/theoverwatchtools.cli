@@ -4,29 +4,28 @@ import (
 	"context"
 	"github.com/dembygenesis/local.tools/internal/config"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlhelper"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlutil"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlutil"
 )
 
 func main() {
 	var (
-		cfg *config.Config
+		cfg *config.App
 		err error
 	)
 
 	log := logger.New(context.TODO())
 
-	cfg, err = config.New(".env")
+	cfg, err = config.New()
 	if err != nil {
 		log.Fatalf("cfg: %v", err.Error())
 	}
 
 	c := &mysqlutil.ConnectionSettings{
-		Host:     cfg.MysqlDatabaseCredentials.Host,
-		User:     cfg.MysqlDatabaseCredentials.User,
-		Pass:     cfg.MysqlDatabaseCredentials.Pass,
-		Database: cfg.MysqlDatabaseCredentials.Database,
-		Port:     cfg.MysqlDatabaseCredentials.Port,
+		Host: cfg.MysqlDatabaseCredentials.Host,
+		User: cfg.MysqlDatabaseCredentials.User,
+		Pass: cfg.MysqlDatabaseCredentials.Pass,
+		Port: cfg.MysqlDatabaseCredentials.Port,
 	}
 
 	log.Info("Migrating...")

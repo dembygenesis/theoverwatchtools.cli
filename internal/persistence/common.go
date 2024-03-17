@@ -27,6 +27,6 @@ type TransactionHandler interface {
 // QueryTimeouts contains the general timeout
 // settings for query operations.
 type QueryTimeouts struct {
-	Query time.Duration `json:"query" validate:"required"`
-	Exec  time.Duration `json:"exec" validate:"required"`
+	Query time.Duration `json:"query" validate:"required,is_positive_time_duration"`
+	Exec  time.Duration `json:"exec" validate:"required,is_positive_time_duration"`
 }

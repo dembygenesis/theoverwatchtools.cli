@@ -1,0 +1,143 @@
+package mysqlstore
+
+import (
+	"context"
+	"fmt"
+	"github.com/dembygenesis/local.tools/internal/model"
+	"github.com/dembygenesis/local.tools/internal/persistence"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltxhandler"
+	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
+	"github.com/sirupsen/logrus"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+)
+
+type Config struct {
+	Logger        *logrus.Entry              `json:"logger" validate:"required"`
+	QueryTimeouts *persistence.QueryTimeouts `json:"query_timeouts" validate:"required"`
+}
+
+func (m *Config) Validate() error {
+	return validationutils.Validate(m)
+}
+
+func (m *UserMySQL) Update(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+	user *model.User,
+) (*model.User, error) {
+	ctxExec, err := mysqltxhandler.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("([^"]*)%w", err)
+	}
+
+	// Update
+	// Question: do I just map everything?
+	entry, err := mysqlmodel.FindUser(ctx, ctxExec, user.Id)
+	if err != nil {
+		return nil, fmt.Errorf("([^"]*)%w", err)
+	}
+
+	// Add defaults here? lol
+
+	// First name
+	if user.Firstname != "" {
+		entry.Firstname = user.Firstname
+	}
+
+	// Last Name
+	if user.Lastname != "" {
+		entry.Lastname = user.Lastname
+	}
+
+	// Password
+	if user.Password != "" {
+		entry.Password = user.Password
+	}
+
+	// Gen
+	if user.Gender.Valid {
+		entry.Gender = user.Gender
+	}
+
+	// Addr
+	if user.Address.Valid {
+		entry.Address = user.Address
+	}
+
+	// Bday
+	if user.Birthday.Valid {
+		entry.Birthday = user.Birthday
+	}
+
+	fmt.Println("===== here here")
+
+	if _, err = entry.Update(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("([^"]*)%w", err)
+	}
+
+	return nil, nil
+}
+
+func (m *UserMySQL) Create(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+	user *model.User,
+) (*model.User, error) {
+	ctxExec, err := mysqltxhandler.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("([^"]*)%w", err)
+	}
+
+	entry := mysqlmodel.User{
+		CategoryTypeRefID: user.CategoryTypeRefId,
+		Firstname:         user.Firstname,
+		Lastname:          user.Lastname,
+		Email:             user.Email,
+		Password:          user.Password,
+		CreatedBy:         user.CreatedBy,
+		CreatedAt:         user.CreatedAt,
+		LastUpdatedBy:     user.LastUpdatedById,
+		IsActive:          user.IsActive,
+		ResetToken:        user.ResetToken,
+		Birthday:          user.Birthday,
+		Gender:            user.Gender,
+	}
+
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("([^"]*)%w", err)
+	}
+
+	user.Id = entry.ID
+	user.Firstname = entry.Firstname
+	user.Lastname = entry.Lastname
+	user.Email = entry.Email
+	user.Password = entry.Password
+	user.ResetToken = entry.ResetToken
+	user.Birthday = entry.Birthday
+	user.Password = entry.Password
+	user.Gender = entry.Gender
+	user.CreatedAt = entry.CreatedAt
+	user.CreatedBy = entry.CreatedBy
+	user.LastUpdatedAt = entry.LastUpdatedAt
+
+	// Change inner join here bro, please
+	// user.LastUpdatedBy = entry.LastUpdatedBy
+	user.IsActive = entry.IsActive
+
+	return user, nil
+}
+
+type UserMySQL struct {
+	cfg *Config
+}
+
+func New(cfg *Config) (*UserMySQL, error) {
+	if err := cfg.Validate(); err != nil {
+		return nil, fmt.Errorf("([^"]*)%w", err)
+	}
+
+	u := &UserMySQL{cfg: cfg}
+
+	return u, nil
+}

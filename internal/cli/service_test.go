@@ -9,9 +9,9 @@ import (
 )
 
 func TestServices_CopyToClipboard_Success(t *testing.T) {
-	mockStringUtils := clifakes.FakeStringUtils{}
-	mockGptUtils := clifakes.FakeGptUtils{}
-	mockFileUtils := clifakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringService{}
+	mockGptUtils := clifakes.FakeGptService{}
+	mockFileUtils := clifakes.FakeFileService{}
 
 	srv := Service{
 		stringUtils: &mockStringUtils,
@@ -24,9 +24,9 @@ func TestServices_CopyToClipboard_Success(t *testing.T) {
 }
 
 func TestServices_CopyToClipboard_Fail(t *testing.T) {
-	mockStringUtils := clifakes.FakeStringUtils{}
-	mockGptUtils := clifakes.FakeGptUtils{}
-	mockFileUtils := clifakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringService{}
+	mockGptUtils := clifakes.FakeGptService{}
+	mockFileUtils := clifakes.FakeFileService{}
 
 	mockStringUtils.CopyRootPathToClipboardReturns(nil, errors.New("mock error"))
 
@@ -43,9 +43,9 @@ func TestServices_CopyToClipboard_Fail(t *testing.T) {
 }
 
 func TestServices_ClipCodingStandardsPreface_Success(t *testing.T) {
-	mockStringUtils := clifakes.FakeStringUtils{}
-	mockGptUtils := clifakes.FakeGptUtils{}
-	mockFileUtils := clifakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringService{}
+	mockGptUtils := clifakes.FakeGptService{}
+	mockFileUtils := clifakes.FakeFileService{}
 
 	srv := Service{
 		stringUtils: &mockStringUtils,
@@ -58,9 +58,9 @@ func TestServices_ClipCodingStandardsPreface_Success(t *testing.T) {
 }
 
 func TestServices_New(t *testing.T) {
-	mockStringUtils := clifakes.FakeStringUtils{}
-	mockGptUtils := clifakes.FakeGptUtils{}
-	mockFileUtils := clifakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringService{}
+	mockGptUtils := clifakes.FakeGptService{}
+	mockFileUtils := clifakes.FakeFileService{}
 
 	_ = NewService(
 		&mockStringUtils,
@@ -70,9 +70,9 @@ func TestServices_New(t *testing.T) {
 }
 
 func TestServices_ClipCodingStandardsPreface_Fail(t *testing.T) {
-	mockStringUtils := clifakes.FakeStringUtils{}
-	mockGptUtils := clifakes.FakeGptUtils{}
-	mockFileUtils := clifakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringService{}
+	mockGptUtils := clifakes.FakeGptService{}
+	mockFileUtils := clifakes.FakeFileService{}
 
 	mockGptUtils.ClipCodingStandardsPrefaceReturns(errors.New("mock error"))
 
@@ -89,9 +89,9 @@ func TestServices_ClipCodingStandardsPreface_Fail(t *testing.T) {
 }
 
 func TestServices_CopyDirToAnother_Success(t *testing.T) {
-	mockStringUtils := clifakes.FakeStringUtils{}
-	mockGptUtils := clifakes.FakeGptUtils{}
-	mockFileUtils := clifakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringService{}
+	mockGptUtils := clifakes.FakeGptService{}
+	mockFileUtils := clifakes.FakeFileService{}
 
 	srv := Service{
 		stringUtils: &mockStringUtils,
@@ -113,9 +113,9 @@ func TestServices_CopyDirToAnother_Success(t *testing.T) {
 }
 
 func TestServices_CopyDirToAnother_Validate_Fail(t *testing.T) {
-	mockStringUtils := clifakes.FakeStringUtils{}
-	mockGptUtils := clifakes.FakeGptUtils{}
-	mockFileUtils := clifakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringService{}
+	mockGptUtils := clifakes.FakeGptService{}
+	mockFileUtils := clifakes.FakeFileService{}
 
 	srv := Service{
 		stringUtils: &mockStringUtils,
@@ -134,9 +134,9 @@ func TestServices_CopyDirToAnother_Validate_Fail(t *testing.T) {
 }
 
 func TestServices_CopyDirToAnother_Opts_Fail(t *testing.T) {
-	mockStringUtils := clifakes.FakeStringUtils{}
-	mockGptUtils := clifakes.FakeGptUtils{}
-	mockFileUtils := clifakes.FakeFileUtils{}
+	mockStringUtils := clifakes.FakeStringService{}
+	mockGptUtils := clifakes.FakeGptService{}
+	mockFileUtils := clifakes.FakeFileService{}
 
 	mockFileUtils.CopyDirToAnotherReturns(errors.New("forced error in copy operation"))
 	srv := Service{

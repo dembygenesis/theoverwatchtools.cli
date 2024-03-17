@@ -167,3 +167,32 @@ func copyDir(src, dst string, exclusions []string) (int, error) {
 	}
 	return addedCount, nil
 }
+
+// CreateFileWithDirs creates the file specified by the given path and writes the provided bytes to it,
+// ensuring that all parent directories exist. It replaces the file if it already exists.
+func CreateFileWithDirs(filePath string, data []byte) error {
+	// Extract the directory part of the file path
+	dirPath := filepath.Dir(filePath)
+
+	// Ensure all directories in the path exist
+	err := os.MkdirAll(dirPath, os.ModePerm) // os.ModePerm is 0777, allowing read, write, and execute
+	if err != nil {
+		return err
+	}
+
+	// Create (or truncate) the file
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close() // Ensure the file is closed when this function completes
+
+	// Write the provided bytes to the file
+	_, err = file.Write(data)
+	if err != nil {
+		return err
+	}
+
+	// File has been created and data has been written successfully
+	return nil
+}

@@ -6,17 +6,17 @@ import (
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
-//counterfeiter:generate . stringUtils
-type stringUtils interface {
+//counterfeiter:generate . stringService
+type stringService interface {
 	CopyRootPathToClipboard(root string, exclude []string) ([]string, error)
 }
 
-//counterfeiter:generate . gptUtils
-type gptUtils interface {
+//counterfeiter:generate . gptService
+type gptService interface {
 	ClipCodingStandardsPreface() error
 }
 
-//counterfeiter:generate . fileUtils
-type fileUtils interface {
+//counterfeiter:generate . fileService
+type fileService interface {
 	CopyDirToAnother(opts *fslib.CopyOptions) error
 }

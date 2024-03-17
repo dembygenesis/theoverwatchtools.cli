@@ -5,7 +5,7 @@ CREATE TABLE `category`
     `created_date`         timestamp NULL DEFAULT current_timestamp (),
     `last_updated`         timestamp NULL DEFAULT NULL,
     `updated_by`           int(11) DEFAULT NULL,
-    `is_active`            int(11) DEFAULT 1,
+    `is_active`            int(11) DEFAULT 1 NOT NULL,
     `category_type_ref_id` int(11) NOT NULL,
     `name`                 varchar(255) NOT NULL,
     CONSTRAINT `category_type_ref_id_fk` FOREIGN KEY (`category_type_ref_id`) REFERENCES `category_type` (`id`),
