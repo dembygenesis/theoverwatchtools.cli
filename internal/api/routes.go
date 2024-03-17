@@ -7,6 +7,7 @@ func (a *Api) Routes() {
 	docs := groupV1.Group("/docs")
 	docs.Name("Get docs").Get("", GetDocs)
 
+	// Category
 	groupCategory := groupV1.Group("/category")
 
 	groupCategory.Name("List Categories").Get("", a.ListCategories)
@@ -14,4 +15,11 @@ func (a *Api) Routes() {
 	groupCategory.Name("Create Category").Get("", a.CreateCategory)
 	groupCategory.Name("Update Categories").Get("", a.UpdateCategory)
 	groupCategory.Name("Delete Category").Get("", a.DeleteCategory)
+
+	groupUserAdmin := groupV1.Group("/user/admin")
+	groupUserAdmin.Name("List Users").Get("", a.ListCategories)
+	groupUserAdmin.Name("List Users").Get("", a.ListCategories)
+	groupUserAdmin.Name("List Users").Get("", a.ListCategories)
+	groupUserAdmin.Name("List Users").Get("", a.ListCategories)
+	groupUserAdmin.Name("List Users").Get("", a.ListCategories)
 }

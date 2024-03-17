@@ -7,6 +7,7 @@ import (
 	"github.com/volatiletech/null"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type nullableFunc struct {
@@ -21,6 +22,23 @@ type customValidation struct {
 }
 
 var customValidations = []customValidation{
+	{
+		Name: "is_positive_time_duration",
+		Logic: nullableFunc{
+			Valid: true,
+			Func: func(i interface{}) bool {
+				val, ok := i.(time.Duration)
+				if !ok {
+					return false
+				}
+				return val > 0
+			},
+		},
+		Response: null.String{
+			String: "must be a time duration greater than 0",
+			Valid:  true,
+		},
+	},
 	{
 		Name: "ascending_non_negative_ints",
 		Logic: nullableFunc{

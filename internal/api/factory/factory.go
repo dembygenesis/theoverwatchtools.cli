@@ -2,15 +2,9 @@ package factory
 
 import (
 	"context"
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
-	"github.com/dembygenesis/local.tools/internal/managers/categorymgr"
-	"github.com/dembygenesis/local.tools/internal/persistence"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlhelper"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlprovider"
-	"github.com/dembygenesis/local.tools/internal/persistence/persistors/category/categorymysql"
-	"github.com/stretchr/testify/require"
 	"testing"
-	"time"
 )
 
 var (
@@ -18,10 +12,16 @@ var (
 	testLogger = logger.New(testCtx)
 )
 
-func testGetMySQLProvider(t *testing.T) (persistence.TransactionProvider, func(ignoreErrors ...bool)) {
+func TestMain(m *testing.M) {
+	fmt.Println("=== build")
+	m.Run()
+	fmt.Println("=== teardown")
+}
+
+/*func testGetMySQLProvider(t *testing.T) (persistence.TransactionProvider, func(ignoreErrors ...bool)) {
 	db, _, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 
-	txProvider, err := mysqlprovider.New(&mysqlprovider.Config{
+	txProvider, err := mysqltxprovider.New(&mysqltxprovider.Config{
 		Db:     db,
 		Logger: testLogger,
 	})
@@ -30,7 +30,7 @@ func testGetMySQLProvider(t *testing.T) (persistence.TransactionProvider, func(i
 	return txProvider, cleanup
 }
 
-func TestGetMySQLCategoryManager(t *testing.T) (*categorymgr.CategoryManager, func(ignoreErrors ...bool)) {
+func TestGetMySQLCategoryManager(t *testing.T) (categorysrv.LogicHandler, func(ignoreErrors ...bool)) {
 	t.Helper()
 
 	txProvider, cleanup := testGetMySQLProvider(t)
@@ -44,11 +44,11 @@ func TestGetMySQLCategoryManager(t *testing.T) (*categorymgr.CategoryManager, fu
 	})
 	require.NoError(t, err, "error instantiating mysql category provider")
 
-	mgr, err := categorymgr.New(&categorymgr.Config{
+	mgr, err := categorysrv.New(&categorysrv.Config{
 		Persistor:  persistor,
 		TxProvider: txProvider,
 	})
 	require.NoError(t, err, "error instantiating mysql category manager")
 
 	return mgr, cleanup
-}
+}*/

@@ -5,12 +5,13 @@ import (
 	"github.com/dembygenesis/local.tools/internal/api"
 	"github.com/dembygenesis/local.tools/internal/config"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
-	"github.com/dembygenesis/local.tools/internal/managers/categorymgr"
+	"github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
 	"github.com/dembygenesis/local.tools/internal/persistence"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlhelper"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlprovider"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlutil"
-	"github.com/dembygenesis/local.tools/internal/persistence/persistors/category/categorymysql"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltxhandler"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltxprovider"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlutil"
+	"github.com/dembygenesis/local.tools/internal/persistence/persistors/mysqlstore"
 	"log"
 	"time"
 )
@@ -47,15 +48,23 @@ func main() {
 		log.Fatalf("new connection: %v", err)
 	}
 
-	mysqlTxProvider, err := mysqlprovider.New(&mysqlprovider.Config{
-		Db:     db,
+	mysqlTxHandler, err := mysqltxhandler.New(&mysqltxhandler.Config{
 		Logger: testLogger,
+		Db:     db,
 	})
 	if err != nil {
 		log.Fatalf("create maria db: %v", err)
 	}
 
-	catPersistor, err := categorymysql.New(&categorymysql.Config{
+	mysqlTxProvider, err := mysqltxprovider.New(&mysqltxprovider.Config{
+		Logger:    testLogger,
+		TxHandler: mysqlTxHandler,
+	})
+	if err != nil {
+		log.Fatalf("create maria db: %v", err)
+	}
+
+	catPersistor, err := mysqlstore.New(&mysqlstore.Config{
 		Logger: logger.New(context.TODO()),
 		QueryTimeouts: &persistence.QueryTimeouts{
 			Query: 10 * time.Second,
@@ -66,7 +75,7 @@ func main() {
 		log.Fatalf("category mysql: %v", err)
 	}
 
-	categoryMgr, err := categorymgr.New(&categorymgr.Config{
+	categoryLogic, err := categorylogic.New(&categorylogic.Config{
 		Persistor:  catPersistor,
 		TxProvider: mysqlTxProvider,
 	})
@@ -76,7 +85,7 @@ func main() {
 
 	a, err := api.New(&api.Config{
 		Port:            3003,
-		CategoryManager: categoryMgr,
+		CategoryManager: categoryLogic,
 	})
 	if err != nil {
 		log.Fatalf("new: %v", err)

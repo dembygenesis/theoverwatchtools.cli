@@ -23,7 +23,7 @@ type Config struct {
 	Port int `json:"port" validate:"required,greater_than_zero"`
 
 	// CategoryManager is the biz function for category
-	CategoryManager categoryManager `json:"category_manager" validate:"required"`
+	CategoryManager categoryService `json:"category_manager" validate:"required"`
 }
 
 func (a *Config) Validate() error {

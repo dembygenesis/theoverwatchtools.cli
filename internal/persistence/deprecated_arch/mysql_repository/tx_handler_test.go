@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/dembygenesis/local.tools/internal/model"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/mysqlhelper"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
