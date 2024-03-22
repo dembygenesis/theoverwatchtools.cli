@@ -6,15 +6,15 @@ import (
 )
 
 type Service struct {
-	stringUtils stringUtils
-	gptUtils    gptUtils
-	fileUtils   fileUtils
+	stringUtils stringService
+	gptUtils    gptService
+	fileUtils   fileService
 }
 
 func NewService(
-	stringUtils stringUtils,
-	gptUtils gptUtils,
-	fileUtils fileUtils,
+	stringUtils stringService,
+	gptUtils gptService,
+	fileUtils fileService,
 ) *Service {
 	return &Service{
 		stringUtils,

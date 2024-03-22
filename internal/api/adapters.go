@@ -7,7 +7,7 @@ import (
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
-//counterfeiter:generate . categoryManager
-type categoryManager interface {
-	GetCategories(ctx context.Context, f *model.CategoryFilters) (*model.PaginatedCategories, error)
+//counterfeiter:generate . categoryService
+type categoryService interface {
+	GetCategories(ctx context.Context, filters *model.CategoryFilters) (*model.PaginatedCategories, error)
 }

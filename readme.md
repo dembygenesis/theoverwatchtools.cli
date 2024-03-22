@@ -20,13 +20,16 @@ Hola! I created this utility CLI to streamline my daily tasks. It's grown to inc
 2. Generate docs:
     ```sh
    Generate your docs here
-   ```
+   ``` 
    
 # Script Commands 🛠️ (Context: Main Directory)
 - `sh ./scripts/build-cli.sh`: Compiles the CLI.
 - `sh ./scripts/build-di.sh`: Compiles the container.
 - `sh ./scripts/build-sqlboiler.sh`: Generates sqlboiler ORM files.
 - `sh ./scripts/migrate.sh`: Performs database migration.
+
+# Convenience commands
+- `clear_all && go test ./... -parallel=100 -count=1`: runs tests with parallel, and no-cache
 
 ## Features 🌟
 

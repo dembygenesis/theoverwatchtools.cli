@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/assets/mysqlmodel"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"strings"

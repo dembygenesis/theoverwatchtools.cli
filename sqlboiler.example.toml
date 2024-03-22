@@ -1,4 +1,4 @@
-output = "./internal/persistence/databases/mysql/assets/mysqlmodel"
+output = "./internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 pkgname = "mysqlmodel"
 
 [[aliases.tables]]

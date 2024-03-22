@@ -29,6 +29,10 @@ func Validate(p interface{}, exclusions ...string) error {
 		return ErrStructNil
 	}
 
+	if p == nil {
+		return ErrStructNil
+	}
+
 	var errs errutil.List
 
 	structVal, err := interfaceutil.GetStructAsValue(p)

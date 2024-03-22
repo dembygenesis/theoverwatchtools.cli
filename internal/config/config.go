@@ -10,7 +10,13 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
+
+type Timeouts struct {
+	DbExec  time.Duration `json:"TIMEOUT_DB_EXEC" mapstructure:"TIMEOUT_DB_EXEC" validate:"required,is_positive_time_duration"`
+	DbQuery time.Duration `json:"TIMEOUT_DB_QUERY" mapstructure:"TIMEOUT_DB_QUERY" validate:"required,is_positive_time_duration"`
+}
 
 type MysqlDatabaseCredentials struct {
 	Host     string `json:"host" mapstructure:"DB_HOST" validate:"required"`
@@ -51,16 +57,17 @@ func (c *FolderAToFolderB) ParseExclusions(s string) error {
 }
 
 type API struct {
-	Port           int `json:"port" mapstructure:"API_PORT" validate:"required,greater_than_zero"`
-	ListenTimeout  int `json:"listen_timeout" mapstructure:"API_LISTEN_TIMEOUT_SECS" validate:"required,greater_than_zero"`
-	RequestTimeout int `json:"request_timeout" mapstructure:"API_REQUEST_TIMEOUT_SECS" validate:"required,greater_than_zero"`
+	Port           int           `json:"port" mapstructure:"API_PORT" validate:"required,greater_than_zero"`
+	ListenTimeout  time.Duration `json:"listen_timeout" mapstructure:"API_LISTEN_TIMEOUT_SECS" validate:"required,is_positive_time_duration"`
+	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"API_REQUEST_TIMEOUT_SECS" validate:"required,is_positive_time_duration"`
 }
 
-type Config struct {
+type App struct {
 	FolderAToFolderB         FolderAToFolderB         `json:"folder_a_to_folder_b"`
 	CopyToClipboard          CopyToClipboard          `json:"copy_to_clipboard"`
 	MysqlDatabaseCredentials MysqlDatabaseCredentials `json:"mysql_database_credentials"`
 	API                      API                      `json:"API"`
+	Timeouts                 Timeouts                 `json:"Timeouts"`
 }
 
 // isProduction checks if the `IS_PRODUCTION` envVar isset
@@ -68,7 +75,7 @@ func isProduction() bool {
 	return os.Getenv("IS_PRODUCTION") != ""
 }
 
-func New(envFile string) (*Config, error) {
+func New(envFile string) (*App, error) {
 	var err error
 	if isProduction() {
 		for _, envVar := range os.Environ() {
@@ -87,7 +94,7 @@ func New(envFile string) (*Config, error) {
 		viper.AutomaticEnv()
 	}
 
-	config := Config{}
+	config := App{}
 
 	if err = config.CopyToClipboard.ParseExclusions(genericExclusions); err != nil {
 		return &config, fmt.Errorf("unmarshal copy to clipboard: %v", err)
@@ -100,6 +107,11 @@ func New(envFile string) (*Config, error) {
 	err = viper.Unmarshal(&config.MysqlDatabaseCredentials)
 	if err != nil {
 		return &config, fmt.Errorf("error trying to unmarshal the database credentials: %w", err)
+	}
+
+	err = viper.Unmarshal(&config.Timeouts)
+	if err != nil {
+		return &config, fmt.Errorf("error trying to unmarshal the timeouts: %w", err)
 	}
 
 	err = viper.Unmarshal(&config.API)
