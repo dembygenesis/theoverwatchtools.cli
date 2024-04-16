@@ -45,7 +45,6 @@ func (a *Api) Routes() error {
 	groupCategory.Name("List Categories").Get("", a.ListCategories)
 	groupCategory.Name("Create Category").Post("", a.CreateCategory)
 	groupCategory.Name("Update Category").Patch("", a.UpdateCategory)
-	groupCategory.Name("Update Category").Patch("/test", a.UpdateCategory)
 
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {
