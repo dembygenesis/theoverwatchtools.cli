@@ -2,8 +2,9 @@ package mysql_repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/model"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/sliceutil"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
@@ -43,13 +44,13 @@ func (m *txHandler) getExec() boil.ContextExecutor {
 
 func (m *txHandler) validate() error {
 	if m == nil {
-		return model.ErrStructNil
+		return errors.New(sysconsts.ErrStructNil)
 	}
 
 	if ok := sliceutil.Compare([]txHandlerType{_db, _tx}, func(v txHandlerType) bool {
 		return v == m.hType
 	}); !ok {
-		return model.ErrUnidentifiedTxType
+		return errors.New(sysconsts.ErrUnidentifiedTxType)
 	}
 
 	return nil
@@ -62,7 +63,7 @@ func (m *txHandler) Commit(ctx context.Context) error {
 
 	// We do nothing
 	if m.hType == _db {
-		return model.ErrCommitInvalidDB
+		return errors.New(sysconsts.ErrCommitInvalidDB)
 	}
 
 	if err = m.tx.Commit(); err != nil {
@@ -93,7 +94,7 @@ func (m *txHandler) Rollback(ctx context.Context) {
 // with a transaction.
 func (m *txHandler) Tx() (Transaction, error) {
 	if m.db == nil {
-		return nil, model.ErrDatabaseNil
+		return nil, errors.New(sysconsts.ErrDatabaseNil)
 	}
 
 	tx, err := m.db.Beginx()
@@ -112,7 +113,7 @@ func (m *txHandler) Tx() (Transaction, error) {
 // with its database instance.
 func (m *txHandler) Db() (Transaction, error) {
 	if m.db == nil {
-		return nil, model.ErrDatabaseNil
+		return nil, errors.New(sysconsts.ErrDatabaseNil)
 	}
 
 	return &txHandler{

@@ -1,0 +1,50 @@
+definitions:
+  model.Category:
+    properties:
+      category_type_ref_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+    required:
+    - name
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/category:
+    get:
+      consumes:
+      - application/json
+      description: Returns the categories
+      operationId: ListCategories
+      parameters:
+      - description: name search by q
+        format: email
+        in: query
+        name: you
+        type: string
+      - description: CategoryService name
+        in: query
+        name: fuck
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Category'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Category'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Category'
+      summary: Get Categories
+      tags:
+      - CategoryService
+swagger: "2.0"

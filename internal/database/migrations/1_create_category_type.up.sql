@@ -12,5 +12,7 @@ CREATE TABLE `category_type`
 );
 
 INSERT INTO category_type (`name`)
-VALUES ('User Types')
+VALUES ('User Types'),
+       ('Capture Page Status'),
+       ('Click Tracker Status')
 ;

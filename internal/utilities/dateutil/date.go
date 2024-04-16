@@ -1,7 +1,7 @@
 package dateutil
 
 import (
-	"github.com/dembygenesis/local.tools/internal/utilities/errutil"
+	"github.com/dembygenesis/local.tools/internal/utilities/errs"
 	"github.com/golang-module/carbon/v2"
 	"time"
 )
@@ -17,7 +17,7 @@ func IsValid(s string) bool {
 }
 
 func isValidStartAndEndDates(start, end string) error {
-	var errs errutil.List
+	var errs errs.List
 
 	t1 := carbon.Parse(start)
 	t2 := carbon.Parse(end)
