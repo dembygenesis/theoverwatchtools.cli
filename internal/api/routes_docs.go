@@ -4,7 +4,8 @@ import "github.com/gofiber/fiber/v2"
 
 func GetDocs(ctx *fiber.Ctx) error {
 	return ctx.Render("index", fiber.Map{
-		"Title": "Hello, World!",
+		"Title":   "Hello, World!",
+		"baseUrl": "www.google.com",
 	})
 }
 

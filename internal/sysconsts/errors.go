@@ -1,0 +1,28 @@
+package sysconsts
+
+var (
+	ErrStructNil                            = "struct nil"
+	ErrConfigNil                            = "config nil"
+	ErrRootMissing                          = "missing root"
+	ErrContainerIdMissing                   = "error, missing container id"
+	ErrDatabaseNil                          = "database is nil"
+	ErrTimeoutNil                           = "timeout is nil"
+	ErrOptsNil                              = "opts is nil"
+	ErrInvalidCreateMode                    = "invalid create mode"
+	ErrEmptyDir                             = "empty dir"
+	ErrInvalidStatusCode                    = "invalid status code: %v"
+	ErrSendResp                             = "err sending response: %w"
+	ErrCommitInvalidDB                      = "commit invalid for db"
+	ErrRollbackInvalid                      = "rollback invalid"
+	ErrUnidentifiedTxType                   = "unidentified tx type"
+	ErrNotATransactionHandler               = "not a transaction handler"
+	ErrEmptyName                            = "empty name"
+	ErrPersistorNil                         = "persistor is nil"
+	ErrNonMySQLTxInstance                   = "instance is not of type"
+	ErrNonMySQLTxControllerInstance         = "mysqltxinstance is not of type 'controller'"
+	ErrNotUtilErr                           = "not a *errs.Util err"
+	ErrExpectedExactlyOneEntry              = "expected exactly one entry for entity: %v"
+	ErrHasNotASingleValidateUpdateParameter = "has not at least one valid update parameter"
+	ErrCategoryTypeRefIdInvalid             = "category_type_ref_id invalid"
+	ErrCategoryNameEmpty                    = "category name empty"
+)

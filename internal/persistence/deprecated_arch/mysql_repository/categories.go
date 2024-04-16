@@ -6,7 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
-	"github.com/dembygenesis/local.tools/internal/persistence/databases/mysql/assets/mysqlmodel"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"strings"
@@ -23,7 +24,7 @@ func (m *repository) upsertCategory(ctx context.Context, exec boil.ContextExecut
 	}
 
 	if strings.TrimSpace(category.Name) == "" {
-		return nil, model.ErrEmptyName
+		return nil, errors.New(sysconsts.ErrEmptyName)
 	}
 
 	if _, err = mysqlmodel.FindCategoryType(ctx, exec, category.CategoryTypeRefId); err != nil {
@@ -115,7 +116,7 @@ func (m *repository) UpsertCategories(ctx context.Context, t Transaction, catego
 func (m *repository) getTxHandler(t Transaction) (*txHandler, error) {
 	h, ok := t.(*txHandler)
 	if !ok {
-		return nil, model.ErrNotATransactionHandler
+		return nil, errors.New(sysconsts.ErrNotATransactionHandler)
 	}
 
 	return h, nil

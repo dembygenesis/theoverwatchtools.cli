@@ -3,7 +3,7 @@ package validationutils
 import (
 	"errors"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/utilities/errutil"
+	"github.com/dembygenesis/local.tools/internal/utilities/errs"
 	"github.com/dembygenesis/local.tools/internal/utilities/interfaceutil"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -29,12 +29,16 @@ func Validate(p interface{}, exclusions ...string) error {
 		return ErrStructNil
 	}
 
-	var errs errutil.List
+	if p == nil {
+		return ErrStructNil
+	}
+
+	var errList errs.List
 
 	structVal, err := interfaceutil.GetStructAsValue(p)
 	if err != nil {
-		errs.AddErr(err)
-		return errs.Single()
+		errList.AddErr(err)
+		return errList.Single()
 	}
 
 	err = validate.Struct(structVal)
@@ -49,14 +53,14 @@ func Validate(p interface{}, exclusions ...string) error {
 				}
 			}
 			if translatedErr != "" {
-				errs = append(errs, errors.New(translatedErr))
+				errList = append(errList, errors.New(translatedErr))
 			} else {
-				errs = append(errs, err)
+				errList = append(errList, err)
 			}
 		}
 	}
 
-	return errs.Single()
+	return errList.Single()
 }
 
 // makeHashVariadic removes an element specified by index for any type of slice

@@ -23,9 +23,9 @@ func init() {
 		log.Fatalf("new container: %v", err)
 	}
 
-	srv, err = ctn.SafeGetServicesLayer()
+	srv, err = ctn.SafeGetServiceCli()
 	if err != nil {
-		log.Fatalf("get services: %v", err)
+		log.Fatalf("safe services cli: %v", err)
 	}
 }
 

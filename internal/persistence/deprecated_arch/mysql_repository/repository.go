@@ -2,8 +2,10 @@ package mysql_repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
@@ -51,7 +53,7 @@ func (m *repository) Tx() (Transaction, error) {
 
 func (m *repository) Db() (Transaction, error) {
 	if m.cfg.Db == nil {
-		return nil, model.ErrDatabaseNil
+		return nil, errors.New(sysconsts.ErrDatabaseNil)
 	}
 
 	return &txHandler{

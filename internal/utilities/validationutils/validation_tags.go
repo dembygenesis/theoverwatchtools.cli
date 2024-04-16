@@ -4,9 +4,10 @@ import (
 	"github.com/dembygenesis/local.tools/internal/utilities/dateutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/interfaceutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
-	"github.com/volatiletech/null"
+	"github.com/volatiletech/null/v8"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type nullableFunc struct {
@@ -21,6 +22,23 @@ type customValidation struct {
 }
 
 var customValidations = []customValidation{
+	{
+		Name: "is_positive_time_duration",
+		Logic: nullableFunc{
+			Valid: true,
+			Func: func(i interface{}) bool {
+				val, ok := i.(time.Duration)
+				if !ok {
+					return false
+				}
+				return val > 0
+			},
+		},
+		Response: null.String{
+			String: "must be a time duration greater than 0",
+			Valid:  true,
+		},
+	},
 	{
 		Name: "ascending_non_negative_ints",
 		Logic: nullableFunc{
@@ -85,7 +103,7 @@ var customValidations = []customValidation{
 					return false
 				}
 				_, err := url.ParseRequestURI(val)
-				return err != nil
+				return err == nil
 			},
 		},
 		Response: null.String{
@@ -132,6 +150,14 @@ var customValidations = []customValidation{
 		Logic: nullableFunc{
 			Valid: true,
 			Func: func(i interface{}) bool {
+				nullInt, ok := i.(null.Int)
+				if ok {
+					if nullInt.Valid {
+						return interfaceutil.IsPositive(nullInt.Int)
+					}
+					return false
+				}
+
 				return interfaceutil.IsPositive(i)
 			},
 		},

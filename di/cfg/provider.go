@@ -2,6 +2,7 @@ package cfg
 
 import (
 	"fmt"
+	"github.com/dembygenesis/local.tools/di/cfg/dependencies"
 	"github.com/sarulabs/dingo/v4"
 )
 
@@ -14,8 +15,13 @@ func getServices() ([]dingo.Def, error) {
 	var services []dingo.Def
 
 	layers := [][]dingo.Def{
-		getServicesLayer(),
-		getConfigLayer(),
+		dependencies.GetConfigs(),
+		dependencies.GetDatabases(),
+		dependencies.GetLoggers(),
+		dependencies.GetTransactions(),
+		dependencies.GetLogicHandlers(),
+		dependencies.GetServicesLayer(),
+		dependencies.GetPersistence(),
 	}
 
 	for _, layer := range layers {

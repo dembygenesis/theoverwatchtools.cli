@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/template/html/v2"
+	"github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -19,11 +20,20 @@ type Api struct {
 }
 
 type Config struct {
+	// BaseUrl is the base URL of your API.
+	BaseUrl string `json:"base_url" validate:"is_url"`
+
+	// WriteDocs is a flag to write the docs to the public folder.
+	WriteDocs bool `json:"write_docs"`
+
+	// Logger is the logger instance.
+	Logger *logrus.Entry `json:"logger" validate:"required"`
+
 	// Port is the port your API will listen to.
 	Port int `json:"port" validate:"required,greater_than_zero"`
 
-	// CategoryManager is the biz function for category
-	CategoryManager categoryManager `json:"category_manager" validate:"required"`
+	// CategoryService is the biz function for category
+	CategoryService categoryService `json:"category_manager" validate:"required"`
 }
 
 func (a *Config) Validate() error {
@@ -40,7 +50,7 @@ func New(cfg *Config) (*Api, error) {
 		return nil, fmt.Errorf("validate: %v", err)
 	}
 
-	docLocation := fmt.Sprintf("%s/%s", os.Getenv(global.OsEnvAppDir), "crazy")
+	docLocation := fmt.Sprintf("%s/%s", os.Getenv(global.OsEnvAppDir), "internal/docs")
 	engine := html.New(docLocation, ".html")
 
 	api := &Api{
@@ -60,12 +70,30 @@ func New(cfg *Config) (*Api, error) {
 		TimeZone:   "America/New_York",
 	}))
 
+	api.app.Get("/docs", func(ctx *fiber.Ctx) error {
+		return ctx.Render("index", fiber.Map{
+			"Title": "hello world",
+		})
+	})
+
+	api.app.Get("/docs/swagger", func(ctx *fiber.Ctx) error {
+		return ctx.Render("index", fiber.Map{
+			"Title": "hello world",
+		}, "assets")
+	})
+
+	if err := api.Routes(); err != nil {
+		return nil, fmt.Errorf("routes: %v", err)
+	}
+
 	return api, nil
 }
 
 // Listen makes fiber listen to the port.
 func (a *Api) Listen() error {
-	a.Routes()
+	if err := a.Routes(); err != nil {
+		return fmt.Errorf("routes: %v", err)
+	}
 
 	if err := a.app.Listen(fmt.Sprintf(":%v", a.cfg.Port)); err != nil {
 		return fmt.Errorf("listen: %v", err)
