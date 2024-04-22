@@ -1,10 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
+	"strconv"
 )
 
 // ListCategories fetches the categories
@@ -21,7 +24,9 @@ import (
 // @Failure 500 {object} []string
 // @Router /v1/category [get]
 func (a *Api) ListCategories(ctx *fiber.Ctx) error {
-	filter := model.CategoryFilters{}
+	filter := model.CategoryFilters{
+		CategoryIsActive: []int{1},
+	}
 	if err := ctx.QueryParser(&filter); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
 	}
@@ -31,6 +36,7 @@ func (a *Api) ListCategories(ctx *fiber.Ctx) error {
 	}
 	filter.SetPaginationDefaults()
 
+	fmt.Println("the filter ---- ", strutil.GetAsJson(&filter))
 	categories, err := a.cfg.CategoryService.ListCategories(ctx.Context(), &filter)
 	return a.WriteResponse(ctx, http.StatusOK, categories, err)
 }
@@ -81,4 +87,63 @@ func (a *Api) UpdateCategory(ctx *fiber.Ctx) error {
 	}
 	category, err := a.cfg.CategoryService.UpdateCategory(ctx.Context(), &body)
 	return a.WriteResponse(ctx, http.StatusOK, category, err)
+}
+
+// DeleteCategory deletes a category by ID
+//
+// @Summary Delete a category by ID
+// @Description Deletes a category by ID
+// @Tags CategoryService
+// @Accept application/json
+// @Produce application/json
+// @Param filters body model.DeleteCategory true "Category ID to delete"
+// @Success 204 "No Content"
+// @Failure 400 {object} []string
+// @Failure 500 {object} []string
+// @Router /v1/category/{id} [delete]
+func (a *Api) DeleteCategory(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	categoryId, err := strconv.Atoi(id)
+	if err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+
+	deleteParams := &model.DeleteCategory{ID: categoryId}
+
+	err = a.cfg.CategoryService.DeleteCategory(ctx.Context(), deleteParams)
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
+	}
+
+	return ctx.SendStatus(http.StatusNoContent)
+}
+
+// RestoreCategory restores a category by ID
+//
+// @Summary Restore a category by ID
+// @Description Restores a category by ID
+// @Tags CategoryService
+// @Accept application/json
+// @Produce application/json
+// @Param id path int true "Category ID"
+// @Param body model.RestoreCategory false "Restore parameters"
+// @Success 204 "No Content"
+// @Failure 400 {object} []string
+// @Failure 500 {object} []string
+// @Router /v1/category/{id}/restore [patch]
+func (a *Api) RestoreCategory(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	categoryID, err := strconv.Atoi(id)
+	if err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+
+	restoreParams := &model.RestoreCategory{ID: categoryID}
+
+	err = a.cfg.CategoryService.RestoreCategory(ctx.Context(), restoreParams)
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
+	}
+
+	return ctx.SendStatus(http.StatusNoContent)
 }

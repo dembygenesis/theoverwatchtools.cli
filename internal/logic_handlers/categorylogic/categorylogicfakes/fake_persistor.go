@@ -25,6 +25,19 @@ type FakePersistor struct {
 		result1 *model.Category
 		result2 error
 	}
+	DeleteCategoryStub        func(context.Context, persistence.TransactionHandler, int) error
+	deleteCategoryMutex       sync.RWMutex
+	deleteCategoryArgsForCall []struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}
+	deleteCategoryReturns struct {
+		result1 error
+	}
+	deleteCategoryReturnsOnCall map[int]struct {
+		result1 error
+	}
 	GetCategoriesStub        func(context.Context, persistence.TransactionHandler, *model.CategoryFilters) (*model.PaginatedCategories, error)
 	getCategoriesMutex       sync.RWMutex
 	getCategoriesArgsForCall []struct {
@@ -69,6 +82,19 @@ type FakePersistor struct {
 	getCategoryTypeByIdReturnsOnCall map[int]struct {
 		result1 *model.CategoryType
 		result2 error
+	}
+	RestoreCategoryStub        func(context.Context, persistence.TransactionHandler, int) error
+	restoreCategoryMutex       sync.RWMutex
+	restoreCategoryArgsForCall []struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}
+	restoreCategoryReturns struct {
+		result1 error
+	}
+	restoreCategoryReturnsOnCall map[int]struct {
+		result1 error
 	}
 	UpdateCategoryStub        func(context.Context, persistence.TransactionHandler, *model.UpdateCategory) (*model.Category, error)
 	updateCategoryMutex       sync.RWMutex
@@ -153,6 +179,69 @@ func (fake *FakePersistor) CreateCategoryReturnsOnCall(i int, result1 *model.Cat
 		result1 *model.Category
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *FakePersistor) DeleteCategory(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 int) error {
+	fake.deleteCategoryMutex.Lock()
+	ret, specificReturn := fake.deleteCategoryReturnsOnCall[len(fake.deleteCategoryArgsForCall)]
+	fake.deleteCategoryArgsForCall = append(fake.deleteCategoryArgsForCall, struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}{arg1, arg2, arg3})
+	stub := fake.DeleteCategoryStub
+	fakeReturns := fake.deleteCategoryReturns
+	fake.recordInvocation("DeleteCategory", []interface{}{arg1, arg2, arg3})
+	fake.deleteCategoryMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakePersistor) DeleteCategoryCallCount() int {
+	fake.deleteCategoryMutex.RLock()
+	defer fake.deleteCategoryMutex.RUnlock()
+	return len(fake.deleteCategoryArgsForCall)
+}
+
+func (fake *FakePersistor) DeleteCategoryCalls(stub func(context.Context, persistence.TransactionHandler, int) error) {
+	fake.deleteCategoryMutex.Lock()
+	defer fake.deleteCategoryMutex.Unlock()
+	fake.DeleteCategoryStub = stub
+}
+
+func (fake *FakePersistor) DeleteCategoryArgsForCall(i int) (context.Context, persistence.TransactionHandler, int) {
+	fake.deleteCategoryMutex.RLock()
+	defer fake.deleteCategoryMutex.RUnlock()
+	argsForCall := fake.deleteCategoryArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakePersistor) DeleteCategoryReturns(result1 error) {
+	fake.deleteCategoryMutex.Lock()
+	defer fake.deleteCategoryMutex.Unlock()
+	fake.DeleteCategoryStub = nil
+	fake.deleteCategoryReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakePersistor) DeleteCategoryReturnsOnCall(i int, result1 error) {
+	fake.deleteCategoryMutex.Lock()
+	defer fake.deleteCategoryMutex.Unlock()
+	fake.DeleteCategoryStub = nil
+	if fake.deleteCategoryReturnsOnCall == nil {
+		fake.deleteCategoryReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteCategoryReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakePersistor) GetCategories(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.CategoryFilters) (*model.PaginatedCategories, error) {
@@ -353,6 +442,69 @@ func (fake *FakePersistor) GetCategoryTypeByIdReturnsOnCall(i int, result1 *mode
 	}{result1, result2}
 }
 
+func (fake *FakePersistor) RestoreCategory(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 int) error {
+	fake.restoreCategoryMutex.Lock()
+	ret, specificReturn := fake.restoreCategoryReturnsOnCall[len(fake.restoreCategoryArgsForCall)]
+	fake.restoreCategoryArgsForCall = append(fake.restoreCategoryArgsForCall, struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}{arg1, arg2, arg3})
+	stub := fake.RestoreCategoryStub
+	fakeReturns := fake.restoreCategoryReturns
+	fake.recordInvocation("RestoreCategory", []interface{}{arg1, arg2, arg3})
+	fake.restoreCategoryMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakePersistor) RestoreCategoryCallCount() int {
+	fake.restoreCategoryMutex.RLock()
+	defer fake.restoreCategoryMutex.RUnlock()
+	return len(fake.restoreCategoryArgsForCall)
+}
+
+func (fake *FakePersistor) RestoreCategoryCalls(stub func(context.Context, persistence.TransactionHandler, int) error) {
+	fake.restoreCategoryMutex.Lock()
+	defer fake.restoreCategoryMutex.Unlock()
+	fake.RestoreCategoryStub = stub
+}
+
+func (fake *FakePersistor) RestoreCategoryArgsForCall(i int) (context.Context, persistence.TransactionHandler, int) {
+	fake.restoreCategoryMutex.RLock()
+	defer fake.restoreCategoryMutex.RUnlock()
+	argsForCall := fake.restoreCategoryArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakePersistor) RestoreCategoryReturns(result1 error) {
+	fake.restoreCategoryMutex.Lock()
+	defer fake.restoreCategoryMutex.Unlock()
+	fake.RestoreCategoryStub = nil
+	fake.restoreCategoryReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakePersistor) RestoreCategoryReturnsOnCall(i int, result1 error) {
+	fake.restoreCategoryMutex.Lock()
+	defer fake.restoreCategoryMutex.Unlock()
+	fake.RestoreCategoryStub = nil
+	if fake.restoreCategoryReturnsOnCall == nil {
+		fake.restoreCategoryReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.restoreCategoryReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakePersistor) UpdateCategory(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.UpdateCategory) (*model.Category, error) {
 	fake.updateCategoryMutex.Lock()
 	ret, specificReturn := fake.updateCategoryReturnsOnCall[len(fake.updateCategoryArgsForCall)]
@@ -424,12 +576,16 @@ func (fake *FakePersistor) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.createCategoryMutex.RLock()
 	defer fake.createCategoryMutex.RUnlock()
+	fake.deleteCategoryMutex.RLock()
+	defer fake.deleteCategoryMutex.RUnlock()
 	fake.getCategoriesMutex.RLock()
 	defer fake.getCategoriesMutex.RUnlock()
 	fake.getCategoryByNameMutex.RLock()
 	defer fake.getCategoryByNameMutex.RUnlock()
 	fake.getCategoryTypeByIdMutex.RLock()
 	defer fake.getCategoryTypeByIdMutex.RUnlock()
+	fake.restoreCategoryMutex.RLock()
+	defer fake.restoreCategoryMutex.RUnlock()
 	fake.updateCategoryMutex.RLock()
 	defer fake.updateCategoryMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

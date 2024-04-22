@@ -205,18 +205,24 @@ func (m *Repository) getCategories(
 				mysqlmodel.CategoryColumns.ID,
 				mysqlmodel.CategoryColumns.ID,
 			),
-			fmt.Sprintf("%s.%s AS %s", mysqlmodel.TableNames.Category,
+			fmt.Sprintf("%s.%s AS %s",
+				mysqlmodel.TableNames.Category,
 				mysqlmodel.CategoryColumns.Name,
 				mysqlmodel.CategoryColumns.Name,
 			),
 			fmt.Sprintf("%s.%s AS %s",
+				mysqlmodel.TableNames.Category,
+				mysqlmodel.CategoryColumns.IsActive,
+				mysqlmodel.CategoryColumns.IsActive,
+			),
+			fmt.Sprintf("%s.%s AS %s",
 				mysqlmodel.TableNames.CategoryType,
-				mysqlmodel.CategoryColumns.ID,
+				mysqlmodel.CategoryTypeColumns.ID,
 				mysqlmodel.CategoryColumns.CategoryTypeRefID,
 			),
 			fmt.Sprintf("%s.%s AS %s",
 				mysqlmodel.TableNames.CategoryType,
-				mysqlmodel.CategoryColumns.Name,
+				mysqlmodel.CategoryTypeColumns.Name,
 				"category_type",
 			),
 		),
@@ -235,10 +241,16 @@ func (m *Repository) getCategories(
 			queryMods = append(queryMods, mysqlmodel.CategoryTypeWhere.Name.IN(filters.CategoryTypeNameIn))
 		}
 
+		if len(filters.CategoryIsActive) > 0 {
+			queryMods = append(queryMods, mysqlmodel.CategoryWhere.IsActive.IN(filters.CategoryIsActive))
+		}
+
 		if len(filters.CategoryNameIn) > 0 {
 			queryMods = append(queryMods, mysqlmodel.CategoryWhere.Name.IN(filters.CategoryNameIn))
 		}
 	}
+
+	fmt.Println("the queryMods ----- ", queryMods)
 
 	q := mysqlmodel.Categories(queryMods...)
 	totalCount, err := q.Count(ctx, ctxExec)
@@ -292,7 +304,6 @@ func (m *Repository) DeleteCategory(
 	return nil
 }
 
-// RestoreCategory attempts to restore a deleted category.
 func (m *Repository) RestoreCategory(
 	ctx context.Context,
 	tx persistence.TransactionHandler,
