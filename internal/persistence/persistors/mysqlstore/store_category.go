@@ -235,6 +235,7 @@ func (m *Repository) getCategories(
 
 		if len(filters.CategoryTypeIdIn) > 0 {
 			queryMods = append(queryMods, mysqlmodel.CategoryTypeWhere.ID.IN(filters.CategoryTypeIdIn))
+			fmt.Println("the cat query mods dude --- ", queryMods)
 		}
 
 		if len(filters.CategoryTypeNameIn) > 0 {
@@ -304,6 +305,7 @@ func (m *Repository) DeleteCategory(
 	return nil
 }
 
+// RestoreCategory restores a category.
 func (m *Repository) RestoreCategory(
 	ctx context.Context,
 	tx persistence.TransactionHandler,
