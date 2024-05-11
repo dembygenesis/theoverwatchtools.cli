@@ -1,3 +1,4 @@
+basePath: /api/v1
 definitions:
   model.Category:
     properties:
@@ -67,8 +68,22 @@ definitions:
       valid:
         type: boolean
     type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
 info:
-  contact: {}
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
 paths:
   /v1/category:
     get:
@@ -100,6 +115,12 @@ paths:
         items:
           type: integer
         name: ids_in
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: integer
+        name: is_active
         type: array
       produces:
       - application/json
@@ -189,4 +210,7 @@ paths:
       summary: Create Category
       tags:
       - CategoryService
+securityDefinitions:
+  BasicAuth:
+    type: basic
 swagger: "2.0"
