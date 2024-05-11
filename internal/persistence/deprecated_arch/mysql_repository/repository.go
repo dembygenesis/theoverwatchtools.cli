@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/jmoiron/sqlx"
@@ -13,13 +12,7 @@ import (
 )
 
 type Repository interface {
-	Categories
 	TransactionHandler
-}
-
-type Categories interface {
-	GetCategories(ctx context.Context, t Transaction, f *model.CategoryFilters) (model.Categories, error)
-	UpsertCategories(ctx context.Context, t Transaction, categories []model.Category) (model.Categories, error)
 }
 
 // TransactionHandler returns transaction handlers.

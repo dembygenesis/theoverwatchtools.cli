@@ -33,14 +33,8 @@ type Config struct {
 	// Port is the port your API will listen to.
 	Port int `json:"port" validate:"required,greater_than_zero"`
 
-	// CategoryService is the biz function for category
-	CategoryService categoryService `json:"category_manager" validate:"required"`
-
 	// OrganizationService is the biz function for organization
 	OrganizationService organizationService `json:"organization_manager" validate:"required"`
-
-	// CapturePagesService is the biz function for capture pages
-	CapturePagesService capturePagesService `json:"capture_pages_service" validate:"required"`
 }
 
 func (a *Config) Validate() error {

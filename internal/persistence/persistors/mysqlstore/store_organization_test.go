@@ -23,9 +23,9 @@ import (
 )
 
 var (
-	testCtxOrganizations           = context.TODO()
-	testLoggerOrganizations        = logger.New(context.TODO())
-	testQueryTimeoutsOrganizations = &persistence.QueryTimeouts{
+	testCtx           = context.TODO()
+	testLogger        = logger.New(context.TODO())
+	testQueryTimeouts = &persistence.QueryTimeouts{
 		Query: 10 * time.Second,
 		Exec:  10 * time.Second,
 	}
@@ -254,8 +254,8 @@ func Test_GetOrganizations(t *testing.T) {
 
 			defer cleanup()
 			cfg := &Config{
-				Logger:        testLoggerOrganizations,
-				QueryTimeouts: testQueryTimeoutsOrganizations,
+				Logger:        testLogger,
+				QueryTimeouts: testQueryTimeouts,
 			}
 
 			m, err := New(cfg)
@@ -263,7 +263,7 @@ func Test_GetOrganizations(t *testing.T) {
 			require.NotNil(t, m, "unexpected nil")
 
 			txHandler, err := mysqltx.New(&mysqltx.Config{
-				Logger:       testLoggerOrganizations,
+				Logger:       testLogger,
 				Db:           db,
 				DatabaseName: cp.Database,
 			})

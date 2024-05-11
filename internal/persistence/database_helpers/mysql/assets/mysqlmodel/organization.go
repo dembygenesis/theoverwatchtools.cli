@@ -79,6 +79,116 @@ var OrganizationTableColumns = struct {
 
 // Generated where
 
+type whereHelperint struct{ field string }
+
+func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperint) IN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperint) NIN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+type whereHelpernull_Int struct{ field string }
+
+func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_Int) IN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_Int) NIN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
+type whereHelpernull_Time struct{ field string }
+
+func (w whereHelpernull_Time) EQ(x null.Time) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Time) NEQ(x null.Time) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Time) LT(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Time) LTE(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Time) GT(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
+type whereHelperstring struct{ field string }
+
+func (w whereHelperstring) EQ(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperstring) NEQ(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperstring) LT(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperstring) LTE(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperstring) GT(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperstring) GTE(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperstring) LIKE(x string) qm.QueryMod  { return qm.Where(w.field+" LIKE ?", x) }
+func (w whereHelperstring) NLIKE(x string) qm.QueryMod { return qm.Where(w.field+" NOT LIKE ?", x) }
+func (w whereHelperstring) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 var OrganizationWhere = struct {
 	ID                    whereHelperint
 	CreatedBy             whereHelpernull_Int
@@ -102,16 +212,13 @@ var OrganizationWhere = struct {
 // OrganizationRels is where relationship names are stored.
 var OrganizationRels = struct {
 	OrganizationTypeRef string
-	CapturePageSets     string
 }{
 	OrganizationTypeRef: "OrganizationTypeRef",
-	CapturePageSets:     "CapturePageSets",
 }
 
 // organizationR is where relationships are stored.
 type organizationR struct {
-	OrganizationTypeRef *OrganizationType   `boil:"OrganizationTypeRef" json:"OrganizationTypeRef" toml:"OrganizationTypeRef" yaml:"OrganizationTypeRef"`
-	CapturePageSets     CapturePageSetSlice `boil:"CapturePageSets" json:"CapturePageSets" toml:"CapturePageSets" yaml:"CapturePageSets"`
+	OrganizationTypeRef *OrganizationType `boil:"OrganizationTypeRef" json:"OrganizationTypeRef" toml:"OrganizationTypeRef" yaml:"OrganizationTypeRef"`
 }
 
 // NewStruct creates a new relationship struct
@@ -124,13 +231,6 @@ func (r *organizationR) GetOrganizationTypeRef() *OrganizationType {
 		return nil
 	}
 	return r.OrganizationTypeRef
-}
-
-func (r *organizationR) GetCapturePageSets() CapturePageSetSlice {
-	if r == nil {
-		return nil
-	}
-	return r.CapturePageSets
 }
 
 // organizationL is where Load methods for each relationship are stored.
@@ -246,20 +346,6 @@ func (o *Organization) OrganizationTypeRef(mods ...qm.QueryMod) organizationType
 	return OrganizationTypes(queryMods...)
 }
 
-// CapturePageSets retrieves all the capture_page_set's CapturePageSets with an executor.
-func (o *Organization) CapturePageSets(mods ...qm.QueryMod) capturePageSetQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("`capture_page_sets`.`organization_id`=?", o.ID),
-	)
-
-	return CapturePageSets(queryMods...)
-}
-
 // LoadOrganizationTypeRef allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (organizationL) LoadOrganizationTypeRef(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrganization interface{}, mods queries.Applicator) error {
@@ -372,112 +458,6 @@ func (organizationL) LoadOrganizationTypeRef(ctx context.Context, e boil.Context
 	return nil
 }
 
-// LoadCapturePageSets allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (organizationL) LoadCapturePageSets(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrganization interface{}, mods queries.Applicator) error {
-	var slice []*Organization
-	var object *Organization
-
-	if singular {
-		var ok bool
-		object, ok = maybeOrganization.(*Organization)
-		if !ok {
-			object = new(Organization)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeOrganization)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeOrganization))
-			}
-		}
-	} else {
-		s, ok := maybeOrganization.(*[]*Organization)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeOrganization)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeOrganization))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &organizationR{}
-		}
-		args[object.ID] = struct{}{}
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &organizationR{}
-			}
-			args[obj.ID] = struct{}{}
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`capture_page_sets`),
-		qm.WhereIn(`capture_page_sets.organization_id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load capture_page_sets")
-	}
-
-	var resultSlice []*CapturePageSet
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice capture_page_sets")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on capture_page_sets")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for capture_page_sets")
-	}
-
-	if singular {
-		object.R.CapturePageSets = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &capturePageSetR{}
-			}
-			foreign.R.Organization = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.OrganizationID) {
-				local.R.CapturePageSets = append(local.R.CapturePageSets, foreign)
-				if foreign.R == nil {
-					foreign.R = &capturePageSetR{}
-				}
-				foreign.R.Organization = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
 // SetOrganizationTypeRef of the organization to the related item.
 // Sets o.R.OrganizationTypeRef to related.
 // Adds o to related.R.OrganizationTypeRefOrganizations.
@@ -520,133 +500,6 @@ func (o *Organization) SetOrganizationTypeRef(ctx context.Context, exec boil.Con
 		}
 	} else {
 		related.R.OrganizationTypeRefOrganizations = append(related.R.OrganizationTypeRefOrganizations, o)
-	}
-
-	return nil
-}
-
-// AddCapturePageSets adds the given related objects to the existing relationships
-// of the organization, optionally inserting them as new records.
-// Appends related to o.R.CapturePageSets.
-// Sets related.R.Organization appropriately.
-func (o *Organization) AddCapturePageSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePageSet) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			queries.Assign(&rel.OrganizationID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE `capture_page_sets` SET %s WHERE %s",
-				strmangle.SetParamNames("`", "`", 0, []string{"organization_id"}),
-				strmangle.WhereClause("`", "`", 0, capturePageSetPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			queries.Assign(&rel.OrganizationID, o.ID)
-		}
-	}
-
-	if o.R == nil {
-		o.R = &organizationR{
-			CapturePageSets: related,
-		}
-	} else {
-		o.R.CapturePageSets = append(o.R.CapturePageSets, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &capturePageSetR{
-				Organization: o,
-			}
-		} else {
-			rel.R.Organization = o
-		}
-	}
-	return nil
-}
-
-// SetCapturePageSets removes all previously related items of the
-// organization replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Organization's CapturePageSets accordingly.
-// Replaces o.R.CapturePageSets with related.
-// Sets related.R.Organization's CapturePageSets accordingly.
-func (o *Organization) SetCapturePageSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePageSet) error {
-	query := "update `capture_page_sets` set `organization_id` = null where `organization_id` = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.CapturePageSets {
-			queries.SetScanner(&rel.OrganizationID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Organization = nil
-		}
-		o.R.CapturePageSets = nil
-	}
-
-	return o.AddCapturePageSets(ctx, exec, insert, related...)
-}
-
-// RemoveCapturePageSets relationships from objects passed in.
-// Removes related items from R.CapturePageSets (uses pointer comparison, removal does not keep order)
-// Sets related.R.Organization.
-func (o *Organization) RemoveCapturePageSets(ctx context.Context, exec boil.ContextExecutor, related ...*CapturePageSet) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.OrganizationID, nil)
-		if rel.R != nil {
-			rel.R.Organization = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("organization_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.CapturePageSets {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.CapturePageSets)
-			if ln > 1 && i < ln-1 {
-				o.R.CapturePageSets[i] = o.R.CapturePageSets[ln-1]
-			}
-			o.R.CapturePageSets = o.R.CapturePageSets[:ln-1]
-			break
-		}
 	}
 
 	return nil

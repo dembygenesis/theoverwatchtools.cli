@@ -2,11 +2,23 @@ package mysql_repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
+
+// getTxHandler attempts to parse `t` as a txHandler.
+func (m *repository) getTxHandler(t Transaction) (*txHandler, error) {
+	h, ok := t.(*txHandler)
+	if !ok {
+		return nil, errors.New(sysconsts.ErrNotATransactionHandler)
+	}
+
+	return h, nil
+}
 
 func (m *repository) GetOrganizations(ctx context.Context, t Transaction, f *model.OrganizationFilters) (model.Organizations, error) {
 	var (

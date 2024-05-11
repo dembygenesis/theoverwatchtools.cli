@@ -4,21 +4,11 @@
 package mysqlmodel
 
 var TableNames = struct {
-	CapturePageSets  string
-	CapturePages     string
-	Category         string
-	CategoryType     string
 	Organization     string
 	OrganizationType string
 	SchemaMigrations string
-	User             string
 }{
-	CapturePageSets:  "capture_page_sets",
-	CapturePages:     "capture_pages",
-	Category:         "category",
-	CategoryType:     "category_type",
 	Organization:     "organization",
 	OrganizationType: "organization_type",
 	SchemaMigrations: "schema_migrations",
-	User:             "user",
 }
