@@ -121,8 +121,8 @@ type organizationTypeL struct{}
 
 var (
 	organizationTypeAllColumns            = []string{"id", "created_by", "created_date", "last_updated", "updated_by", "is_active", "name"}
-	organizationTypeColumnsWithoutDefault = []string{"created_by", "updated_by", "is_active", "name"}
-	organizationTypeColumnsWithDefault    = []string{"id", "created_date", "last_updated"}
+	organizationTypeColumnsWithoutDefault = []string{"created_by", "last_updated", "updated_by", "name"}
+	organizationTypeColumnsWithDefault    = []string{"id", "created_date", "is_active"}
 	organizationTypePrimaryKeyColumns     = []string{"id"}
 	organizationTypeGeneratedColumns      = []string{}
 )
@@ -131,8 +131,6 @@ type (
 	// OrganizationTypeSlice is an alias for a slice of pointers to OrganizationType.
 	// This should almost always be used instead of []OrganizationType.
 	OrganizationTypeSlice []*OrganizationType
-	// OrganizationTypeHook is the signature for custom OrganizationType hook methods
-	OrganizationTypeHook func(context.Context, boil.ContextExecutor, *OrganizationType) error
 
 	organizationTypeQuery struct {
 		*queries.Query
@@ -160,206 +158,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var organizationTypeAfterSelectMu sync.Mutex
-var organizationTypeAfterSelectHooks []OrganizationTypeHook
-
-var organizationTypeBeforeInsertMu sync.Mutex
-var organizationTypeBeforeInsertHooks []OrganizationTypeHook
-var organizationTypeAfterInsertMu sync.Mutex
-var organizationTypeAfterInsertHooks []OrganizationTypeHook
-
-var organizationTypeBeforeUpdateMu sync.Mutex
-var organizationTypeBeforeUpdateHooks []OrganizationTypeHook
-var organizationTypeAfterUpdateMu sync.Mutex
-var organizationTypeAfterUpdateHooks []OrganizationTypeHook
-
-var organizationTypeBeforeDeleteMu sync.Mutex
-var organizationTypeBeforeDeleteHooks []OrganizationTypeHook
-var organizationTypeAfterDeleteMu sync.Mutex
-var organizationTypeAfterDeleteHooks []OrganizationTypeHook
-
-var organizationTypeBeforeUpsertMu sync.Mutex
-var organizationTypeBeforeUpsertHooks []OrganizationTypeHook
-var organizationTypeAfterUpsertMu sync.Mutex
-var organizationTypeAfterUpsertHooks []OrganizationTypeHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *OrganizationType) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range organizationTypeAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *OrganizationType) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range organizationTypeBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *OrganizationType) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range organizationTypeAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *OrganizationType) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range organizationTypeBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *OrganizationType) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range organizationTypeAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *OrganizationType) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range organizationTypeBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *OrganizationType) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range organizationTypeAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *OrganizationType) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range organizationTypeBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *OrganizationType) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range organizationTypeAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddOrganizationTypeHook registers your hook function for all future operations.
-func AddOrganizationTypeHook(hookPoint boil.HookPoint, organizationTypeHook OrganizationTypeHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		organizationTypeAfterSelectMu.Lock()
-		organizationTypeAfterSelectHooks = append(organizationTypeAfterSelectHooks, organizationTypeHook)
-		organizationTypeAfterSelectMu.Unlock()
-	case boil.BeforeInsertHook:
-		organizationTypeBeforeInsertMu.Lock()
-		organizationTypeBeforeInsertHooks = append(organizationTypeBeforeInsertHooks, organizationTypeHook)
-		organizationTypeBeforeInsertMu.Unlock()
-	case boil.AfterInsertHook:
-		organizationTypeAfterInsertMu.Lock()
-		organizationTypeAfterInsertHooks = append(organizationTypeAfterInsertHooks, organizationTypeHook)
-		organizationTypeAfterInsertMu.Unlock()
-	case boil.BeforeUpdateHook:
-		organizationTypeBeforeUpdateMu.Lock()
-		organizationTypeBeforeUpdateHooks = append(organizationTypeBeforeUpdateHooks, organizationTypeHook)
-		organizationTypeBeforeUpdateMu.Unlock()
-	case boil.AfterUpdateHook:
-		organizationTypeAfterUpdateMu.Lock()
-		organizationTypeAfterUpdateHooks = append(organizationTypeAfterUpdateHooks, organizationTypeHook)
-		organizationTypeAfterUpdateMu.Unlock()
-	case boil.BeforeDeleteHook:
-		organizationTypeBeforeDeleteMu.Lock()
-		organizationTypeBeforeDeleteHooks = append(organizationTypeBeforeDeleteHooks, organizationTypeHook)
-		organizationTypeBeforeDeleteMu.Unlock()
-	case boil.AfterDeleteHook:
-		organizationTypeAfterDeleteMu.Lock()
-		organizationTypeAfterDeleteHooks = append(organizationTypeAfterDeleteHooks, organizationTypeHook)
-		organizationTypeAfterDeleteMu.Unlock()
-	case boil.BeforeUpsertHook:
-		organizationTypeBeforeUpsertMu.Lock()
-		organizationTypeBeforeUpsertHooks = append(organizationTypeBeforeUpsertHooks, organizationTypeHook)
-		organizationTypeBeforeUpsertMu.Unlock()
-	case boil.AfterUpsertHook:
-		organizationTypeAfterUpsertMu.Lock()
-		organizationTypeAfterUpsertHooks = append(organizationTypeAfterUpsertHooks, organizationTypeHook)
-		organizationTypeAfterUpsertMu.Unlock()
-	}
-}
-
 // One returns a single organizationType record from the query.
 func (q organizationTypeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*OrganizationType, error) {
 	o := &OrganizationType{}
@@ -374,10 +172,6 @@ func (q organizationTypeQuery) One(ctx context.Context, exec boil.ContextExecuto
 		return nil, errors.Wrap(err, "mysqlmodel: failed to execute a one query for organization_type")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -388,14 +182,6 @@ func (q organizationTypeQuery) All(ctx context.Context, exec boil.ContextExecuto
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "mysqlmodel: failed to assign all query results to OrganizationType slice")
-	}
-
-	if len(organizationTypeAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -525,13 +311,6 @@ func (organizationTypeL) LoadOrganizationTypeRefOrganizations(ctx context.Contex
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for organization")
 	}
 
-	if len(organizationAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.OrganizationTypeRefOrganizations = resultSlice
 		for _, foreign := range resultSlice {
@@ -646,10 +425,6 @@ func FindOrganizationType(ctx context.Context, exec boil.ContextExecutor, iD int
 		return nil, errors.Wrap(err, "mysqlmodel: unable to select from organization_type")
 	}
 
-	if err = organizationTypeObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return organizationTypeObj, err
-	}
-
 	return organizationTypeObj, nil
 }
 
@@ -661,10 +436,6 @@ func (o *OrganizationType) Insert(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(organizationTypeColumnsWithDefault, o)
 
@@ -756,7 +527,7 @@ CacheNoHooks:
 		organizationTypeInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the OrganizationType.
@@ -764,9 +535,6 @@ CacheNoHooks:
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *OrganizationType) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	organizationTypeUpdateCacheMut.RLock()
 	cache, cached := organizationTypeUpdateCache[key]
@@ -819,7 +587,7 @@ func (o *OrganizationType) Update(ctx context.Context, exec boil.ContextExecutor
 		organizationTypeUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -889,6 +657,7 @@ func (o OrganizationTypeSlice) UpdateAll(ctx context.Context, exec boil.ContextE
 
 var mySQLOrganizationTypeUniqueColumns = []string{
 	"id",
+	"name",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
@@ -896,10 +665,6 @@ var mySQLOrganizationTypeUniqueColumns = []string{
 func (o *OrganizationType) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("mysqlmodel: no organization_type provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(organizationTypeColumnsWithDefault, o)
@@ -1034,7 +799,7 @@ CacheNoHooks:
 		organizationTypeUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single OrganizationType record with an executor.
@@ -1042,10 +807,6 @@ CacheNoHooks:
 func (o *OrganizationType) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("mysqlmodel: no OrganizationType provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), organizationTypePrimaryKeyMapping)
@@ -1064,10 +825,6 @@ func (o *OrganizationType) Delete(ctx context.Context, exec boil.ContextExecutor
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "mysqlmodel: failed to get rows affected by delete for organization_type")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1100,14 +857,6 @@ func (o OrganizationTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextE
 		return 0, nil
 	}
 
-	if len(organizationTypeBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), organizationTypePrimaryKeyMapping)
@@ -1130,14 +879,6 @@ func (o OrganizationTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextE
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "mysqlmodel: failed to get rows affected by deleteall for organization_type")
-	}
-
-	if len(organizationTypeAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

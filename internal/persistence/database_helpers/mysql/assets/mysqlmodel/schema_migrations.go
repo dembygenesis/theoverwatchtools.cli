@@ -71,15 +71,6 @@ func (w whereHelperint64) NIN(slice []int64) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelperbool struct{ field string }
-
-func (w whereHelperbool) EQ(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperbool) NEQ(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperbool) LT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperbool) LTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-
 var SchemaMigrationWhere = struct {
 	Version whereHelperint64
 	Dirty   whereHelperbool
@@ -116,8 +107,6 @@ type (
 	// SchemaMigrationSlice is an alias for a slice of pointers to SchemaMigration.
 	// This should almost always be used instead of []SchemaMigration.
 	SchemaMigrationSlice []*SchemaMigration
-	// SchemaMigrationHook is the signature for custom SchemaMigration hook methods
-	SchemaMigrationHook func(context.Context, boil.ContextExecutor, *SchemaMigration) error
 
 	schemaMigrationQuery struct {
 		*queries.Query
@@ -145,206 +134,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var schemaMigrationAfterSelectMu sync.Mutex
-var schemaMigrationAfterSelectHooks []SchemaMigrationHook
-
-var schemaMigrationBeforeInsertMu sync.Mutex
-var schemaMigrationBeforeInsertHooks []SchemaMigrationHook
-var schemaMigrationAfterInsertMu sync.Mutex
-var schemaMigrationAfterInsertHooks []SchemaMigrationHook
-
-var schemaMigrationBeforeUpdateMu sync.Mutex
-var schemaMigrationBeforeUpdateHooks []SchemaMigrationHook
-var schemaMigrationAfterUpdateMu sync.Mutex
-var schemaMigrationAfterUpdateHooks []SchemaMigrationHook
-
-var schemaMigrationBeforeDeleteMu sync.Mutex
-var schemaMigrationBeforeDeleteHooks []SchemaMigrationHook
-var schemaMigrationAfterDeleteMu sync.Mutex
-var schemaMigrationAfterDeleteHooks []SchemaMigrationHook
-
-var schemaMigrationBeforeUpsertMu sync.Mutex
-var schemaMigrationBeforeUpsertHooks []SchemaMigrationHook
-var schemaMigrationAfterUpsertMu sync.Mutex
-var schemaMigrationAfterUpsertHooks []SchemaMigrationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *SchemaMigration) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range schemaMigrationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *SchemaMigration) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range schemaMigrationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *SchemaMigration) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range schemaMigrationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *SchemaMigration) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range schemaMigrationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *SchemaMigration) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range schemaMigrationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *SchemaMigration) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range schemaMigrationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *SchemaMigration) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range schemaMigrationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *SchemaMigration) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range schemaMigrationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *SchemaMigration) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range schemaMigrationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddSchemaMigrationHook registers your hook function for all future operations.
-func AddSchemaMigrationHook(hookPoint boil.HookPoint, schemaMigrationHook SchemaMigrationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		schemaMigrationAfterSelectMu.Lock()
-		schemaMigrationAfterSelectHooks = append(schemaMigrationAfterSelectHooks, schemaMigrationHook)
-		schemaMigrationAfterSelectMu.Unlock()
-	case boil.BeforeInsertHook:
-		schemaMigrationBeforeInsertMu.Lock()
-		schemaMigrationBeforeInsertHooks = append(schemaMigrationBeforeInsertHooks, schemaMigrationHook)
-		schemaMigrationBeforeInsertMu.Unlock()
-	case boil.AfterInsertHook:
-		schemaMigrationAfterInsertMu.Lock()
-		schemaMigrationAfterInsertHooks = append(schemaMigrationAfterInsertHooks, schemaMigrationHook)
-		schemaMigrationAfterInsertMu.Unlock()
-	case boil.BeforeUpdateHook:
-		schemaMigrationBeforeUpdateMu.Lock()
-		schemaMigrationBeforeUpdateHooks = append(schemaMigrationBeforeUpdateHooks, schemaMigrationHook)
-		schemaMigrationBeforeUpdateMu.Unlock()
-	case boil.AfterUpdateHook:
-		schemaMigrationAfterUpdateMu.Lock()
-		schemaMigrationAfterUpdateHooks = append(schemaMigrationAfterUpdateHooks, schemaMigrationHook)
-		schemaMigrationAfterUpdateMu.Unlock()
-	case boil.BeforeDeleteHook:
-		schemaMigrationBeforeDeleteMu.Lock()
-		schemaMigrationBeforeDeleteHooks = append(schemaMigrationBeforeDeleteHooks, schemaMigrationHook)
-		schemaMigrationBeforeDeleteMu.Unlock()
-	case boil.AfterDeleteHook:
-		schemaMigrationAfterDeleteMu.Lock()
-		schemaMigrationAfterDeleteHooks = append(schemaMigrationAfterDeleteHooks, schemaMigrationHook)
-		schemaMigrationAfterDeleteMu.Unlock()
-	case boil.BeforeUpsertHook:
-		schemaMigrationBeforeUpsertMu.Lock()
-		schemaMigrationBeforeUpsertHooks = append(schemaMigrationBeforeUpsertHooks, schemaMigrationHook)
-		schemaMigrationBeforeUpsertMu.Unlock()
-	case boil.AfterUpsertHook:
-		schemaMigrationAfterUpsertMu.Lock()
-		schemaMigrationAfterUpsertHooks = append(schemaMigrationAfterUpsertHooks, schemaMigrationHook)
-		schemaMigrationAfterUpsertMu.Unlock()
-	}
-}
-
 // One returns a single schemaMigration record from the query.
 func (q schemaMigrationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*SchemaMigration, error) {
 	o := &SchemaMigration{}
@@ -359,10 +148,6 @@ func (q schemaMigrationQuery) One(ctx context.Context, exec boil.ContextExecutor
 		return nil, errors.Wrap(err, "mysqlmodel: failed to execute a one query for schema_migrations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -373,14 +158,6 @@ func (q schemaMigrationQuery) All(ctx context.Context, exec boil.ContextExecutor
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "mysqlmodel: failed to assign all query results to SchemaMigration slice")
-	}
-
-	if len(schemaMigrationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -451,10 +228,6 @@ func FindSchemaMigration(ctx context.Context, exec boil.ContextExecutor, version
 		return nil, errors.Wrap(err, "mysqlmodel: unable to select from schema_migrations")
 	}
 
-	if err = schemaMigrationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return schemaMigrationObj, err
-	}
-
 	return schemaMigrationObj, nil
 }
 
@@ -466,10 +239,6 @@ func (o *SchemaMigration) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(schemaMigrationColumnsWithDefault, o)
 
@@ -550,7 +319,7 @@ CacheNoHooks:
 		schemaMigrationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the SchemaMigration.
@@ -558,9 +327,6 @@ CacheNoHooks:
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *SchemaMigration) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	schemaMigrationUpdateCacheMut.RLock()
 	cache, cached := schemaMigrationUpdateCache[key]
@@ -613,7 +379,7 @@ func (o *SchemaMigration) Update(ctx context.Context, exec boil.ContextExecutor,
 		schemaMigrationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -690,10 +456,6 @@ var mySQLSchemaMigrationUniqueColumns = []string{
 func (o *SchemaMigration) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("mysqlmodel: no schema_migrations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(schemaMigrationColumnsWithDefault, o)
@@ -817,7 +579,7 @@ CacheNoHooks:
 		schemaMigrationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single SchemaMigration record with an executor.
@@ -825,10 +587,6 @@ CacheNoHooks:
 func (o *SchemaMigration) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("mysqlmodel: no SchemaMigration provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), schemaMigrationPrimaryKeyMapping)
@@ -847,10 +605,6 @@ func (o *SchemaMigration) Delete(ctx context.Context, exec boil.ContextExecutor)
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "mysqlmodel: failed to get rows affected by delete for schema_migrations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -883,14 +637,6 @@ func (o SchemaMigrationSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 		return 0, nil
 	}
 
-	if len(schemaMigrationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), schemaMigrationPrimaryKeyMapping)
@@ -913,14 +659,6 @@ func (o SchemaMigrationSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "mysqlmodel: failed to get rows affected by deleteall for schema_migrations")
-	}
-
-	if len(schemaMigrationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

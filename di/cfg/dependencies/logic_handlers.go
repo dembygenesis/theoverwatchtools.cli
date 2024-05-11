@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/config"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
+	"github.com/dembygenesis/local.tools/internal/logic_handlers/capturepageslogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/marketinglogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/organizationlogic"
@@ -15,15 +16,55 @@ import (
 )
 
 const (
-	logicCategory     = "logic_category"
-	logicUser         = "logic_user"
-	logicAuth         = "logic_auth"
-	logicMarketing    = "logic_marketing"
-	logicOrganization = "logic_organization"
+	logicCategory        = "logic_category"
+	logicUser            = "logic_user"
+	logicAuth            = "logic_auth"
+	logicMarketing       = "logic_marketing"
+	logicOrganization    = "logic_organization"
+	logicCapturePages    = "logic_capture_pages"
+	logicCapturePageSets = "logic_capture_pages_sets"
 )
 
 func GetLogicHandlers() []dingo.Def {
 	return []dingo.Def{
+		{
+			Name: logicCapturePageSets,
+			Build: func(
+				cfg *config.App,
+				logger *logrus.Entry,
+				txProvider *mysqlconn.Provider,
+				store *mysqlstore.Repository,
+			) (*capturepageslogic.Service, error) {
+				logic, err := capturepageslogic.New(&capturepageslogic.Config{
+					TxProvider: txProvider,
+					Logger:     logger,
+					Persistor:  store,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("logiccapturepagesset: %v", err)
+				}
+				return logic, nil
+			},
+		},
+		{
+			Name: logicCapturePages,
+			Build: func(
+				cfg *config.App,
+				logger *logrus.Entry,
+				txProvider *mysqlconn.Provider,
+				store *mysqlstore.Repository,
+			) (*capturepageslogic.Service, error) {
+				logic, err := capturepageslogic.New(&capturepageslogic.Config{
+					TxProvider: txProvider,
+					Logger:     logger,
+					Persistor:  store,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("logiccapturepages: %v", err)
+				}
+				return logic, nil
+			},
+		},
 		{
 			Name: logicOrganization,
 			Build: func(
