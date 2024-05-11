@@ -35,12 +35,28 @@ type ContainerConfig struct {
 	ExternalPort int
 	HostPort     int    // Specifying the host port in port bindings.
 	WaitFor      string // Specifies the string you wait for, before confirming
+	Cmd          []string
 }
 
 func New(cfg *ContainerConfig) (*DockerEnv, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
+	}
+
+	_, _, err = cli.ImageInspectWithRaw(context.Background(), cfg.Image)
+	if err != nil {
+		if client.IsErrNotFound(err) {
+			rc, err := cli.ImagePull(context.Background(), cfg.Image, types.ImagePullOptions{})
+			if err != nil {
+				return nil, fmt.Errorf("pulling image: %v", err)
+			}
+			defer rc.Close()
+		} else {
+			return nil, fmt.Errorf("error checking for image: %v", err)
+		}
+	} else {
+		fmt.Println("====== found it!")
 	}
 
 	return &DockerEnv{
@@ -185,6 +201,7 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 		ExposedPorts: nat.PortSet{
 			nat.Port(fmt.Sprintf("%d/tcp", dm.cfg.ExposedPort)): struct{}{},
 		},
+		Cmd: dm.cfg.Cmd,
 	}
 
 	hostConfig := &container.HostConfig{
@@ -214,7 +231,8 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 	}
 
 	if dm.cfg.WaitFor != "" {
-		if err = dm.waitForLogMessage(ctx, dm.ContainerID, dm.cfg.WaitFor, 5*time.Second); err != nil {
+		timeoutDuration := 60 * time.Second
+		if err = dm.waitForLogMessage(ctx, dm.ContainerID, dm.cfg.WaitFor, timeoutDuration); err != nil {
 			return "", fmt.Errorf("err waiting for text: %s, with err: %v", dm.cfg.WaitFor, err)
 		}
 	}

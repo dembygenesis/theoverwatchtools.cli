@@ -34,7 +34,7 @@ func (m *MariaDBConfig) Validate() error {
 func (m *MariaDBConfig) GetEnvVars() []string {
 	return []string{
 		"MYSQL_ROOT_HOST=%",
-		fmt.Sprintf("MARIADB_ROOT_PASSWORD=%v", m.Pass),
+		fmt.Sprintf("MYSQL_ROOT_PASSWORD=%v", m.Pass),
 		fmt.Sprintf("MYSQL_TCP_PORT=%v", m.ExposedInternalPort),
 	}
 }
@@ -46,7 +46,7 @@ func NewMariaDB(cfg *MariaDBConfig) (*dockerenv.DockerEnv, error) {
 	}
 
 	const (
-		image = "mariadb:latest"
+		image = "mysql:8.0"
 	)
 
 	dm, err := dockerenv.New(&dockerenv.ContainerConfig{
@@ -55,7 +55,8 @@ func NewMariaDB(cfg *MariaDBConfig) (*dockerenv.DockerEnv, error) {
 		Env:         cfg.GetEnvVars(),
 		ExposedPort: cfg.ExposedInternalPort,
 		HostPort:    cfg.ExposedInternalPort,
-		WaitFor:     "mariadbd: ready for connections.",
+		WaitFor:     "usr/sbin/mysqld: ready for connections",
+		Cmd:         []string{"--default-authentication-plugin=mysql_native_password", "--sql_mode="},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("docker manager: %v", err)
