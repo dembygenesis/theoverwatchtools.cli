@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/utilities/sliceutil"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
@@ -18,7 +17,8 @@ import (
 )
 
 var (
-	m sync.Mutex
+	m              sync.Mutex
+	waitForTimeout = 30 * time.Second
 )
 
 type DockerEnv struct {
@@ -35,6 +35,7 @@ type ContainerConfig struct {
 	ExternalPort int
 	HostPort     int    // Specifying the host port in port bindings.
 	WaitFor      string // Specifies the string you wait for, before confirming
+	Cmd          []string
 }
 
 func New(cfg *ContainerConfig) (*DockerEnv, error) {
@@ -75,108 +76,52 @@ func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string
 	targetHostPort := strconv.Itoa(dm.cfg.HostPort)
 
 	for _, ctn := range allContainers {
-		// Check if there is a port, and mysql image that is the same
-		hasPortBindingCollision := sliceutil.Compare(ctn.Ports, func(port types.Port) bool {
-			return strconv.Itoa(int(port.PublicPort)) == targetHostPort && port.Type == "tcp"
-		})
-		if hasPortBindingCollision {
-			if !recreate {
-				dm.ContainerID = ctn.ID
-				return ctn.ID, nil
-			}
+		hasPortBindingCollision := checkPortBindingCollision(ctn, targetHostPort)
+		hasContainerNameCollision := checkNameCollision(ctn, dm.cfg.Name)
+		isStopped := ctn.State == "exited" || ctn.State == "created"
 
-			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
-				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to port collision: %w", ctn.ID, err)
-			}
-		}
-
-		hasContainerNameCollision := sliceutil.Compare(ctn.Names, func(name string) bool {
-			return name == "/"+dm.cfg.Name
-		})
-
-		hasExistingStoppedContainer := ctn.State == "exited" || ctn.State == "created"
-		if hasExistingStoppedContainer && hasContainerNameCollision {
+		if isStopped && hasContainerNameCollision {
 			log.Printf("Existing stopped container found with name %s. Attempting to start it.", dm.cfg.Name)
 			if err := dm.client.ContainerStart(ctx, ctn.ID, container.StartOptions{}); err != nil {
 				return "", fmt.Errorf("failed to start existing container: %s, with error: %w", ctn.ID, err)
 			}
+
 			dm.ContainerID = ctn.ID
 			return ctn.ID, nil
 		}
 
-		if hasContainerNameCollision {
+		if hasContainerNameCollision || hasPortBindingCollision {
 			if !recreate {
 				dm.ContainerID = ctn.ID
 				return ctn.ID, nil
 			}
 
 			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
-				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to name collision: %w", ctn.ID, err)
+				return "", fmt.Errorf("failed to remove existing ctn (ID: %s): %w", ctn.ID, err)
 			}
 		}
-
 	}
 
 	return dm.createContainer(ctx)
 }
 
-/*// UpsertContainer upserts a new container, be careful with this function
-// because it will remove other running instances with colliding port, OR names.
-func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string, error) {
-	m.Lock()
-	defer m.Unlock()
-
-	allContainers, err := dm.client.ContainerList(ctx, container.ListOptions{All: true})
-	if err != nil {
-		return "", err
-	}
-
-	targetHostPort := strconv.Itoa(dm.cfg.HostPort)
-
-	for _, ctn := range allContainers {
-
-		hasContainerNameCollision := sliceutil.Compare(ctn.Names, func(name string) bool {
-			return name == "/"+dm.cfg.Name
-		})
-
-		hasExistingStoppedContainer := ctn.State == "exited" || ctn.State == "created"
-		if hasExistingStoppedContainer && hasContainerNameCollision {
-			log.Printf("Existing stopped container found with name %s. Attempting to start it.", dm.cfg.Name)
-			if err := dm.client.ContainerStart(ctx, ctn.ID, container.StartOptions{}); err != nil {
-				return "", fmt.Errorf("failed to start existing container: %s, with error: %w", ctn.ID, err)
-			}
-			dm.ContainerID = ctn.ID
-			return ctn.ID, nil
-		}
-
-		if hasContainerNameCollision {
-			if !recreate {
-				dm.ContainerID = ctn.ID
-				return ctn.ID, nil
-			}
-
-			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
-				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to name collision: %w", ctn.ID, err)
-			}
-		}
-
-		hasPortBindingCollision := sliceutil.Compare(ctn.Ports, func(port types.Port) bool {
-			return strconv.Itoa(int(port.PublicPort)) == targetHostPort && port.Type == "tcp"
-		})
-		if hasPortBindingCollision {
-			if !recreate {
-				dm.ContainerID = ctn.ID
-				return ctn.ID, nil
-			}
-
-			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
-				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to port collision: %w", ctn.ID, err)
-			}
+func checkPortBindingCollision(ctn types.Container, targetHostPort string) bool {
+	for _, port := range ctn.Ports {
+		if strconv.Itoa(int(port.PublicPort)) == targetHostPort && port.Type == "tcp" {
+			return true
 		}
 	}
+	return false
+}
 
-	return dm.createContainer(ctx)
-}*/
+func checkNameCollision(ctn types.Container, name string) bool {
+	for _, n := range ctn.Names {
+		if n == "/"+name {
+			return true
+		}
+	}
+	return false
+}
 
 func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 	contConfig := &container.Config{
@@ -185,6 +130,7 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 		ExposedPorts: nat.PortSet{
 			nat.Port(fmt.Sprintf("%d/tcp", dm.cfg.ExposedPort)): struct{}{},
 		},
+		Cmd: dm.cfg.Cmd,
 	}
 
 	hostConfig := &container.HostConfig{
@@ -205,6 +151,7 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 
 	dm.ContainerID = resp.ID
 
+	// if err = dm.client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 	if err = dm.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return "", err
 	}
@@ -214,7 +161,7 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 	}
 
 	if dm.cfg.WaitFor != "" {
-		if err = dm.waitForLogMessage(ctx, dm.ContainerID, dm.cfg.WaitFor, 5*time.Second); err != nil {
+		if err = dm.waitForLogMessage(ctx, dm.ContainerID, dm.cfg.WaitFor, waitForTimeout); err != nil {
 			return "", fmt.Errorf("err waiting for text: %s, with err: %v", dm.cfg.WaitFor, err)
 		}
 	}
@@ -226,7 +173,6 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 func (dm *DockerEnv) waitForLogMessage(ctx context.Context, containerID, message string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	options := container.LogsOptions{ShowStdout: true, ShowStderr: true, Follow: true}
-
 	logStream, err := dm.client.ContainerLogs(ctx, containerID, options)
 	if err != nil {
 		return fmt.Errorf("failed to get container logs: %w", err)

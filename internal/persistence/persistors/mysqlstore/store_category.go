@@ -9,7 +9,6 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
-	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -51,9 +50,6 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 
 	entry := &mysqlmodel.Category{ID: params.Id}
 	cols := []string{mysqlmodel.CategoryColumns.ID}
-
-	fmt.Println("====== entry UpdateCategory:", strutil.GetAsJson(entry))
-	fmt.Println("====== params UpdateCategory:", strutil.GetAsJson(params))
 
 	if params.CategoryTypeRefId.Valid {
 		entry.CategoryTypeRefID = params.CategoryTypeRefId.Int

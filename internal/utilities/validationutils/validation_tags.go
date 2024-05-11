@@ -40,6 +40,23 @@ var customValidations = []customValidation{
 		},
 	},
 	{
+		Name: "boolean",
+		Logic: nullableFunc{
+			Valid: true,
+			Func: func(i interface{}) bool {
+				_, ok := i.(bool)
+				if !ok {
+					return false
+				}
+				return true
+			},
+		},
+		Response: null.String{
+			String: "must be a time duration greater than 0",
+			Valid:  true,
+		},
+	},
+	{
 		Name: "ascending_non_negative_ints",
 		Logic: nullableFunc{
 			Valid: true,
