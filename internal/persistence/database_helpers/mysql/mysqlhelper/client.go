@@ -12,13 +12,23 @@ type ClientOptions struct {
 	PingTimeout time.Duration
 	ConnString  string
 	Close       bool
+	UseCache    bool
 }
 
+var cachedDb *sqlx.DB
+
 func NewDbClient(ctx context.Context, o *ClientOptions) (*sqlx.DB, error) {
+	if o.UseCache && cachedDb != nil {
+		return cachedDb, nil
+	}
+
 	db, err := sqlx.Open("mysql", o.ConnString)
 	if err != nil {
 		return nil, fmt.Errorf("open: %v", err)
 	}
+
+	db.SetMaxIdleConns(25)
+	db.SetMaxOpenConns(25)
 
 	retries := 5
 	var pingSuccess bool
@@ -53,5 +63,8 @@ func NewDbClient(ctx context.Context, o *ClientOptions) (*sqlx.DB, error) {
 		}
 	}
 
+	if o.UseCache {
+		cachedDb = db
+	}
 	return db, nil
 }

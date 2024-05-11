@@ -27,6 +27,7 @@ func TestCreateDatabase(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.D
 	db, err := NewDbClient(context.TODO(), &ClientOptions{
 		ConnString: cp.GetConnectionString(true),
 		Close:      false,
+		UseCache:   true,
 	})
 	require.NoError(t, err, "unexpected error getting client from database")
 
@@ -107,6 +108,7 @@ func testExistingMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.
 	db, err = NewDbClient(context.TODO(), &ClientOptions{
 		ConnString: cp.GetConnectionString(false),
 		Close:      false,
+		UseCache:   true,
 	})
 	require.NoError(t, err, "unexpected error getting client from database")
 

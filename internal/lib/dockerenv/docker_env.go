@@ -55,8 +55,6 @@ func New(cfg *ContainerConfig) (*DockerEnv, error) {
 		} else {
 			return nil, fmt.Errorf("error checking for image: %v", err)
 		}
-	} else {
-		fmt.Println("====== found it!")
 	}
 
 	return &DockerEnv{
