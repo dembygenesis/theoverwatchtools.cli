@@ -56,7 +56,7 @@ func NewMariaDB(cfg *MariaDBConfig) (*dockerenv.DockerEnv, error) {
 		ExposedPort: cfg.ExposedInternalPort,
 		HostPort:    cfg.ExposedInternalPort,
 		WaitFor:     "usr/sbin/mysqld: ready for connections",
-		Cmd:         []string{"--default-authentication-plugin=mysql_native_password", "--sql_mode="},
+		Cmd:         []string{"--default-authentication-plugin=mysql_native_password", "--sql_mode=STRICT_TRANS_TABLES"},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("docker manager: %v", err)

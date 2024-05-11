@@ -70,7 +70,7 @@ func getTestCasesGetCategories() []testCaseGetCategories {
 				modelhelpers.AssertNonEmptyCategories(t, paginated.Categories)
 			},
 		},
-		/*{
+		{
 			name: "success-filter-names-in",
 			filter: &model.CategoryFilters{
 				CategoryNameIn: []string{"Regular User", "Admin"},
@@ -171,7 +171,7 @@ func getTestCasesGetCategories() []testCaseGetCategories {
 
 				modelhelpers.AssertNonEmptyCategories(t, paginated.Categories)
 			},
-		},*/
+		},
 	}
 }
 
