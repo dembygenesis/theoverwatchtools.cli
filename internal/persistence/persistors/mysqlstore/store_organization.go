@@ -45,13 +45,10 @@ func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.Transa
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
-	fmt.Println("the filters ssssssss ---- ", strutil.GetAsJson(filters))
 	res, err := m.getOrganizations(ctx, ctxExec, filters)
 	if err != nil {
 		return nil, fmt.Errorf("read organizations: %v", err)
 	}
-
-	fmt.Println("the res ---- ", strutil.GetAsJson(res))
 
 	return res, nil
 }
@@ -172,8 +169,6 @@ func (m *Repository) getOrganizations(
 	paginated.Organizations = res
 	paginated.Pagination = pagination
 
-	fmt.Println("the paginated return --- ", strutil.GetAsJson(&paginated))
-
 	return &paginated, nil
 }
 
@@ -282,9 +277,6 @@ func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.Tran
 
 	entry := &mysqlmodel.Organization{ID: params.Id}
 	cols := []string{mysqlmodel.OrganizationColumns.ID}
-
-	fmt.Println("====== entry UpdateOrganization:", strutil.GetAsJson(entry))
-	fmt.Println("====== params UpdateOrganization:", strutil.GetAsJson(params))
 
 	if params.OrganizationTypeRefId.Valid {
 		entry.OrganizationTypeRefID = params.OrganizationTypeRefId.Int
