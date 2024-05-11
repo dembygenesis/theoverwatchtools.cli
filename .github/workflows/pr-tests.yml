@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mariadb:
-        image: mariadb:latest
+        image: mysql:8.0
         ports:
           - 3341:3341
+        options:
+          --name=mysql_container
         env:
           MYSQL_ROOT_HOST: "%"
           MYSQL_ROOT_PASSWORD: "secret"
@@ -38,6 +40,10 @@ jobs:
       - name: Run go vet
         run: |
           go vet ./... 
+
+      - name: Set MySQL sql_mode
+        run: |
+          echo "SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES';" | docker exec -i mysql_container mysql -uroot -psecret theoverwatchtools
 
       - name: Run go test
         env:

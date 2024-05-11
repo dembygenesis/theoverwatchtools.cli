@@ -27,6 +27,7 @@ func TestCreateDatabase(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.D
 	db, err := NewDbClient(context.TODO(), &ClientOptions{
 		ConnString: cp.GetConnectionString(true),
 		Close:      false,
+		UseCache:   true,
 	})
 	require.NoError(t, err, "unexpected error getting client from database")
 
@@ -65,6 +66,7 @@ type CleanFn func(ignoreErrors ...bool)
 // create an integration testing sandbox for MariaDB.
 func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
 	m.Lock()
+	fmt.Println("==== locked testSpawnMariaDBrs")
 	defer m.Unlock()
 
 	// Set database logs on for testing
@@ -97,6 +99,7 @@ func testExistingMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.
 	db, err := NewDbClient(context.TODO(), &ClientOptions{
 		ConnString: cp.GetConnectionString(true),
 		Close:      false,
+		UseCache:   true,
 	})
 	require.NoError(t, err, "unexpected error creating test database for localDB")
 
@@ -107,6 +110,7 @@ func testExistingMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.
 	db, err = NewDbClient(context.TODO(), &ClientOptions{
 		ConnString: cp.GetConnectionString(false),
 		Close:      false,
+		UseCache:   true,
 	})
 	require.NoError(t, err, "unexpected error getting client from database")
 

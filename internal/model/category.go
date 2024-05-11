@@ -17,6 +17,14 @@ type UpdateCategory struct {
 	Name              null.String `json:"name"`
 }
 
+type DeleteCategory struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
+}
+
+type RestoreCategory struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
+}
+
 func (c *UpdateCategory) Validate() error {
 	var errList errs.List
 	if err := validationutils.Validate(c); err != nil {
@@ -114,6 +122,7 @@ type CategoryFilters struct {
 	CategoryNameIn         []string `query:"category_name_in" json:"category_name_in"`
 	CategoryTypeNameIn     []string `query:"category_type_name_in" json:"category_type_name_in"`
 	CategoryTypeIdIn       []int    `query:"category_type_id_in" json:"category_type_id_in"`
+	CategoryIsActive       []int    `query:"is_active" json:"is_active"`
 	IdsIn                  []int    `query:"ids_in" json:"ids_in"`
 	PaginationQueryFilters `swaggerignore:"true"`
 }
