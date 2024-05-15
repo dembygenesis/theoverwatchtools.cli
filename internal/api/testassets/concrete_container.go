@@ -18,9 +18,6 @@ func GetConcreteContainer(t *testing.T) (*Container, mysqlhelper.CleanFn) {
 	err = mySQLTxHandler.Set(db)
 	require.Nil(t, err, "unexpected error for setting mysqlTxHandler.Set")
 
-	category, err := ctn.SafeGetLogicCategory()
-	require.NoError(t, err, "unexpected error: SafeGetLogicCategory")
-
 	mysqlStore, err := ctn.SafeGetPersistenceMysql()
 	require.NoError(t, err, "unexpected error: SafeGetPersistenceMysql")
 
@@ -28,8 +25,7 @@ func GetConcreteContainer(t *testing.T) (*Container, mysqlhelper.CleanFn) {
 	require.NoError(t, err, "unexpected error: SafeGetTxProvider")
 
 	return &Container{
-		CategoryService: category,
-		MySQLStore:      mysqlStore,
-		ConnProvider:    mysqlTxProvider,
+		MySQLStore:   mysqlStore,
+		ConnProvider: mysqlTxProvider,
 	}, cleanup
 }

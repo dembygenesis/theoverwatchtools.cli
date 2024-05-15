@@ -4,13 +4,11 @@
 package mysqlmodel
 
 var TableNames = struct {
-	Category         string
-	CategoryType     string
+	Organization     string
+	OrganizationType string
 	SchemaMigrations string
-	User             string
 }{
-	Category:         "category",
-	CategoryType:     "category_type",
+	Organization:     "organization",
+	OrganizationType: "organization_type",
 	SchemaMigrations: "schema_migrations",
-	User:             "user",
 }

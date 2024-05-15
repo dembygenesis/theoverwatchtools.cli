@@ -24,16 +24,16 @@ func main() {
 		log.Fatalf("logger: %v", err)
 	}
 
-	categoryMgr, err := ctn.SafeGetLogicCategory()
+	organizationMgr, err := ctn.SafeGetLogicOrganization()
 	if err != nil {
-		log.Fatalf("category mgr: %v", err)
+		log.Fatalf("organization mgr: %v", err)
 	}
 
 	apiCfg := &api.Config{
-		BaseUrl:         cfg.API.BaseUrl,
-		Logger:          _logger,
-		Port:            cfg.API.Port,
-		CategoryService: categoryMgr,
+		BaseUrl:             cfg.API.BaseUrl,
+		Logger:              _logger,
+		Port:                cfg.API.Port,
+		OrganizationService: organizationMgr,
 	}
 
 	_api, err := api.New(apiCfg)

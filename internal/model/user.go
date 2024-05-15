@@ -2,7 +2,9 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/volatiletech/null/v8"
 	"time"
 )
@@ -32,6 +34,32 @@ type User struct {
 	Birthday          null.Time   `json:"birthday" boil:"birthday"`
 	Gender            null.String `json:"gender" boil:"gender"`
 	IsSelfRegistered  null.Bool   `json:"is_self_registered" boil:"is_self_registered"`
+}
+
+// UserFilters contains the user filters.
+type UserFilters struct {
+	UserNameIn             []string `query:"user_name_in" json:"user_name_in"`
+	UserTypeNameIn         []string `query:"user_type_name_in" json:"user_type_name_in"`
+	UserTypeIdIn           []int    `query:"user_type_id_in" json:"user_type_id_in"`
+	UserIsActive           []int    `query:"is_active" json:"is_active"`
+	IdsIn                  []int    `query:"ids_in" json:"ids_in"`
+	PaginationQueryFilters `swaggerignore:"true"`
+}
+
+type PaginatedUsers struct {
+	Users      []User      `json:"users"`
+	Pagination *Pagination `json:"pagination"`
+}
+
+func (c *UserFilters) Validate() error {
+	if err := c.ValidatePagination(); err != nil {
+		return fmt.Errorf("pagination: %v", err)
+	}
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("users filters: %v", err)
+	}
+
+	return nil
 }
 
 func (u *User) ValidateCreate() error {

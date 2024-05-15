@@ -12,10 +12,7 @@ import (
 
 	cli "github.com/dembygenesis/local.tools/internal/cli"
 	config "github.com/dembygenesis/local.tools/internal/config"
-	authlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
-	categorylogic "github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
-	marketinglogic "github.com/dembygenesis/local.tools/internal/logic_handlers/marketinglogic"
-	userlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/userlogic"
+	organizationlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/organizationlogic"
 	mysqlconn "github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlconn"
 	mysqltx "github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	mysqlstore "github.com/dembygenesis/local.tools/internal/persistence/persistors/mysqlstore"
@@ -610,152 +607,12 @@ func LoggerLogrus(i interface{}) *logrus.Entry {
 	return C(i).GetLoggerLogrus()
 }
 
-// SafeGetLogicAuth retrieves the "logic_auth" object from the main scope.
+// SafeGetLogicOrganization retrieves the "logic_organization" object from the main scope.
 //
 // ---------------------------------------------
 //
-//	name: "logic_auth"
-//	type: *authlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// If the object can not be retrieved, it returns an error.
-func (c *Container) SafeGetLogicAuth() (*authlogic.Impl, error) {
-	i, err := c.ctn.SafeGet("logic_auth")
-	if err != nil {
-		var eo *authlogic.Impl
-		return eo, err
-	}
-	o, ok := i.(*authlogic.Impl)
-	if !ok {
-		return o, errors.New("could get 'logic_auth' because the object could not be cast to *authlogic.Impl")
-	}
-	return o, nil
-}
-
-// GetLogicAuth retrieves the "logic_auth" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_auth"
-//	type: *authlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// If the object can not be retrieved, it panics.
-func (c *Container) GetLogicAuth() *authlogic.Impl {
-	o, err := c.SafeGetLogicAuth()
-	if err != nil {
-		panic(err)
-	}
-	return o
-}
-
-// UnscopedSafeGetLogicAuth retrieves the "logic_auth" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_auth"
-//	type: *authlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// This method can be called even if main is a sub-scope of the container.
-// If the object can not be retrieved, it returns an error.
-func (c *Container) UnscopedSafeGetLogicAuth() (*authlogic.Impl, error) {
-	i, err := c.ctn.UnscopedSafeGet("logic_auth")
-	if err != nil {
-		var eo *authlogic.Impl
-		return eo, err
-	}
-	o, ok := i.(*authlogic.Impl)
-	if !ok {
-		return o, errors.New("could get 'logic_auth' because the object could not be cast to *authlogic.Impl")
-	}
-	return o, nil
-}
-
-// UnscopedGetLogicAuth retrieves the "logic_auth" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_auth"
-//	type: *authlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// This method can be called even if main is a sub-scope of the container.
-// If the object can not be retrieved, it panics.
-func (c *Container) UnscopedGetLogicAuth() *authlogic.Impl {
-	o, err := c.UnscopedSafeGetLogicAuth()
-	if err != nil {
-		panic(err)
-	}
-	return o
-}
-
-// LogicAuth retrieves the "logic_auth" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_auth"
-//	type: *authlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// It tries to find the container with the C method and the given interface.
-// If the container can be retrieved, it calls the GetLogicAuth method.
-// If the container can not be retrieved, it panics.
-func LogicAuth(i interface{}) *authlogic.Impl {
-	return C(i).GetLogicAuth()
-}
-
-// SafeGetLogicCategory retrieves the "logic_category" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_category"
-//	type: *categorylogic.Service
+//	name: "logic_organization"
+//	type: *organizationlogic.Service
 //	scope: "main"
 //	build: func
 //	params:
@@ -769,25 +626,25 @@ func LogicAuth(i interface{}) *authlogic.Impl {
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it returns an error.
-func (c *Container) SafeGetLogicCategory() (*categorylogic.Service, error) {
-	i, err := c.ctn.SafeGet("logic_category")
+func (c *Container) SafeGetLogicOrganization() (*organizationlogic.Service, error) {
+	i, err := c.ctn.SafeGet("logic_organization")
 	if err != nil {
-		var eo *categorylogic.Service
+		var eo *organizationlogic.Service
 		return eo, err
 	}
-	o, ok := i.(*categorylogic.Service)
+	o, ok := i.(*organizationlogic.Service)
 	if !ok {
-		return o, errors.New("could get 'logic_category' because the object could not be cast to *categorylogic.Service")
+		return o, errors.New("could get 'logic_organization' because the object could not be cast to *organizationlogic.Service")
 	}
 	return o, nil
 }
 
-// GetLogicCategory retrieves the "logic_category" object from the main scope.
+// GetLogicOrganization retrieves the "logic_organization" object from the main scope.
 //
 // ---------------------------------------------
 //
-//	name: "logic_category"
-//	type: *categorylogic.Service
+//	name: "logic_organization"
+//	type: *organizationlogic.Service
 //	scope: "main"
 //	build: func
 //	params:
@@ -801,20 +658,20 @@ func (c *Container) SafeGetLogicCategory() (*categorylogic.Service, error) {
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it panics.
-func (c *Container) GetLogicCategory() *categorylogic.Service {
-	o, err := c.SafeGetLogicCategory()
+func (c *Container) GetLogicOrganization() *organizationlogic.Service {
+	o, err := c.SafeGetLogicOrganization()
 	if err != nil {
 		panic(err)
 	}
 	return o
 }
 
-// UnscopedSafeGetLogicCategory retrieves the "logic_category" object from the main scope.
+// UnscopedSafeGetLogicOrganization retrieves the "logic_organization" object from the main scope.
 //
 // ---------------------------------------------
 //
-//	name: "logic_category"
-//	type: *categorylogic.Service
+//	name: "logic_organization"
+//	type: *organizationlogic.Service
 //	scope: "main"
 //	build: func
 //	params:
@@ -829,25 +686,25 @@ func (c *Container) GetLogicCategory() *categorylogic.Service {
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it returns an error.
-func (c *Container) UnscopedSafeGetLogicCategory() (*categorylogic.Service, error) {
-	i, err := c.ctn.UnscopedSafeGet("logic_category")
+func (c *Container) UnscopedSafeGetLogicOrganization() (*organizationlogic.Service, error) {
+	i, err := c.ctn.UnscopedSafeGet("logic_organization")
 	if err != nil {
-		var eo *categorylogic.Service
+		var eo *organizationlogic.Service
 		return eo, err
 	}
-	o, ok := i.(*categorylogic.Service)
+	o, ok := i.(*organizationlogic.Service)
 	if !ok {
-		return o, errors.New("could get 'logic_category' because the object could not be cast to *categorylogic.Service")
+		return o, errors.New("could get 'logic_organization' because the object could not be cast to *organizationlogic.Service")
 	}
 	return o, nil
 }
 
-// UnscopedGetLogicCategory retrieves the "logic_category" object from the main scope.
+// UnscopedGetLogicOrganization retrieves the "logic_organization" object from the main scope.
 //
 // ---------------------------------------------
 //
-//	name: "logic_category"
-//	type: *categorylogic.Service
+//	name: "logic_organization"
+//	type: *organizationlogic.Service
 //	scope: "main"
 //	build: func
 //	params:
@@ -862,20 +719,20 @@ func (c *Container) UnscopedSafeGetLogicCategory() (*categorylogic.Service, erro
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it panics.
-func (c *Container) UnscopedGetLogicCategory() *categorylogic.Service {
-	o, err := c.UnscopedSafeGetLogicCategory()
+func (c *Container) UnscopedGetLogicOrganization() *organizationlogic.Service {
+	o, err := c.UnscopedSafeGetLogicOrganization()
 	if err != nil {
 		panic(err)
 	}
 	return o
 }
 
-// LogicCategory retrieves the "logic_category" object from the main scope.
+// LogicOrganization retrieves the "logic_organization" object from the main scope.
 //
 // ---------------------------------------------
 //
-//	name: "logic_category"
-//	type: *categorylogic.Service
+//	name: "logic_organization"
+//	type: *organizationlogic.Service
 //	scope: "main"
 //	build: func
 //	params:
@@ -889,290 +746,10 @@ func (c *Container) UnscopedGetLogicCategory() *categorylogic.Service {
 // ---------------------------------------------
 //
 // It tries to find the container with the C method and the given interface.
-// If the container can be retrieved, it calls the GetLogicCategory method.
+// If the container can be retrieved, it calls the GetLogicOrganization method.
 // If the container can not be retrieved, it panics.
-func LogicCategory(i interface{}) *categorylogic.Service {
-	return C(i).GetLogicCategory()
-}
-
-// SafeGetLogicMarketing retrieves the "logic_marketing" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_marketing"
-//	type: *marketinglogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// If the object can not be retrieved, it returns an error.
-func (c *Container) SafeGetLogicMarketing() (*marketinglogic.Impl, error) {
-	i, err := c.ctn.SafeGet("logic_marketing")
-	if err != nil {
-		var eo *marketinglogic.Impl
-		return eo, err
-	}
-	o, ok := i.(*marketinglogic.Impl)
-	if !ok {
-		return o, errors.New("could get 'logic_marketing' because the object could not be cast to *marketinglogic.Impl")
-	}
-	return o, nil
-}
-
-// GetLogicMarketing retrieves the "logic_marketing" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_marketing"
-//	type: *marketinglogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// If the object can not be retrieved, it panics.
-func (c *Container) GetLogicMarketing() *marketinglogic.Impl {
-	o, err := c.SafeGetLogicMarketing()
-	if err != nil {
-		panic(err)
-	}
-	return o
-}
-
-// UnscopedSafeGetLogicMarketing retrieves the "logic_marketing" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_marketing"
-//	type: *marketinglogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// This method can be called even if main is a sub-scope of the container.
-// If the object can not be retrieved, it returns an error.
-func (c *Container) UnscopedSafeGetLogicMarketing() (*marketinglogic.Impl, error) {
-	i, err := c.ctn.UnscopedSafeGet("logic_marketing")
-	if err != nil {
-		var eo *marketinglogic.Impl
-		return eo, err
-	}
-	o, ok := i.(*marketinglogic.Impl)
-	if !ok {
-		return o, errors.New("could get 'logic_marketing' because the object could not be cast to *marketinglogic.Impl")
-	}
-	return o, nil
-}
-
-// UnscopedGetLogicMarketing retrieves the "logic_marketing" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_marketing"
-//	type: *marketinglogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// This method can be called even if main is a sub-scope of the container.
-// If the object can not be retrieved, it panics.
-func (c *Container) UnscopedGetLogicMarketing() *marketinglogic.Impl {
-	o, err := c.UnscopedSafeGetLogicMarketing()
-	if err != nil {
-		panic(err)
-	}
-	return o
-}
-
-// LogicMarketing retrieves the "logic_marketing" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_marketing"
-//	type: *marketinglogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// It tries to find the container with the C method and the given interface.
-// If the container can be retrieved, it calls the GetLogicMarketing method.
-// If the container can not be retrieved, it panics.
-func LogicMarketing(i interface{}) *marketinglogic.Impl {
-	return C(i).GetLogicMarketing()
-}
-
-// SafeGetLogicUser retrieves the "logic_user" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_user"
-//	type: *userlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// If the object can not be retrieved, it returns an error.
-func (c *Container) SafeGetLogicUser() (*userlogic.Impl, error) {
-	i, err := c.ctn.SafeGet("logic_user")
-	if err != nil {
-		var eo *userlogic.Impl
-		return eo, err
-	}
-	o, ok := i.(*userlogic.Impl)
-	if !ok {
-		return o, errors.New("could get 'logic_user' because the object could not be cast to *userlogic.Impl")
-	}
-	return o, nil
-}
-
-// GetLogicUser retrieves the "logic_user" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_user"
-//	type: *userlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// If the object can not be retrieved, it panics.
-func (c *Container) GetLogicUser() *userlogic.Impl {
-	o, err := c.SafeGetLogicUser()
-	if err != nil {
-		panic(err)
-	}
-	return o
-}
-
-// UnscopedSafeGetLogicUser retrieves the "logic_user" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_user"
-//	type: *userlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// This method can be called even if main is a sub-scope of the container.
-// If the object can not be retrieved, it returns an error.
-func (c *Container) UnscopedSafeGetLogicUser() (*userlogic.Impl, error) {
-	i, err := c.ctn.UnscopedSafeGet("logic_user")
-	if err != nil {
-		var eo *userlogic.Impl
-		return eo, err
-	}
-	o, ok := i.(*userlogic.Impl)
-	if !ok {
-		return o, errors.New("could get 'logic_user' because the object could not be cast to *userlogic.Impl")
-	}
-	return o, nil
-}
-
-// UnscopedGetLogicUser retrieves the "logic_user" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_user"
-//	type: *userlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// This method can be called even if main is a sub-scope of the container.
-// If the object can not be retrieved, it panics.
-func (c *Container) UnscopedGetLogicUser() *userlogic.Impl {
-	o, err := c.UnscopedSafeGetLogicUser()
-	if err != nil {
-		panic(err)
-	}
-	return o
-}
-
-// LogicUser retrieves the "logic_user" object from the main scope.
-//
-// ---------------------------------------------
-//
-//	name: "logic_user"
-//	type: *userlogic.Impl
-//	scope: "main"
-//	build: func
-//	params:
-//		- "0": Service(*config.App) ["config_layer"]
-//		- "1": Service(*logrus.Entry) ["logger_logrus"]
-//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
-//	unshared: false
-//	close: false
-//
-// ---------------------------------------------
-//
-// It tries to find the container with the C method and the given interface.
-// If the container can be retrieved, it calls the GetLogicUser method.
-// If the container can not be retrieved, it panics.
-func LogicUser(i interface{}) *userlogic.Impl {
-	return C(i).GetLogicUser()
+func LogicOrganization(i interface{}) *organizationlogic.Service {
+	return C(i).GetLogicOrganization()
 }
 
 // SafeGetPersistenceMysql retrieves the "persistence_mysql" object from the main scope.
