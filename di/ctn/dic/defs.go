@@ -10,8 +10,6 @@ import (
 	config "github.com/dembygenesis/local.tools/internal/config"
 	authlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
 	categorylogic "github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
-	marketinglogic "github.com/dembygenesis/local.tools/internal/logic_handlers/marketinglogic"
-	userlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/userlogic"
 	mysqlconn "github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlconn"
 	mysqltx "github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	mysqlstore "github.com/dembygenesis/local.tools/internal/persistence/persistors/mysqlstore"
@@ -198,102 +196,6 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					return eo, errors.New("could not cast build function to func(*config.App, *logrus.Entry, *mysqlconn.Provider, *mysqlstore.Repository) (*categorylogic.Service, error)")
 				}
 				return b(p0, p1, p2, p3)
-			},
-			Unshared: false,
-		},
-		{
-			Name:  "logic_marketing",
-			Scope: "",
-			Build: func(ctn di.Container) (interface{}, error) {
-				d, err := provider.Get("logic_marketing")
-				if err != nil {
-					var eo *marketinglogic.Impl
-					return eo, err
-				}
-				pi0, err := ctn.SafeGet("config_layer")
-				if err != nil {
-					var eo *marketinglogic.Impl
-					return eo, err
-				}
-				p0, ok := pi0.(*config.App)
-				if !ok {
-					var eo *marketinglogic.Impl
-					return eo, errors.New("could not cast parameter 0 to *config.App")
-				}
-				pi1, err := ctn.SafeGet("logger_logrus")
-				if err != nil {
-					var eo *marketinglogic.Impl
-					return eo, err
-				}
-				p1, ok := pi1.(*logrus.Entry)
-				if !ok {
-					var eo *marketinglogic.Impl
-					return eo, errors.New("could not cast parameter 1 to *logrus.Entry")
-				}
-				pi2, err := ctn.SafeGet("tx_provider")
-				if err != nil {
-					var eo *marketinglogic.Impl
-					return eo, err
-				}
-				p2, ok := pi2.(*mysqlconn.Provider)
-				if !ok {
-					var eo *marketinglogic.Impl
-					return eo, errors.New("could not cast parameter 2 to *mysqlconn.Provider")
-				}
-				b, ok := d.Build.(func(*config.App, *logrus.Entry, *mysqlconn.Provider) (*marketinglogic.Impl, error))
-				if !ok {
-					var eo *marketinglogic.Impl
-					return eo, errors.New("could not cast build function to func(*config.App, *logrus.Entry, *mysqlconn.Provider) (*marketinglogic.Impl, error)")
-				}
-				return b(p0, p1, p2)
-			},
-			Unshared: false,
-		},
-		{
-			Name:  "logic_user",
-			Scope: "",
-			Build: func(ctn di.Container) (interface{}, error) {
-				d, err := provider.Get("logic_user")
-				if err != nil {
-					var eo *userlogic.Impl
-					return eo, err
-				}
-				pi0, err := ctn.SafeGet("config_layer")
-				if err != nil {
-					var eo *userlogic.Impl
-					return eo, err
-				}
-				p0, ok := pi0.(*config.App)
-				if !ok {
-					var eo *userlogic.Impl
-					return eo, errors.New("could not cast parameter 0 to *config.App")
-				}
-				pi1, err := ctn.SafeGet("logger_logrus")
-				if err != nil {
-					var eo *userlogic.Impl
-					return eo, err
-				}
-				p1, ok := pi1.(*logrus.Entry)
-				if !ok {
-					var eo *userlogic.Impl
-					return eo, errors.New("could not cast parameter 1 to *logrus.Entry")
-				}
-				pi2, err := ctn.SafeGet("tx_provider")
-				if err != nil {
-					var eo *userlogic.Impl
-					return eo, err
-				}
-				p2, ok := pi2.(*mysqlconn.Provider)
-				if !ok {
-					var eo *userlogic.Impl
-					return eo, errors.New("could not cast parameter 2 to *mysqlconn.Provider")
-				}
-				b, ok := d.Build.(func(*config.App, *logrus.Entry, *mysqlconn.Provider) (*userlogic.Impl, error))
-				if !ok {
-					var eo *userlogic.Impl
-					return eo, errors.New("could not cast build function to func(*config.App, *logrus.Entry, *mysqlconn.Provider) (*userlogic.Impl, error)")
-				}
-				return b(p0, p1, p2)
 			},
 			Unshared: false,
 		},

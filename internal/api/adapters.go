@@ -12,4 +12,6 @@ type categoryService interface {
 	ListCategories(ctx context.Context, filters *model.CategoryFilters) (*model.PaginatedCategories, error)
 	CreateCategory(ctx context.Context, category *model.CreateCategory) (*model.Category, error)
 	UpdateCategory(ctx context.Context, category *model.UpdateCategory) (*model.Category, error)
+	DeleteCategory(ctx context.Context, params *model.DeleteCategory) error
+	RestoreCategory(ctx context.Context, params *model.RestoreCategory) error
 }

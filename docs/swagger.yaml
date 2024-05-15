@@ -44,29 +44,6 @@ definitions:
         type: integer
     type: object
   model.UpdateCategory:
-    properties:
-      category_type_ref_id:
-        $ref: '#/definitions/null.Int'
-      id:
-        type: integer
-      name:
-        $ref: '#/definitions/null.String'
-    required:
-    - id
-    type: object
-  null.Int:
-    properties:
-      int:
-        type: integer
-      valid:
-        type: boolean
-    type: object
-  null.String:
-    properties:
-      string:
-        type: string
-      valid:
-        type: boolean
     type: object
 externalDocs:
   description: OpenAPI
