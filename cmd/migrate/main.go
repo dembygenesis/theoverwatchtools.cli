@@ -22,10 +22,11 @@ func main() {
 	}
 
 	c := &mysqlutil.ConnectionSettings{
-		Host: cfg.MysqlDatabaseCredentials.Host,
-		User: cfg.MysqlDatabaseCredentials.User,
-		Pass: cfg.MysqlDatabaseCredentials.Pass,
-		Port: cfg.MysqlDatabaseCredentials.Port,
+		Host:     cfg.MysqlDatabaseCredentials.Host,
+		User:     cfg.MysqlDatabaseCredentials.User,
+		Pass:     cfg.MysqlDatabaseCredentials.Pass,
+		Port:     cfg.MysqlDatabaseCredentials.Port,
+		Database: cfg.MysqlDatabaseCredentials.Database,
 	}
 
 	log.Info("Migrating...")
