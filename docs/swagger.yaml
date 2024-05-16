@@ -1,0 +1,193 @@
+basePath: /api/v1
+definitions:
+  model.Category:
+    properties:
+      category_type:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  model.CreateCategory:
+    properties:
+      category_type_ref_id:
+        type: integer
+      name:
+        type: string
+    required:
+    - category_type_ref_id
+    - name
+    type: object
+  model.PaginatedCategories:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/model.Category'
+        type: array
+      pagination:
+        $ref: '#/definitions/model.Pagination'
+    type: object
+  model.Pagination:
+    properties:
+      max_rows:
+        type: integer
+      page:
+        type: integer
+      pages:
+        items:
+          type: integer
+        type: array
+      row_count:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  model.UpdateCategory:
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /v1/category:
+    get:
+      consumes:
+      - application/json
+      description: Returns the categories
+      operationId: ListCategories
+      parameters:
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: category_name_in
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: integer
+        name: category_type_id_in
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: category_type_name_in
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: integer
+        name: ids_in
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: integer
+        name: is_active
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PaginatedCategories'
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get Categories
+      tags:
+      - CategoryService
+    patch:
+      consumes:
+      - application/json
+      description: Update a category
+      operationId: UpdateCategory
+      parameters:
+      - description: Category body
+        in: body
+        name: filters
+        schema:
+          $ref: '#/definitions/model.UpdateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Category'
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Update Category
+      tags:
+      - CategoryService
+    post:
+      consumes:
+      - application/json
+      description: Create a category
+      operationId: CreateCategory
+      parameters:
+      - description: Category filters
+        in: body
+        name: filters
+        schema:
+          $ref: '#/definitions/model.CreateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Category'
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Create Category
+      tags:
+      - CategoryService
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
