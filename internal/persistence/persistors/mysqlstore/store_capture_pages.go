@@ -89,7 +89,7 @@ func (m *Repository) getCapturePages(
 
 	if filters != nil {
 		if len(filters.IdsIn) > 0 {
-			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.IdsIn))
+			queryMods = append(queryMods, mysqlmodel.CapturePageWhere.ID.IN(filters.IdsIn))
 		}
 
 		if len(filters.CapturePagesTypeIdIn) > 0 {
@@ -117,7 +117,7 @@ func (m *Repository) getCapturePages(
 	q := mysqlmodel.CapturePages(queryMods...)
 	totalCount, err := q.Count(ctx, ctxExec)
 	if err != nil {
-		return nil, fmt.Errorf("get organizations count: %v", err)
+		return nil, fmt.Errorf("get capture pages count: %v", err)
 	}
 
 	page := pagination.Page
