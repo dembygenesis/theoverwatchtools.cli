@@ -2,6 +2,7 @@ package dockerenv
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/utilities/sliceutil"
@@ -41,7 +42,7 @@ type ContainerConfig struct {
 func New(cfg *ContainerConfig) (*DockerEnv, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new client: %v", err)
 	}
 
 	_, _, err = cli.ImageInspectWithRaw(context.Background(), cfg.Image)
@@ -83,7 +84,7 @@ func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string
 
 	allContainers, err := dm.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("container list: %v", err)
 	}
 
 	targetHostPort := strconv.Itoa(dm.cfg.HostPort)
@@ -128,69 +129,10 @@ func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string
 				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to name collision: %w", ctn.ID, err)
 			}
 		}
-
 	}
 
 	return dm.createContainer(ctx)
 }
-
-/*// UpsertContainer upserts a new container, be careful with this function
-// because it will remove other running instances with colliding port, OR names.
-func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string, error) {
-	m.Lock()
-	defer m.Unlock()
-
-	allContainers, err := dm.client.ContainerList(ctx, container.ListOptions{All: true})
-	if err != nil {
-		return "", err
-	}
-
-	targetHostPort := strconv.Itoa(dm.cfg.HostPort)
-
-	for _, ctn := range allContainers {
-
-		hasContainerNameCollision := sliceutil.Compare(ctn.Names, func(name string) bool {
-			return name == "/"+dm.cfg.Name
-		})
-
-		hasExistingStoppedContainer := ctn.State == "exited" || ctn.State == "created"
-		if hasExistingStoppedContainer && hasContainerNameCollision {
-			log.Printf("Existing stopped container found with name %s. Attempting to start it.", dm.cfg.Name)
-			if err := dm.client.ContainerStart(ctx, ctn.ID, container.StartOptions{}); err != nil {
-				return "", fmt.Errorf("failed to start existing container: %s, with error: %w", ctn.ID, err)
-			}
-			dm.ContainerID = ctn.ID
-			return ctn.ID, nil
-		}
-
-		if hasContainerNameCollision {
-			if !recreate {
-				dm.ContainerID = ctn.ID
-				return ctn.ID, nil
-			}
-
-			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
-				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to name collision: %w", ctn.ID, err)
-			}
-		}
-
-		hasPortBindingCollision := sliceutil.Compare(ctn.Ports, func(port types.Port) bool {
-			return strconv.Itoa(int(port.PublicPort)) == targetHostPort && port.Type == "tcp"
-		})
-		if hasPortBindingCollision {
-			if !recreate {
-				dm.ContainerID = ctn.ID
-				return ctn.ID, nil
-			}
-
-			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
-				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to port collision: %w", ctn.ID, err)
-			}
-		}
-	}
-
-	return dm.createContainer(ctx)
-}*/
 
 func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 	contConfig := &container.Config{
@@ -213,9 +155,26 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 		},
 	}
 
+	_, _, err := dm.client.ImageInspectWithRaw(ctx, dm.cfg.Image)
+	if err != nil {
+		if client.IsErrNotFound(err) {
+			rc, err := dm.client.ImagePull(ctx, dm.cfg.Image, types.ImagePullOptions{})
+			if err != nil {
+				return "", fmt.Errorf("pulling image: %v", err)
+			}
+			defer rc.Close()
+
+			if _, err = new(bytes.Buffer).ReadFrom(rc); err != nil {
+				return "", fmt.Errorf("reading image pull response: %v", err)
+			}
+		} else {
+			return "", fmt.Errorf("error checking for image: %v", err)
+		}
+	}
+
 	resp, err := dm.client.ContainerCreate(ctx, contConfig, hostConfig, nil, nil, dm.cfg.Name)
 	if err != nil {
-		return "", err
+		return "ok", fmt.Errorf("create container: %v", err)
 	}
 
 	dm.ContainerID = resp.ID

@@ -16,6 +16,7 @@ import (
 )
 
 const (
+<<<<<<< HEAD
 	logicCategory        = "logic_category"
 	logicUser            = "logic_user"
 	logicAuth            = "logic_auth"
@@ -23,11 +24,19 @@ const (
 	logicOrganization    = "logic_organization"
 	logicCapturePages    = "logic_capture_pages"
 	logicCapturePageSets = "logic_capture_pages_sets"
+=======
+	logicCategory     = "logic_category"
+	logicUser         = "logic_user"
+	logicAuth         = "logic_auth"
+	logicMarketing    = "logic_marketing"
+	logicOrganization = "logic_organization"
+>>>>>>> upstream/main
 )
 
 func GetLogicHandlers() []dingo.Def {
 	return []dingo.Def{
 		{
+<<<<<<< HEAD
 			Name: logicCapturePageSets,
 			Build: func(
 				cfg *config.App,
@@ -66,6 +75,8 @@ func GetLogicHandlers() []dingo.Def {
 			},
 		},
 		{
+=======
+>>>>>>> upstream/main
 			Name: logicOrganization,
 			Build: func(
 				cfg *config.App,
