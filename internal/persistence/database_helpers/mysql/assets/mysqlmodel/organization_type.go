@@ -532,6 +532,7 @@ func (organizationTypeL) LoadOrganizationTypeRefOrganizations(ctx context.Contex
 			}
 		}
 	}
+
 	if singular {
 		object.R.OrganizationTypeRefOrganizations = resultSlice
 		for _, foreign := range resultSlice {
@@ -767,6 +768,7 @@ func (o *OrganizationType) Update(ctx context.Context, exec boil.ContextExecutor
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
 	}
+
 	key := makeCacheKey(columns, nil)
 	organizationTypeUpdateCacheMut.RLock()
 	cache, cached := organizationTypeUpdateCache[key]
@@ -889,6 +891,7 @@ func (o OrganizationTypeSlice) UpdateAll(ctx context.Context, exec boil.ContextE
 
 var mySQLOrganizationTypeUniqueColumns = []string{
 	"id",
+	"name",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.

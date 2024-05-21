@@ -21,3 +21,11 @@ func AssertNonEmptyOrganizations(t *testing.T, organizations []model.Organizatio
 		assert.NotEmpty(t, organization.OrganizationType, "unexpected empty organization type")
 	}
 }
+
+func AssertNonEmptyCapturePages(t *testing.T, capturePages []model.CapturePages) {
+	for _, organization := range capturePages {
+		assert.NotEmpty(t, organization.Id, "unexpected empty capture page id")
+		assert.NotEmpty(t, organization.Name, "unexpected empty capture page name")
+		assert.NotEmpty(t, organization.CapturePagesType, "unexpected empty capture page type")
+	}
+}

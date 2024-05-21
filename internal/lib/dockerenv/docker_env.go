@@ -45,6 +45,19 @@ func New(cfg *ContainerConfig) (*DockerEnv, error) {
 		return nil, fmt.Errorf("new client: %v", err)
 	}
 
+	_, _, err = cli.ImageInspectWithRaw(context.Background(), cfg.Image)
+	if err != nil {
+		if client.IsErrNotFound(err) {
+			rc, err := cli.ImagePull(context.Background(), cfg.Image, types.ImagePullOptions{})
+			if err != nil {
+				return nil, fmt.Errorf("pulling image: %v", err)
+			}
+			defer rc.Close()
+		} else {
+			return nil, fmt.Errorf("error checking for image: %v", err)
+		}
+	}
+
 	return &DockerEnv{
 		client: cli,
 		cfg:    cfg,

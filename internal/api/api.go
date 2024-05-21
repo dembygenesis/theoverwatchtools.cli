@@ -38,6 +38,9 @@ type Config struct {
 
 	// OrganizationService is the biz function for organization
 	OrganizationService organizationService `json:"organization_manager" validate:"required"`
+
+	// CapturePagesService is the biz function for capture pages
+	CapturePagesService capturePagesService `json:"capture_pages_service" validate:"required"`
 }
 
 func (a *Config) Validate() error {

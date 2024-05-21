@@ -62,4 +62,4 @@ jobs:
           DB_PORT: "3341"
           DB_DATABASE: "theoverwatchtools"
         run: |
-          go test ./... -v
+          go test ./... -v -parallel 25
