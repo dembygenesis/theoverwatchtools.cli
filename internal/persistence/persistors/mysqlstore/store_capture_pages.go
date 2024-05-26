@@ -73,6 +73,11 @@ func (m *Repository) getCapturePages(
 				mysqlmodel.CapturePageColumns.Name,
 			),
 			fmt.Sprintf("%s.%s AS %s",
+				mysqlmodel.TableNames.CapturePages,
+				mysqlmodel.CapturePageColumns.IsControl,
+				mysqlmodel.CapturePageColumns.IsControl,
+			),
+			fmt.Sprintf("%s.%s AS %s",
 				mysqlmodel.TableNames.CapturePageSets,
 				mysqlmodel.CapturePageSetColumns.ID,
 				mysqlmodel.CapturePageColumns.CapturePageSetID,
@@ -85,29 +90,26 @@ func (m *Repository) getCapturePages(
 		),
 	}
 
-	fmt.Println("the query mods orgs ----- ", queryMods)
-
 	if filters != nil {
 		if len(filters.IdsIn) > 0 {
 			queryMods = append(queryMods, mysqlmodel.CapturePageWhere.ID.IN(filters.IdsIn))
 		}
 
-		if len(filters.CapturePagesTypeIdIn) > 0 {
-			queryMods = append(queryMods, mysqlmodel.CapturePageSetWhere.ID.IN(filters.CapturePagesTypeIdIn))
-			fmt.Println("the query mods dude --- ", queryMods)
+		if len(filters.CapturePagesSetID) > 0 {
+			queryMods = append(queryMods, mysqlmodel.CapturePageSetWhere.ID.IN(filters.CapturePagesSetID))
 		}
 
 		if len(filters.CapturePagesTypeNameIn) > 0 {
 			queryMods = append(queryMods, mysqlmodel.CapturePageSetWhere.Name.IN(filters.CapturePagesTypeNameIn))
 		}
 
-		if filters.CapturePagesIsControl {
-			queryMods = append(queryMods, mysqlmodel.CapturePageWhere.IsControl.EQ(filters.CapturePagesIsControl))
-		}
-
-		//if len(filters.CapturePagesIsControl) > 0 {
-		//	queryMods = append(queryMods, mysqlmodel.CapturePageWhere.IsControl.IN(filters.CapturePagesNameIn))
+		//if filters.CapturePagesIsControl {
+		//	queryMods = append(queryMods, mysqlmodel.CapturePageWhere.IsControl.EQ(filters.CapturePagesIsControl))
 		//}
+
+		if len(filters.CapturePagesIsControl) > 0 {
+			queryMods = append(queryMods, mysqlmodel.CapturePageWhere.IsControl.IN(filters.CapturePagesIsControl))
+		}
 
 		if len(filters.CapturePagesNameIn) > 0 {
 			queryMods = append(queryMods, mysqlmodel.CapturePageWhere.Name.IN(filters.CapturePagesNameIn))

@@ -27,19 +27,20 @@ type CapturePageSet struct {
 	ID                      int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name                    string    `boil:"name" json:"name" toml:"name" yaml:"name"`
 	URLName                 string    `boil:"url_name" json:"url_name" toml:"url_name" yaml:"url_name"`
-	CreatedBy               null.Int  `boil:"created_by" json:"created_by,omitempty" toml:"created_by" yaml:"created_by,omitempty"`
-	UpdatedBy               null.Int  `boil:"updated_by" json:"updated_by,omitempty" toml:"updated_by" yaml:"updated_by,omitempty"`
-	OrganizationID          null.Int  `boil:"organization_id" json:"organization_id,omitempty" toml:"organization_id" yaml:"organization_id,omitempty"`
+	CreatedBy               int       `boil:"created_by" json:"created_by" toml:"created_by" yaml:"created_by"`
+	UpdatedBy               int       `boil:"updated_by" json:"updated_by" toml:"updated_by" yaml:"updated_by"`
+	OrganizationID          int       `boil:"organization_id" json:"organization_id" toml:"organization_id" yaml:"organization_id"`
 	SwitchDurationInMinutes int       `boil:"switch_duration_in_minutes" json:"switch_duration_in_minutes" toml:"switch_duration_in_minutes" yaml:"switch_duration_in_minutes"`
 	CreatedAt               null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt               null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 	// Processed by worker queue
-	AnalyticsNumberOfForms null.Int `boil:"analytics_number_of_forms" json:"analytics_number_of_forms,omitempty" toml:"analytics_number_of_forms" yaml:"analytics_number_of_forms,omitempty"`
+	AnalyticsNumberOfForms int `boil:"analytics_number_of_forms" json:"analytics_number_of_forms" toml:"analytics_number_of_forms" yaml:"analytics_number_of_forms"`
 	// Processed by worker queue
-	AnalyticsImpressions null.Int `boil:"analytics_impressions" json:"analytics_impressions,omitempty" toml:"analytics_impressions" yaml:"analytics_impressions,omitempty"`
+	AnalyticsImpressions int `boil:"analytics_impressions" json:"analytics_impressions" toml:"analytics_impressions" yaml:"analytics_impressions"`
 	// Processed by worker queue
-	AnalyticsSubmissions   null.Int  `boil:"analytics_submissions" json:"analytics_submissions,omitempty" toml:"analytics_submissions" yaml:"analytics_submissions,omitempty"`
-	AnalyticsLastUpdatedAt null.Time `boil:"analytics_last_updated_at" json:"analytics_last_updated_at,omitempty" toml:"analytics_last_updated_at" yaml:"analytics_last_updated_at,omitempty"`
+	AnalyticsSubmissions   int       `boil:"analytics_submissions" json:"analytics_submissions" toml:"analytics_submissions" yaml:"analytics_submissions"`
+	AnalyticsLastUpdatedAt time.Time `boil:"analytics_last_updated_at" json:"analytics_last_updated_at" toml:"analytics_last_updated_at" yaml:"analytics_last_updated_at"`
+	DeletedAt              null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *capturePageSetR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L capturePageSetL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -59,6 +60,7 @@ var CapturePageSetColumns = struct {
 	AnalyticsImpressions    string
 	AnalyticsSubmissions    string
 	AnalyticsLastUpdatedAt  string
+	DeletedAt               string
 }{
 	ID:                      "id",
 	Name:                    "name",
@@ -73,6 +75,7 @@ var CapturePageSetColumns = struct {
 	AnalyticsImpressions:    "analytics_impressions",
 	AnalyticsSubmissions:    "analytics_submissions",
 	AnalyticsLastUpdatedAt:  "analytics_last_updated_at",
+	DeletedAt:               "deleted_at",
 }
 
 var CapturePageSetTableColumns = struct {
@@ -89,6 +92,7 @@ var CapturePageSetTableColumns = struct {
 	AnalyticsImpressions    string
 	AnalyticsSubmissions    string
 	AnalyticsLastUpdatedAt  string
+	DeletedAt               string
 }{
 	ID:                      "capture_page_sets.id",
 	Name:                    "capture_page_sets.name",
@@ -103,85 +107,151 @@ var CapturePageSetTableColumns = struct {
 	AnalyticsImpressions:    "capture_page_sets.analytics_impressions",
 	AnalyticsSubmissions:    "capture_page_sets.analytics_submissions",
 	AnalyticsLastUpdatedAt:  "capture_page_sets.analytics_last_updated_at",
+	DeletedAt:               "capture_page_sets.deleted_at",
 }
 
 // Generated where
+
+type whereHelperint struct{ field string }
+
+func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperint) IN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperint) NIN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+type whereHelperstring struct{ field string }
+
+func (w whereHelperstring) EQ(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperstring) NEQ(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperstring) LT(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperstring) LTE(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperstring) GT(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperstring) GTE(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperstring) LIKE(x string) qm.QueryMod  { return qm.Where(w.field+" LIKE ?", x) }
+func (w whereHelperstring) NLIKE(x string) qm.QueryMod { return qm.Where(w.field+" NOT LIKE ?", x) }
+func (w whereHelperstring) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+type whereHelpernull_Time struct{ field string }
+
+func (w whereHelpernull_Time) EQ(x null.Time) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Time) NEQ(x null.Time) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Time) LT(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Time) LTE(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Time) GT(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
+type whereHelpertime_Time struct{ field string }
+
+func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
 
 var CapturePageSetWhere = struct {
 	ID                      whereHelperint
 	Name                    whereHelperstring
 	URLName                 whereHelperstring
-	CreatedBy               whereHelpernull_Int
-	UpdatedBy               whereHelpernull_Int
-	OrganizationID          whereHelpernull_Int
+	CreatedBy               whereHelperint
+	UpdatedBy               whereHelperint
+	OrganizationID          whereHelperint
 	SwitchDurationInMinutes whereHelperint
 	CreatedAt               whereHelpernull_Time
 	UpdatedAt               whereHelpernull_Time
-	AnalyticsNumberOfForms  whereHelpernull_Int
-	AnalyticsImpressions    whereHelpernull_Int
-	AnalyticsSubmissions    whereHelpernull_Int
-	AnalyticsLastUpdatedAt  whereHelpernull_Time
+	AnalyticsNumberOfForms  whereHelperint
+	AnalyticsImpressions    whereHelperint
+	AnalyticsSubmissions    whereHelperint
+	AnalyticsLastUpdatedAt  whereHelpertime_Time
+	DeletedAt               whereHelpernull_Time
 }{
 	ID:                      whereHelperint{field: "`capture_page_sets`.`id`"},
 	Name:                    whereHelperstring{field: "`capture_page_sets`.`name`"},
 	URLName:                 whereHelperstring{field: "`capture_page_sets`.`url_name`"},
-	CreatedBy:               whereHelpernull_Int{field: "`capture_page_sets`.`created_by`"},
-	UpdatedBy:               whereHelpernull_Int{field: "`capture_page_sets`.`updated_by`"},
-	OrganizationID:          whereHelpernull_Int{field: "`capture_page_sets`.`organization_id`"},
+	CreatedBy:               whereHelperint{field: "`capture_page_sets`.`created_by`"},
+	UpdatedBy:               whereHelperint{field: "`capture_page_sets`.`updated_by`"},
+	OrganizationID:          whereHelperint{field: "`capture_page_sets`.`organization_id`"},
 	SwitchDurationInMinutes: whereHelperint{field: "`capture_page_sets`.`switch_duration_in_minutes`"},
 	CreatedAt:               whereHelpernull_Time{field: "`capture_page_sets`.`created_at`"},
 	UpdatedAt:               whereHelpernull_Time{field: "`capture_page_sets`.`updated_at`"},
-	AnalyticsNumberOfForms:  whereHelpernull_Int{field: "`capture_page_sets`.`analytics_number_of_forms`"},
-	AnalyticsImpressions:    whereHelpernull_Int{field: "`capture_page_sets`.`analytics_impressions`"},
-	AnalyticsSubmissions:    whereHelpernull_Int{field: "`capture_page_sets`.`analytics_submissions`"},
-	AnalyticsLastUpdatedAt:  whereHelpernull_Time{field: "`capture_page_sets`.`analytics_last_updated_at`"},
+	AnalyticsNumberOfForms:  whereHelperint{field: "`capture_page_sets`.`analytics_number_of_forms`"},
+	AnalyticsImpressions:    whereHelperint{field: "`capture_page_sets`.`analytics_impressions`"},
+	AnalyticsSubmissions:    whereHelperint{field: "`capture_page_sets`.`analytics_submissions`"},
+	AnalyticsLastUpdatedAt:  whereHelpertime_Time{field: "`capture_page_sets`.`analytics_last_updated_at`"},
+	DeletedAt:               whereHelpernull_Time{field: "`capture_page_sets`.`deleted_at`"},
 }
 
 // CapturePageSetRels is where relationship names are stored.
 var CapturePageSetRels = struct {
-	CreatedByUser string
-	UpdatedByUser string
-	Organization  string
-	CapturePages  string
+	CapturePages string
 }{
-	CreatedByUser: "CreatedByUser",
-	UpdatedByUser: "UpdatedByUser",
-	Organization:  "Organization",
-	CapturePages:  "CapturePages",
+	CapturePages: "CapturePages",
 }
 
 // capturePageSetR is where relationships are stored.
 type capturePageSetR struct {
-	CreatedByUser *User            `boil:"CreatedByUser" json:"CreatedByUser" toml:"CreatedByUser" yaml:"CreatedByUser"`
-	UpdatedByUser *User            `boil:"UpdatedByUser" json:"UpdatedByUser" toml:"UpdatedByUser" yaml:"UpdatedByUser"`
-	Organization  *Organization    `boil:"Organization" json:"Organization" toml:"Organization" yaml:"Organization"`
-	CapturePages  CapturePageSlice `boil:"CapturePages" json:"CapturePages" toml:"CapturePages" yaml:"CapturePages"`
+	CapturePages CapturePageSlice `boil:"CapturePages" json:"CapturePages" toml:"CapturePages" yaml:"CapturePages"`
 }
 
 // NewStruct creates a new relationship struct
 func (*capturePageSetR) NewStruct() *capturePageSetR {
 	return &capturePageSetR{}
-}
-
-func (r *capturePageSetR) GetCreatedByUser() *User {
-	if r == nil {
-		return nil
-	}
-	return r.CreatedByUser
-}
-
-func (r *capturePageSetR) GetUpdatedByUser() *User {
-	if r == nil {
-		return nil
-	}
-	return r.UpdatedByUser
-}
-
-func (r *capturePageSetR) GetOrganization() *Organization {
-	if r == nil {
-		return nil
-	}
-	return r.Organization
 }
 
 func (r *capturePageSetR) GetCapturePages() CapturePageSlice {
@@ -195,9 +265,9 @@ func (r *capturePageSetR) GetCapturePages() CapturePageSlice {
 type capturePageSetL struct{}
 
 var (
-	capturePageSetAllColumns            = []string{"id", "name", "url_name", "created_by", "updated_by", "organization_id", "switch_duration_in_minutes", "created_at", "updated_at", "analytics_number_of_forms", "analytics_impressions", "analytics_submissions", "analytics_last_updated_at"}
-	capturePageSetColumnsWithoutDefault = []string{"name", "url_name", "created_by", "updated_by", "organization_id"}
-	capturePageSetColumnsWithDefault    = []string{"id", "switch_duration_in_minutes", "created_at", "updated_at", "analytics_number_of_forms", "analytics_impressions", "analytics_submissions", "analytics_last_updated_at"}
+	capturePageSetAllColumns            = []string{"id", "name", "url_name", "created_by", "updated_by", "organization_id", "switch_duration_in_minutes", "created_at", "updated_at", "analytics_number_of_forms", "analytics_impressions", "analytics_submissions", "analytics_last_updated_at", "deleted_at"}
+	capturePageSetColumnsWithoutDefault = []string{"name", "url_name", "created_by", "updated_by", "organization_id", "created_at", "updated_at", "deleted_at"}
+	capturePageSetColumnsWithDefault    = []string{"id", "switch_duration_in_minutes", "analytics_number_of_forms", "analytics_impressions", "analytics_submissions", "analytics_last_updated_at"}
 	capturePageSetPrimaryKeyColumns     = []string{"id"}
 	capturePageSetGeneratedColumns      = []string{}
 )
@@ -293,39 +363,6 @@ func (q capturePageSetQuery) Exists(ctx context.Context, exec boil.ContextExecut
 	return count > 0, nil
 }
 
-// CreatedByUser pointed to by the foreign key.
-func (o *CapturePageSet) CreatedByUser(mods ...qm.QueryMod) userQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`id` = ?", o.CreatedBy),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return Users(queryMods...)
-}
-
-// UpdatedByUser pointed to by the foreign key.
-func (o *CapturePageSet) UpdatedByUser(mods ...qm.QueryMod) userQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`id` = ?", o.UpdatedBy),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return Users(queryMods...)
-}
-
-// Organization pointed to by the foreign key.
-func (o *CapturePageSet) Organization(mods ...qm.QueryMod) organizationQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`id` = ?", o.OrganizationID),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return Organizations(queryMods...)
-}
-
 // CapturePages retrieves all the capture_page's CapturePages with an executor.
 func (o *CapturePageSet) CapturePages(mods ...qm.QueryMod) capturePageQuery {
 	var queryMods []qm.QueryMod
@@ -338,354 +375,6 @@ func (o *CapturePageSet) CapturePages(mods ...qm.QueryMod) capturePageQuery {
 	)
 
 	return CapturePages(queryMods...)
-}
-
-// LoadCreatedByUser allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (capturePageSetL) LoadCreatedByUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCapturePageSet interface{}, mods queries.Applicator) error {
-	var slice []*CapturePageSet
-	var object *CapturePageSet
-
-	if singular {
-		var ok bool
-		object, ok = maybeCapturePageSet.(*CapturePageSet)
-		if !ok {
-			object = new(CapturePageSet)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeCapturePageSet)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCapturePageSet))
-			}
-		}
-	} else {
-		s, ok := maybeCapturePageSet.(*[]*CapturePageSet)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeCapturePageSet)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCapturePageSet))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &capturePageSetR{}
-		}
-		if !queries.IsNil(object.CreatedBy) {
-			args[object.CreatedBy] = struct{}{}
-		}
-
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &capturePageSetR{}
-			}
-
-			if !queries.IsNil(obj.CreatedBy) {
-				args[obj.CreatedBy] = struct{}{}
-			}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`user`),
-		qm.WhereIn(`user.id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load User")
-	}
-
-	var resultSlice []*User
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice User")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for user")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user")
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.CreatedByUser = foreign
-		if foreign.R == nil {
-			foreign.R = &userR{}
-		}
-		foreign.R.CreatedByCapturePageSets = append(foreign.R.CreatedByCapturePageSets, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if queries.Equal(local.CreatedBy, foreign.ID) {
-				local.R.CreatedByUser = foreign
-				if foreign.R == nil {
-					foreign.R = &userR{}
-				}
-				foreign.R.CreatedByCapturePageSets = append(foreign.R.CreatedByCapturePageSets, local)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadUpdatedByUser allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (capturePageSetL) LoadUpdatedByUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCapturePageSet interface{}, mods queries.Applicator) error {
-	var slice []*CapturePageSet
-	var object *CapturePageSet
-
-	if singular {
-		var ok bool
-		object, ok = maybeCapturePageSet.(*CapturePageSet)
-		if !ok {
-			object = new(CapturePageSet)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeCapturePageSet)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCapturePageSet))
-			}
-		}
-	} else {
-		s, ok := maybeCapturePageSet.(*[]*CapturePageSet)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeCapturePageSet)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCapturePageSet))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &capturePageSetR{}
-		}
-		if !queries.IsNil(object.UpdatedBy) {
-			args[object.UpdatedBy] = struct{}{}
-		}
-
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &capturePageSetR{}
-			}
-
-			if !queries.IsNil(obj.UpdatedBy) {
-				args[obj.UpdatedBy] = struct{}{}
-			}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`user`),
-		qm.WhereIn(`user.id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load User")
-	}
-
-	var resultSlice []*User
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice User")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for user")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user")
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.UpdatedByUser = foreign
-		if foreign.R == nil {
-			foreign.R = &userR{}
-		}
-		foreign.R.UpdatedByCapturePageSets = append(foreign.R.UpdatedByCapturePageSets, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if queries.Equal(local.UpdatedBy, foreign.ID) {
-				local.R.UpdatedByUser = foreign
-				if foreign.R == nil {
-					foreign.R = &userR{}
-				}
-				foreign.R.UpdatedByCapturePageSets = append(foreign.R.UpdatedByCapturePageSets, local)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadOrganization allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (capturePageSetL) LoadOrganization(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCapturePageSet interface{}, mods queries.Applicator) error {
-	var slice []*CapturePageSet
-	var object *CapturePageSet
-
-	if singular {
-		var ok bool
-		object, ok = maybeCapturePageSet.(*CapturePageSet)
-		if !ok {
-			object = new(CapturePageSet)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeCapturePageSet)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCapturePageSet))
-			}
-		}
-	} else {
-		s, ok := maybeCapturePageSet.(*[]*CapturePageSet)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeCapturePageSet)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCapturePageSet))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &capturePageSetR{}
-		}
-		if !queries.IsNil(object.OrganizationID) {
-			args[object.OrganizationID] = struct{}{}
-		}
-
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &capturePageSetR{}
-			}
-
-			if !queries.IsNil(obj.OrganizationID) {
-				args[obj.OrganizationID] = struct{}{}
-			}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`organization`),
-		qm.WhereIn(`organization.id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load Organization")
-	}
-
-	var resultSlice []*Organization
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Organization")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for organization")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for organization")
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.Organization = foreign
-		if foreign.R == nil {
-			foreign.R = &organizationR{}
-		}
-		foreign.R.CapturePageSets = append(foreign.R.CapturePageSets, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if queries.Equal(local.OrganizationID, foreign.ID) {
-				local.R.Organization = foreign
-				if foreign.R == nil {
-					foreign.R = &organizationR{}
-				}
-				foreign.R.CapturePageSets = append(foreign.R.CapturePageSets, local)
-				break
-			}
-		}
-	}
-
-	return nil
 }
 
 // LoadCapturePages allows an eager lookup of values, cached into the
@@ -780,7 +469,7 @@ func (capturePageSetL) LoadCapturePages(ctx context.Context, e boil.ContextExecu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.CapturePageSetID) {
+			if local.ID == foreign.CapturePageSetID {
 				local.R.CapturePages = append(local.R.CapturePages, foreign)
 				if foreign.R == nil {
 					foreign.R = &capturePageR{}
@@ -794,246 +483,6 @@ func (capturePageSetL) LoadCapturePages(ctx context.Context, e boil.ContextExecu
 	return nil
 }
 
-// SetCreatedByUser of the capturePageSet to the related item.
-// Sets o.R.CreatedByUser to related.
-// Adds o to related.R.CreatedByCapturePageSets.
-func (o *CapturePageSet) SetCreatedByUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE `capture_page_sets` SET %s WHERE %s",
-		strmangle.SetParamNames("`", "`", 0, []string{"created_by"}),
-		strmangle.WhereClause("`", "`", 0, capturePageSetPrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	queries.Assign(&o.CreatedBy, related.ID)
-	if o.R == nil {
-		o.R = &capturePageSetR{
-			CreatedByUser: related,
-		}
-	} else {
-		o.R.CreatedByUser = related
-	}
-
-	if related.R == nil {
-		related.R = &userR{
-			CreatedByCapturePageSets: CapturePageSetSlice{o},
-		}
-	} else {
-		related.R.CreatedByCapturePageSets = append(related.R.CreatedByCapturePageSets, o)
-	}
-
-	return nil
-}
-
-// RemoveCreatedByUser relationship.
-// Sets o.R.CreatedByUser to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *CapturePageSet) RemoveCreatedByUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.CreatedBy, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("created_by")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.CreatedByUser = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.CreatedByCapturePageSets {
-		if queries.Equal(o.CreatedBy, ri.CreatedBy) {
-			continue
-		}
-
-		ln := len(related.R.CreatedByCapturePageSets)
-		if ln > 1 && i < ln-1 {
-			related.R.CreatedByCapturePageSets[i] = related.R.CreatedByCapturePageSets[ln-1]
-		}
-		related.R.CreatedByCapturePageSets = related.R.CreatedByCapturePageSets[:ln-1]
-		break
-	}
-	return nil
-}
-
-// SetUpdatedByUser of the capturePageSet to the related item.
-// Sets o.R.UpdatedByUser to related.
-// Adds o to related.R.UpdatedByCapturePageSets.
-func (o *CapturePageSet) SetUpdatedByUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE `capture_page_sets` SET %s WHERE %s",
-		strmangle.SetParamNames("`", "`", 0, []string{"updated_by"}),
-		strmangle.WhereClause("`", "`", 0, capturePageSetPrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	queries.Assign(&o.UpdatedBy, related.ID)
-	if o.R == nil {
-		o.R = &capturePageSetR{
-			UpdatedByUser: related,
-		}
-	} else {
-		o.R.UpdatedByUser = related
-	}
-
-	if related.R == nil {
-		related.R = &userR{
-			UpdatedByCapturePageSets: CapturePageSetSlice{o},
-		}
-	} else {
-		related.R.UpdatedByCapturePageSets = append(related.R.UpdatedByCapturePageSets, o)
-	}
-
-	return nil
-}
-
-// RemoveUpdatedByUser relationship.
-// Sets o.R.UpdatedByUser to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *CapturePageSet) RemoveUpdatedByUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.UpdatedBy, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("updated_by")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.UpdatedByUser = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.UpdatedByCapturePageSets {
-		if queries.Equal(o.UpdatedBy, ri.UpdatedBy) {
-			continue
-		}
-
-		ln := len(related.R.UpdatedByCapturePageSets)
-		if ln > 1 && i < ln-1 {
-			related.R.UpdatedByCapturePageSets[i] = related.R.UpdatedByCapturePageSets[ln-1]
-		}
-		related.R.UpdatedByCapturePageSets = related.R.UpdatedByCapturePageSets[:ln-1]
-		break
-	}
-	return nil
-}
-
-// SetOrganization of the capturePageSet to the related item.
-// Sets o.R.Organization to related.
-// Adds o to related.R.CapturePageSets.
-func (o *CapturePageSet) SetOrganization(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Organization) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE `capture_page_sets` SET %s WHERE %s",
-		strmangle.SetParamNames("`", "`", 0, []string{"organization_id"}),
-		strmangle.WhereClause("`", "`", 0, capturePageSetPrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	queries.Assign(&o.OrganizationID, related.ID)
-	if o.R == nil {
-		o.R = &capturePageSetR{
-			Organization: related,
-		}
-	} else {
-		o.R.Organization = related
-	}
-
-	if related.R == nil {
-		related.R = &organizationR{
-			CapturePageSets: CapturePageSetSlice{o},
-		}
-	} else {
-		related.R.CapturePageSets = append(related.R.CapturePageSets, o)
-	}
-
-	return nil
-}
-
-// RemoveOrganization relationship.
-// Sets o.R.Organization to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *CapturePageSet) RemoveOrganization(ctx context.Context, exec boil.ContextExecutor, related *Organization) error {
-	var err error
-
-	queries.SetScanner(&o.OrganizationID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("organization_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Organization = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.CapturePageSets {
-		if queries.Equal(o.OrganizationID, ri.OrganizationID) {
-			continue
-		}
-
-		ln := len(related.R.CapturePageSets)
-		if ln > 1 && i < ln-1 {
-			related.R.CapturePageSets[i] = related.R.CapturePageSets[ln-1]
-		}
-		related.R.CapturePageSets = related.R.CapturePageSets[:ln-1]
-		break
-	}
-	return nil
-}
-
 // AddCapturePages adds the given related objects to the existing relationships
 // of the capture_page_set, optionally inserting them as new records.
 // Appends related to o.R.CapturePages.
@@ -1042,7 +491,7 @@ func (o *CapturePageSet) AddCapturePages(ctx context.Context, exec boil.ContextE
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.CapturePageSetID, o.ID)
+			rel.CapturePageSetID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1063,7 +512,7 @@ func (o *CapturePageSet) AddCapturePages(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.CapturePageSetID, o.ID)
+			rel.CapturePageSetID = o.ID
 		}
 	}
 
@@ -1084,80 +533,6 @@ func (o *CapturePageSet) AddCapturePages(ctx context.Context, exec boil.ContextE
 			rel.R.CapturePageSet = o
 		}
 	}
-	return nil
-}
-
-// SetCapturePages removes all previously related items of the
-// capture_page_set replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.CapturePageSet's CapturePages accordingly.
-// Replaces o.R.CapturePages with related.
-// Sets related.R.CapturePageSet's CapturePages accordingly.
-func (o *CapturePageSet) SetCapturePages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePage) error {
-	query := "update `capture_pages` set `capture_page_set_id` = null where `capture_page_set_id` = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.CapturePages {
-			queries.SetScanner(&rel.CapturePageSetID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.CapturePageSet = nil
-		}
-		o.R.CapturePages = nil
-	}
-
-	return o.AddCapturePages(ctx, exec, insert, related...)
-}
-
-// RemoveCapturePages relationships from objects passed in.
-// Removes related items from R.CapturePages (uses pointer comparison, removal does not keep order)
-// Sets related.R.CapturePageSet.
-func (o *CapturePageSet) RemoveCapturePages(ctx context.Context, exec boil.ContextExecutor, related ...*CapturePage) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.CapturePageSetID, nil)
-		if rel.R != nil {
-			rel.R.CapturePageSet = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("capture_page_set_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.CapturePages {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.CapturePages)
-			if ln > 1 && i < ln-1 {
-				o.R.CapturePages[i] = o.R.CapturePages[ln-1]
-			}
-			o.R.CapturePages = o.R.CapturePages[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
