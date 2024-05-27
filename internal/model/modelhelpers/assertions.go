@@ -26,6 +26,6 @@ func AssertNonEmptyCapturePages(t *testing.T, capturePages []model.CapturePages)
 	for _, capturePages := range capturePages {
 		assert.NotEmpty(t, capturePages.Id, "unexpected empty capture page id")
 		assert.NotEmpty(t, capturePages.Name, "unexpected empty capture page name")
-		assert.NotEmpty(t, capturePages.CapturePagesTypeRefId, "unexpected empty capture page sets")
+		assert.NotEmpty(t, capturePages.CapturePageSetId, "unexpected empty capture page sets")
 	}
 }

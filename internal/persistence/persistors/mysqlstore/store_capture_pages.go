@@ -20,13 +20,10 @@ func (m *Repository) GetCapturePages(ctx context.Context, tx persistence.Transac
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
-	fmt.Println("the filters ssssssss ---- ", strutil.GetAsJson(filters))
 	res, err := m.getCapturePages(ctx, ctxExec, filters)
 	if err != nil {
 		return nil, fmt.Errorf("read capture pages: %v", err)
 	}
-
-	fmt.Println("the res ---- ", strutil.GetAsJson(res))
 
 	return res, nil
 }
@@ -47,8 +44,6 @@ func (m *Repository) getCapturePages(
 
 	ctx, cancel := context.WithTimeout(ctx, m.cfg.QueryTimeouts.Query)
 	defer cancel()
-
-	fmt.Println("the filters on orgs ---- ", strutil.GetAsJson(filters))
 
 	queryMods := []qm.QueryMod{
 		qm.InnerJoin(
@@ -95,8 +90,8 @@ func (m *Repository) getCapturePages(
 			queryMods = append(queryMods, mysqlmodel.CapturePageWhere.ID.IN(filters.IdsIn))
 		}
 
-		if len(filters.CapturePagesSetID) > 0 {
-			queryMods = append(queryMods, mysqlmodel.CapturePageSetWhere.ID.IN(filters.CapturePagesSetID))
+		if len(filters.CapturePagesTypeIdIn) > 0 {
+			queryMods = append(queryMods, mysqlmodel.CapturePageSetWhere.ID.IN(filters.CapturePagesTypeIdIn))
 		}
 
 		if len(filters.CapturePagesTypeNameIn) > 0 {
@@ -138,7 +133,7 @@ func (m *Repository) getCapturePages(
 	queryMods = append(queryMods, qm.Limit(pagination.MaxRows), qm.Offset(pagination.Offset))
 	q = mysqlmodel.CapturePages(queryMods...)
 
-	fmt.Println("the q --- ", q)
+	fmt.Println("the q --- ", strutil.GetAsJson(q))
 
 	if err = q.Bind(ctx, ctxExec, &res); err != nil {
 		return nil, fmt.Errorf("get capture pages: %v", err)
@@ -148,7 +143,7 @@ func (m *Repository) getCapturePages(
 	paginated.CapturePages = res
 	paginated.Pagination = pagination
 
-	fmt.Println("the paginated return --- ", strutil.GetAsJson(&paginated))
+	fmt.Println("the res return --- ", strutil.GetAsJson(res))
 
 	return &paginated, nil
 }

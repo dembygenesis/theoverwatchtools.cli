@@ -20,4 +20,4 @@ INSERT INTO `capture_pages` (
     `name`, `html`, `is_control`, `capture_page_set_id`, `created_by`, `updated_by`
 ) VALUES
       ('Example Page 1', '<html><body><h1>Example 1</h1></body></html>', 1, 1, 1, 1),
-      ('Example Page 2', '<html><body><h1>Example 2</h1></body></html>', 0, 2, 1, 1);
+      ('Example Page 2', '<html><body><h1>Example 2</h1></body></html>', 0, 1, 1, 1);

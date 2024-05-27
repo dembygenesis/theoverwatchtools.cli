@@ -22,7 +22,7 @@ import (
 // @Router /v1/organization [get]
 func (a *Api) ListCapturePages(ctx *fiber.Ctx) error {
 	filter := model.CapturePagesFilters{
-		CapturePagesIsControl: true,
+		CapturePagesIsControl: []int{1},
 	}
 
 	if err := ctx.QueryParser(&filter); err != nil {

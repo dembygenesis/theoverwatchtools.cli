@@ -32,8 +32,6 @@ func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
 
-				fmt.Println("the paginated.CapturePages ---- ", strutil.GetAsJson(paginated.CapturePages))
-
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.CapturePages, "unexpected nil capture page")
@@ -63,89 +61,89 @@ func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 				modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
 			},
 		},
-		//{
-		//	name: "success-capture-page-set-id",
-		//	filter: &model.CapturePagesFilters{
-		//		CapturePagesSetID: []int{1},
-		//	},
-		//	mutations: func(t *testing.T, db *sqlx.DB) {
-		//
-		//	},
-		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
-		//
-		//		fmt.Println("Number of capture pages retrieved ---- ", strutil.GetAsJson(paginated.CapturePages))
-		//
-		//		require.NoError(t, err, "unexpected error")
-		//		require.NotNil(t, paginated, "unexpected nil paginated")
-		//		require.NotNil(t, paginated.CapturePages, "unexpected nil capture page")
-		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-		//		assert.True(t, len(paginated.CapturePages) > 1, "unexpected greater than 1 capture page")
-		//		assert.True(t, paginated.Pagination.RowCount > 1, "unexpected count to be greater than 1 capture page")
-		//
-		//		modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
-		//	},
-		//},
-		//{
-		//	name: "success-capture-page-type-name-in",
-		//	filter: &model.CapturePagesFilters{
-		//		CapturePagesTypeNameIn: []string{"User Types"},
-		//	},
-		//	mutations: func(t *testing.T, db *sqlx.DB) {
-		//
-		//	},
-		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
-		//		require.NoError(t, err, "unexpected error")
-		//		require.NotNil(t, paginated, "unexpected nil paginated")
-		//		require.NotNil(t, paginated.CapturePages, "unexpected nil capture page")
-		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-		//		assert.True(t, len(paginated.CapturePages) > 1, "unexpected greater than 1 capture page")
-		//		assert.True(t, paginated.Pagination.RowCount > 1, "unexpected count to be greater than 1 capture page")
-		//
-		//		modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
-		//	},
-		//},
-		//{
-		//	name: "success-multiple-filters",
-		//	filter: &model.CapturePagesFilters{
-		//		CapturePagesTypeNameIn: []string{"User Types"},
-		//		CapturePagesTypeIdIn:   []int{1},
-		//		CapturePagesNameIn:     []string{"Super Admin"},
-		//	},
-		//	mutations: func(t *testing.T, db *sqlx.DB) {
-		//
-		//	},
-		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
-		//		require.NoError(t, err, "unexpected error")
-		//		require.NotNil(t, paginated, "unexpected nil paginated")
-		//		require.NotNil(t, paginated.CapturePages, "unexpected nil capture page")
-		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-		//		assert.True(t, len(paginated.CapturePages) == 1, "unexpected greater than 1 capture page")
-		//		assert.True(t, paginated.Pagination.RowCount == 1, "unexpected count to be greater than 1 capture page")
-		//
-		//		modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
-		//	},
-		//},
-		//{
-		//	name: "empty-results",
-		//	filter: &model.CapturePagesFilters{
-		//		CapturePagesTypeNameIn: []string{"Saul Goodman"},
-		//		CapturePagesTypeIdIn:   []int{1},
-		//		CapturePagesNameIn:     []string{"Super Admin"},
-		//	},
-		//	mutations: func(t *testing.T, db *sqlx.DB) {
-		//
-		//	},
-		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
-		//		require.NoError(t, err, "unexpected error")
-		//		require.NotNil(t, paginated, "unexpected nil paginated")
-		//		require.NotNil(t, paginated.CapturePages, "unexpected nil capture pages")
-		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-		//		assert.True(t, len(paginated.CapturePages) == 0, "unexpected greater than 1 capture pages")
-		//		assert.True(t, paginated.Pagination.RowCount == 0, "unexpected count to be greater than 1 capture pages")
-		//
-		//		modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
-		//	},
-		//},
+		{
+			name: "success-capture-page-set-id",
+			filter: &model.CapturePagesFilters{
+				CapturePagesTypeIdIn: []int{1},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
+
+				fmt.Println("Number of capture pages retrieved ---- ", strutil.GetAsJson(paginated.CapturePages))
+
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.CapturePages, "unexpected nil capture page")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.CapturePages) > 1, "unexpected greater than 1 capture page")
+				assert.True(t, paginated.Pagination.RowCount > 1, "unexpected count to be greater than 1 capture page")
+
+				modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
+			},
+		},
+		{
+			name: "success-capture-page-type-name-in",
+			filter: &model.CapturePagesFilters{
+				CapturePagesTypeNameIn: []string{"Test Page Set 1"},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.CapturePages, "unexpected nil capture page")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.CapturePages) > 1, "unexpected greater than 1 capture page")
+				assert.True(t, paginated.Pagination.RowCount > 1, "unexpected count to be greater than 1 capture page")
+
+				modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
+			},
+		},
+		{
+			name: "success-multiple-filters",
+			filter: &model.CapturePagesFilters{
+				CapturePagesTypeNameIn: []string{"Test Page Set 1"},
+				CapturePagesTypeIdIn:   []int{1},
+				CapturePagesNameIn:     []string{"Example Page 1"},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.CapturePages, "unexpected nil capture page")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.CapturePages) == 1, "unexpected greater than 1 capture page")
+				assert.True(t, paginated.Pagination.RowCount == 1, "unexpected count to be greater than 1 capture page")
+
+				modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
+			},
+		},
+		{
+			name: "empty-results",
+			filter: &model.CapturePagesFilters{
+				CapturePagesTypeNameIn: []string{"Saul Goodman"},
+				CapturePagesTypeIdIn:   []int{13},
+				CapturePagesNameIn:     []string{"Super Admin"},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.CapturePages, "unexpected nil capture pages")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.CapturePages) == 0, "unexpected greater than 1 capture pages")
+				assert.True(t, paginated.Pagination.RowCount == 0, "unexpected count to be greater than 1 capture pages")
+
+				modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
+			},
+		},
 	}
 }
 
@@ -177,8 +175,6 @@ func Test_GetCapturePages(t *testing.T) {
 			txHandlerDb, err := txHandler.Db(testCtx)
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
-
-			fmt.Println("the cap filters --- ", strutil.GetAsJson(testCase.filter))
 
 			testCase.mutations(t, db)
 			paginated, err := m.GetCapturePages(testCtx, txHandlerDb, testCase.filter)

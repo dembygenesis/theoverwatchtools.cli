@@ -37,6 +37,16 @@ type repository struct {
 	cfg *Config
 }
 
+func (m *repository) GetCategories(ctx context.Context, t Transaction, f *model.CategoryFilters) (model.Categories, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *repository) UpsertCategories(ctx context.Context, t Transaction, categories []model.Category) (model.Categories, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 // Tx starts an abstract transaction for external resources.
 func (m *repository) Tx() (Transaction, error) {
 	tx, err := m.cfg.Db.Beginx()

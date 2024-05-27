@@ -89,37 +89,18 @@ func getTestCasesGetCategories() []testCaseGetCategories {
 		//		modelhelpers.AssertNonEmptyCategories(t, paginated.Categories)
 		//	},
 		//},
-		{
-			name: "success-category-type-id-in",
-			filter: &model.CategoryFilters{
-				CategoryTypeIdIn: []int{1},
-			},
-			mutations: func(t *testing.T, db *sqlx.DB) {
-
-			},
-			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCategories, err error) {
-
-				fmt.Println("Number of categories retrieved ---- ", strutil.GetAsJson(paginated.Categories))
-
-				require.NoError(t, err, "unexpected error")
-				require.NotNil(t, paginated, "unexpected nil paginated")
-				require.NotNil(t, paginated.Categories, "unexpected nil categories")
-				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-				assert.True(t, len(paginated.Categories) > 1, "unexpected greater than 1 category")
-				assert.True(t, paginated.Pagination.RowCount > 1, "unexpected count to be greater than 1 category")
-
-				modelhelpers.AssertNonEmptyCategories(t, paginated.Categories)
-			},
-		},
 		//{
-		//	name: "success-category-type-name-in",
+		//	name: "success-category-type-id-in",
 		//	filter: &model.CategoryFilters{
-		//		CategoryTypeNameIn: []string{"User Types"},
+		//		CategoryTypeIdIn: []int{1},
 		//	},
 		//	mutations: func(t *testing.T, db *sqlx.DB) {
 		//
 		//	},
 		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCategories, err error) {
+		//
+		//		fmt.Println("Number of categories retrieved ---- ", strutil.GetAsJson(paginated.Categories))
+		//
 		//		require.NoError(t, err, "unexpected error")
 		//		require.NotNil(t, paginated, "unexpected nil paginated")
 		//		require.NotNil(t, paginated.Categories, "unexpected nil categories")
@@ -130,6 +111,25 @@ func getTestCasesGetCategories() []testCaseGetCategories {
 		//		modelhelpers.AssertNonEmptyCategories(t, paginated.Categories)
 		//	},
 		//},
+		{
+			name: "success-category-type-name-in",
+			filter: &model.CategoryFilters{
+				CategoryTypeNameIn: []string{"User Types"},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCategories, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.Categories, "unexpected nil categories")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.Categories) > 1, "unexpected greater than 1 category")
+				assert.True(t, paginated.Pagination.RowCount > 1, "unexpected count to be greater than 1 category")
+
+				modelhelpers.AssertNonEmptyCategories(t, paginated.Categories)
+			},
+		},
 		//{
 		//	name: "success-multiple-filters",
 		//	filter: &model.CategoryFilters{
