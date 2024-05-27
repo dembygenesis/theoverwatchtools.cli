@@ -35,7 +35,6 @@ func (a *Api) ListOrganizations(ctx *fiber.Ctx) error {
 	}
 	filter.SetPaginationDefaults()
 
-	//fmt.Println("the filter ---- ", strutil.GetAsJson(&filter))
 	organizations, err := a.cfg.OrganizationService.ListOrganizations(ctx.Context(), &filter)
 	return a.WriteResponse(ctx, http.StatusOK, organizations, err)
 }

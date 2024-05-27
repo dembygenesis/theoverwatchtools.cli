@@ -13,6 +13,7 @@ import (
 	cli "github.com/dembygenesis/local.tools/internal/cli"
 	config "github.com/dembygenesis/local.tools/internal/config"
 	authlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
+	capturepageslogic "github.com/dembygenesis/local.tools/internal/logic_handlers/capturepageslogic"
 	categorylogic "github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
 	marketinglogic "github.com/dembygenesis/local.tools/internal/logic_handlers/marketinglogic"
 	organizationlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/organizationlogic"
@@ -749,6 +750,296 @@ func (c *Container) UnscopedGetLogicAuth() *authlogic.Impl {
 // If the container can not be retrieved, it panics.
 func LogicAuth(i interface{}) *authlogic.Impl {
 	return C(i).GetLogicAuth()
+}
+
+// SafeGetLogicCapturePages retrieves the "logic_capture_pages" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetLogicCapturePages() (*capturepageslogic.Service, error) {
+	i, err := c.ctn.SafeGet("logic_capture_pages")
+	if err != nil {
+		var eo *capturepageslogic.Service
+		return eo, err
+	}
+	o, ok := i.(*capturepageslogic.Service)
+	if !ok {
+		return o, errors.New("could get 'logic_capture_pages' because the object could not be cast to *capturepageslogic.Service")
+	}
+	return o, nil
+}
+
+// GetLogicCapturePages retrieves the "logic_capture_pages" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetLogicCapturePages() *capturepageslogic.Service {
+	o, err := c.SafeGetLogicCapturePages()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetLogicCapturePages retrieves the "logic_capture_pages" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetLogicCapturePages() (*capturepageslogic.Service, error) {
+	i, err := c.ctn.UnscopedSafeGet("logic_capture_pages")
+	if err != nil {
+		var eo *capturepageslogic.Service
+		return eo, err
+	}
+	o, ok := i.(*capturepageslogic.Service)
+	if !ok {
+		return o, errors.New("could get 'logic_capture_pages' because the object could not be cast to *capturepageslogic.Service")
+	}
+	return o, nil
+}
+
+// UnscopedGetLogicCapturePages retrieves the "logic_capture_pages" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetLogicCapturePages() *capturepageslogic.Service {
+	o, err := c.UnscopedSafeGetLogicCapturePages()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// LogicCapturePages retrieves the "logic_capture_pages" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetLogicCapturePages method.
+// If the container can not be retrieved, it panics.
+func LogicCapturePages(i interface{}) *capturepageslogic.Service {
+	return C(i).GetLogicCapturePages()
+}
+
+// SafeGetLogicCapturePagesSets retrieves the "logic_capture_pages_sets" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages_sets"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetLogicCapturePagesSets() (*capturepageslogic.Service, error) {
+	i, err := c.ctn.SafeGet("logic_capture_pages_sets")
+	if err != nil {
+		var eo *capturepageslogic.Service
+		return eo, err
+	}
+	o, ok := i.(*capturepageslogic.Service)
+	if !ok {
+		return o, errors.New("could get 'logic_capture_pages_sets' because the object could not be cast to *capturepageslogic.Service")
+	}
+	return o, nil
+}
+
+// GetLogicCapturePagesSets retrieves the "logic_capture_pages_sets" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages_sets"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetLogicCapturePagesSets() *capturepageslogic.Service {
+	o, err := c.SafeGetLogicCapturePagesSets()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetLogicCapturePagesSets retrieves the "logic_capture_pages_sets" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages_sets"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetLogicCapturePagesSets() (*capturepageslogic.Service, error) {
+	i, err := c.ctn.UnscopedSafeGet("logic_capture_pages_sets")
+	if err != nil {
+		var eo *capturepageslogic.Service
+		return eo, err
+	}
+	o, ok := i.(*capturepageslogic.Service)
+	if !ok {
+		return o, errors.New("could get 'logic_capture_pages_sets' because the object could not be cast to *capturepageslogic.Service")
+	}
+	return o, nil
+}
+
+// UnscopedGetLogicCapturePagesSets retrieves the "logic_capture_pages_sets" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages_sets"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetLogicCapturePagesSets() *capturepageslogic.Service {
+	o, err := c.UnscopedSafeGetLogicCapturePagesSets()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// LogicCapturePagesSets retrieves the "logic_capture_pages_sets" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_capture_pages_sets"
+//	type: *capturepageslogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetLogicCapturePagesSets method.
+// If the container can not be retrieved, it panics.
+func LogicCapturePagesSets(i interface{}) *capturepageslogic.Service {
+	return C(i).GetLogicCapturePagesSets()
 }
 
 // SafeGetLogicCategory retrieves the "logic_category" object from the main scope.

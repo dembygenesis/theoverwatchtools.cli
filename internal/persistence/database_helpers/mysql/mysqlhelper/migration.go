@@ -18,7 +18,7 @@ import (
 type Tables [][]string
 
 const (
-	migrateDirFolder = "internal/database/migrations"
+	migrateDirFolder = "/internal/database/migrations"
 )
 
 var (

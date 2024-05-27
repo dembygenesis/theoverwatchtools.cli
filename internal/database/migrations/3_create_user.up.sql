@@ -28,3 +28,23 @@ CREATE TABLE `user`
 );
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+INSERT INTO `user` (
+    `firstname`,
+    `lastname`,
+    `email`,
+    `password`,
+    `category_type_ref_id`,
+    `created_by`,
+    `last_updated_by`,
+    `created_at`,
+    `last_updated_at`,
+    `is_active`,
+    `reset_token`,
+    `address`,
+    `birthday`,
+    `gender`
+) VALUES
+      ('Lawrence', 'Margaja', 'lawrence@example.com', 'password123', 1, NULL, NULL, NOW(), NOW(), TRUE, NULL, '123 Main St', '1990-01-01', 'M'),
+      ('Demby', 'Abella', 'demby@example.com', 'password456', 1, NULL, NULL, NOW(), NOW(), TRUE, NULL, '458 Elm St', '1995-03-01', 'M'),
+      ('Minik', 'Abella', 'Minik@example.com', 'password1231', 1, NULL, NULL, NOW(), NOW(), TRUE, NULL, '456 Elm St', '1995-05-05', 'F');
