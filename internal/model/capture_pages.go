@@ -13,6 +13,12 @@ type RestoreCapturePages struct {
 	ID int `json:"id" validate:"required,greater_than_zero"`
 }
 
+// CreateCapturePage struct for creating a new category
+type CreateCapturePage struct {
+	CapturePageSetId int    `json:"capture_page_set_id" validate:"required,greater_than_zero"`
+	Name             string `json:"name" validate:"required"`
+}
+
 // CapturePagesFilters contains the capture pages filters.
 type CapturePagesFilters struct {
 	CapturePagesNameIn     []string `query:"capture_pages_name_in" json:"capture_pages"`
@@ -23,15 +29,32 @@ type CapturePagesFilters struct {
 	PaginationQueryFilters `swaggerignore:"true"`
 }
 
-type CapturePagesType struct {
-	Id   int    `json:"id" boil:"id"`
-	Name string `json:"name" validate:"required" boil:"name"`
-}
-
 type CapturePages struct {
 	Id               int    `json:"id" boil:"id"`
 	CapturePageSetId int    `json:"capture_page_set_id" boil:"capture_page_set_id" swaggerignore:"true"`
 	Name             string `json:"name" boil:"name"`
+	CapturePageType  string `json:"capture_page_type" boil:"capture_page_type"`
+}
+
+// ToCapturePage converts the CreateCapturePage to a Capture Page.
+func (c *CreateCapturePage) ToCapturePage() *CapturePages {
+	capturepage := &CapturePages{
+		Name:             c.Name,
+		CapturePageSetId: c.CapturePageSetId,
+	}
+	return capturepage
+}
+
+func (c *CreateCapturePage) Validate() error {
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %v", err)
+	}
+	return nil
+}
+
+type CapturePageType struct {
+	Id   int    `json:"id" boil:"id"`
+	Name string `json:"name" validate:"required" boil:"name"`
 }
 
 func (c *CapturePagesFilters) Validate() error {

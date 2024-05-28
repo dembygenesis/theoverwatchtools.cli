@@ -22,7 +22,7 @@ import (
 // @Router /v1/organization [get]
 func (a *Api) ListCapturePages(ctx *fiber.Ctx) error {
 	filter := model.CapturePagesFilters{
-		CapturePagesIsControl: true,
+		CapturePagesIsControl: []int{1},
 	}
 
 	if err := ctx.QueryParser(&filter); err != nil {
@@ -37,4 +37,26 @@ func (a *Api) ListCapturePages(ctx *fiber.Ctx) error {
 	//fmt.Println("the filter ---- ", strutil.GetAsJson(&filter))
 	organizations, err := a.cfg.CapturePagesService.ListCapturePages(ctx.Context(), &filter)
 	return a.WriteResponse(ctx, http.StatusOK, organizations, err)
+}
+
+// CreateCapturePages fetches the categories
+//
+// @Id CreateCapturePages
+// @Summary Create CapturePage
+// @Description Create a CapturePage
+// @Tags CapturePageService
+// @Accept application/json
+// @Produce application/json
+// @Param filters body model.CreateCapturePage false "Capture Pages filters"
+// @Success 200 {object} model.CapturePage
+// @Failure 400 {object} []string
+// @Failure 500 {object} []string
+// @Router /v1/capturepage [post]
+func (a *Api) CreateCapturePages(ctx *fiber.Ctx) error {
+	var body model.CreateCapturePage
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+	capturepage, err := a.cfg.CapturePagesService.CreateCapturePages(ctx.Context(), &body)
+	return a.WriteResponse(ctx, http.StatusCreated, capturepage, err)
 }

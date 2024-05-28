@@ -58,6 +58,7 @@ func (a *Api) Routes() error {
 	// Capture Pages
 	groupCapturePages := v1.Group("/capturepages")
 	groupCapturePages.Name("List Capture Pages").Get("", a.ListCapturePages)
+	groupCapturePages.Name("Create Capture Pages").Post("", a.CreateCapturePages)
 
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {

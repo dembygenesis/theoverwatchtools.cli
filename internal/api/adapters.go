@@ -27,7 +27,7 @@ type organizationService interface {
 //counterfeiter:generate . capturePagesService
 type capturePagesService interface {
 	ListCapturePages(ctx context.Context, filters *model.CapturePagesFilters) (*model.PaginatedCapturePages, error)
-	//CreateCapturePages(ctx context.Context, organization *model.CapturePagesFilters) (*model.CapturePages, error)
+	CreateCapturePages(ctx context.Context, capturepage *model.CreateCapturePage) (*model.CapturePages, error)
 	//DeleteCapturePages(ctx context.Context, params *model.DeleteCapturePages) error
 	//RestoreCapturePages(ctx context.Context, params *model.RestoreCapturePages) error
 }

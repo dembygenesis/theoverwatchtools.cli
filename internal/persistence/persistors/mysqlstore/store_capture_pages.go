@@ -7,10 +7,73 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
+
+// AddCapturePage attempts to add a new category
+func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capture_page *model.CapturePages) (*model.CapturePages, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %v", err)
+	}
+
+	entry := &mysqlmodel.CapturePage{
+		Name:             capture_page.Name,
+		CapturePageSetID: capture_page.CapturePageSetId,
+	}
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("insert capture page: %v", err)
+	}
+
+	capture_page, err = m.GetCapturePageById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get capture page by id: %v", err)
+	}
+
+	return capture_page, nil
+}
+
+// GetCapturePageById attempts to fetch the capture page.
+func (m *Repository) GetCapturePageById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.CapturePages, error) {
+	paginated, err := m.GetCapturePages(ctx, tx, &model.CapturePagesFilters{
+		IdsIn: []int{id},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("capture page filtered by id: %v", err)
+	}
+
+	if paginated.Pagination.RowCount != 1 {
+
+		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, id)
+	}
+
+	return &paginated.CapturePages[0], nil
+}
+
+func (m *Repository) CreateCapturePages(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CapturePages) (*model.CapturePages, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %v", err)
+	}
+
+	entry := mysqlmodel.CapturePage{
+		Name:             capturePage.Name,
+		CapturePageSetID: capturePage.CapturePageSetId,
+	}
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("insert category: %v", err)
+	}
+
+	capturePage, err = m.GetCapturePageById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get category by id: %v", err)
+	}
+
+	return capturePage, nil
+}
 
 // GetCapturePages attempts to fetch the capture pages
 // entries using the given transaction layer.
