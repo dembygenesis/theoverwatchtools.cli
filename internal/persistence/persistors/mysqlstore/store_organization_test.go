@@ -31,6 +31,8 @@ var (
 	}
 )
 
+//test
+
 type testCaseGetOrganizations struct {
 	name       string
 	filter     *model.OrganizationFilters
