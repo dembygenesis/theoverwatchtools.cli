@@ -13,7 +13,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-// AddCapturePage attempts to add a new category
+// AddCapturePage attempts to add a new capture page
 func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capture_page *model.CapturePages) (*model.CapturePages, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {

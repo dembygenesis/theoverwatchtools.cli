@@ -34,8 +34,8 @@ func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.CapturePages, "unexpected nil capture page")
 				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-				assert.True(t, len(paginated.CapturePages) == 1, "unexpected greater than 1 category")
-				assert.True(t, paginated.Pagination.RowCount == 1, "unexpected count to be greater than 1 category")
+				assert.True(t, len(paginated.CapturePages) == 1, "unexpected greater than 1 capture page")
+				assert.True(t, paginated.Pagination.RowCount == 1, "unexpected count to be greater than 1 capture page")
 
 				modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
 			},
