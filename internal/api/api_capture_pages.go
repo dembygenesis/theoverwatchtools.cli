@@ -4,6 +4,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
 	"github.com/gofiber/fiber/v2"
+	"github.com/volatiletech/null/v8"
 	"net/http"
 )
 
@@ -19,10 +20,13 @@ import (
 // @Success 200 {object} model.PaginatedCapturePages
 // @Failure 400 {object} []string
 // @Failure 500 {object} []string
-// @Router /v1/organization [get]
+// @Router /v1/capturepage [get]
 func (a *Api) ListCapturePages(ctx *fiber.Ctx) error {
 	filter := model.CapturePagesFilters{
-		CapturePagesIsControl: []int{1},
+		CapturePagesIsControl: null.Bool{
+			Bool:  true,
+			Valid: false,
+		},
 	}
 
 	if err := ctx.QueryParser(&filter); err != nil {
@@ -39,7 +43,7 @@ func (a *Api) ListCapturePages(ctx *fiber.Ctx) error {
 	return a.WriteResponse(ctx, http.StatusOK, organizations, err)
 }
 
-// CreateCapturePages fetches the categories
+// CreateCapturePages fetches the CapturePages
 //
 // @Id CreateCapturePages
 // @Summary Create CapturePage

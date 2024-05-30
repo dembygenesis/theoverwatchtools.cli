@@ -8,6 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
 	"testing"
 )
 
@@ -21,15 +22,17 @@ type testCaseGetCapturePages struct {
 func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 	return []testCaseGetCapturePages{
 		{
-			name: "success-filter-ids-in",
+			name: "success-filter-is-control",
 			filter: &model.CapturePagesFilters{
-				CapturePagesIsControl: []int{1},
+				CapturePagesIsControl: null.Bool{
+					Bool:  true,
+					Valid: true,
+				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
 
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error) {
-
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.CapturePages, "unexpected nil capture page")

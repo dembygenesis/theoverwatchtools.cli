@@ -23,6 +23,7 @@ func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.Transact
 	entry := &mysqlmodel.CapturePage{
 		Name:             capture_page.Name,
 		CapturePageSetID: capture_page.CapturePageSetId,
+		IsControl:        capture_page.CapturePagesIsControl,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert capture page: %v", err)
@@ -62,6 +63,7 @@ func (m *Repository) CreateCapturePages(ctx context.Context, tx persistence.Tran
 	entry := mysqlmodel.CapturePage{
 		Name:             capturePage.Name,
 		CapturePageSetID: capturePage.CapturePageSetId,
+		IsControl:        capturePage.CapturePagesIsControl,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert category: %v", err)
@@ -165,8 +167,12 @@ func (m *Repository) getCapturePages(
 		//	queryMods = append(queryMods, mysqlmodel.CapturePageWhere.IsControl.EQ(filters.CapturePagesIsControl))
 		//}
 
-		if len(filters.CapturePagesIsControl) > 0 {
-			queryMods = append(queryMods, mysqlmodel.CapturePageWhere.IsControl.IN(filters.CapturePagesIsControl))
+		if filters.CapturePagesIsControl.Valid {
+			if filters.CapturePagesIsControl.Bool {
+				queryMods = append(queryMods, mysqlmodel.CapturePageWhere.IsControl.EQ(1))
+			} else {
+				queryMods = append(queryMods, mysqlmodel.CapturePageWhere.IsControl.EQ(0))
+			}
 		}
 
 		if len(filters.CapturePagesNameIn) > 0 {
