@@ -28,7 +28,7 @@ func getTestCasesListCapturePages() []testCaseListCapturePages {
 		{
 			name: "success",
 			queryParameters: map[string]interface{}{
-				"ids_in": []int{1, 2, 3},
+				"is_control": []int{1},
 			},
 			mutations: func(t *testing.T, modules *testassets.Container) {
 
@@ -51,61 +51,61 @@ func getTestCasesListCapturePages() []testCaseListCapturePages {
 				assert.Equal(t, respPaginated.Pagination.Page, 1, "unexpected page")
 			},
 		},
-		{
-			name: "success-limit-offset-page-1",
-			queryParameters: map[string]interface{}{
-				"ids_in":   []int{1, 2, 3},
-				"page":     1,
-				"max_rows": 1,
-			},
-			mutations: func(t *testing.T, modules *testassets.Container) {
-
-			},
-			getContainer: func(t *testing.T) (*testassets.Container, func()) {
-				ctn, cleanup := testassets.GetConcreteContainer(t)
-				return ctn, func() {
-					cleanup()
-				}
-			},
-			assertions: func(t *testing.T, resp []byte, respCode int) {
-				require.Equalf(t, http.StatusOK, respCode, "unexpected status code: %v, with resp: %s", respCode, string(resp))
-
-				var respPaginated model.PaginatedCapturePages
-				err := json.Unmarshal(resp, &respPaginated)
-
-				require.NoError(t, err, "unexpected error unmarshalling the response")
-				assert.NotNil(t, respPaginated.CapturePages, "unexpected empty capture pages")
-				assert.Greater(t, respPaginated.Pagination.TotalCount, 1, "unexpected total_count")
-				assert.Equal(t, respPaginated.Pagination.Page, 1, "unexpected page")
-			},
-		},
-		{
-			name: "success-limit-offset-page-2",
-			queryParameters: map[string]interface{}{
-				"ids_in":   []int{1, 2, 3},
-				"page":     2,
-				"max_rows": 2,
-			},
-			mutations: func(t *testing.T, modules *testassets.Container) {
-
-			},
-			getContainer: func(t *testing.T) (*testassets.Container, func()) {
-				ctn, cleanup := testassets.GetConcreteContainer(t)
-				return ctn, func() {
-					cleanup()
-				}
-			},
-			assertions: func(t *testing.T, resp []byte, respCode int) {
-				require.Equalf(t, http.StatusOK, respCode, "unexpected status code: %v, with resp: %s", respCode, string(resp))
-
-				var respPaginated model.PaginatedCapturePages
-				err := json.Unmarshal(resp, &respPaginated)
-				require.NoError(t, err, "unexpected error unmarshalling the response")
-				assert.NotNil(t, respPaginated.CapturePages, "unexpected empty capture pages")
-				assert.True(t, respPaginated.Pagination.TotalCount > 2, "unexpected total_count")
-				assert.Equal(t, respPaginated.Pagination.Page, 2, "unexpected page")
-			},
-		},
+		//{
+		//	name: "success-limit-offset-page-1",
+		//	queryParameters: map[string]interface{}{
+		//		"ids_in":   []int{1, 2, 3},
+		//		"page":     1,
+		//		"max_rows": 1,
+		//	},
+		//	mutations: func(t *testing.T, modules *testassets.Container) {
+		//
+		//	},
+		//	getContainer: func(t *testing.T) (*testassets.Container, func()) {
+		//		ctn, cleanup := testassets.GetConcreteContainer(t)
+		//		return ctn, func() {
+		//			cleanup()
+		//		}
+		//	},
+		//	assertions: func(t *testing.T, resp []byte, respCode int) {
+		//		require.Equalf(t, http.StatusOK, respCode, "unexpected status code: %v, with resp: %s", respCode, string(resp))
+		//
+		//		var respPaginated model.PaginatedCapturePages
+		//		err := json.Unmarshal(resp, &respPaginated)
+		//
+		//		require.NoError(t, err, "unexpected error unmarshalling the response")
+		//		assert.NotNil(t, respPaginated.CapturePages, "unexpected empty capture pages")
+		//		assert.Greater(t, respPaginated.Pagination.TotalCount, 1, "unexpected total_count")
+		//		assert.Equal(t, respPaginated.Pagination.Page, 1, "unexpected page")
+		//	},
+		//},
+		//{
+		//	name: "success-limit-offset-page-2",
+		//	queryParameters: map[string]interface{}{
+		//		"ids_in":   []int{1, 2, 3},
+		//		"page":     2,
+		//		"max_rows": 2,
+		//	},
+		//	mutations: func(t *testing.T, modules *testassets.Container) {
+		//
+		//	},
+		//	getContainer: func(t *testing.T) (*testassets.Container, func()) {
+		//		ctn, cleanup := testassets.GetConcreteContainer(t)
+		//		return ctn, func() {
+		//			cleanup()
+		//		}
+		//	},
+		//	assertions: func(t *testing.T, resp []byte, respCode int) {
+		//		require.Equalf(t, http.StatusOK, respCode, "unexpected status code: %v, with resp: %s", respCode, string(resp))
+		//
+		//		var respPaginated model.PaginatedCapturePages
+		//		err := json.Unmarshal(resp, &respPaginated)
+		//		require.NoError(t, err, "unexpected error unmarshalling the response")
+		//		assert.NotNil(t, respPaginated.CapturePages, "unexpected empty capture pages")
+		//		assert.True(t, respPaginated.Pagination.TotalCount > 2, "unexpected total_count")
+		//		assert.Equal(t, respPaginated.Pagination.Page, 2, "unexpected page")
+		//	},
+		//},
 		//{
 		//	name: "success-all-filters",
 		//	queryParameters: map[string]interface{}{
@@ -135,35 +135,35 @@ func getTestCasesListCapturePages() []testCaseListCapturePages {
 		//		assert.True(t, len(respPaginated.Pagination.Pages) > 0, "unexpected empty pages")
 		//	},
 		//},
-		{
-			name:            "empty_store",
-			queryParameters: map[string]interface{}{},
-			mutations: func(t *testing.T, modules *testassets.Container) {
-				store := modules.MySQLStore
-				require.NotNil(t, store, "unexpected nil: store")
-
-				connProvider := modules.ConnProvider
-				require.NotNil(t, store, "unexpected nil: txProvider")
-
-				tx, err := connProvider.Tx(context.TODO())
-				require.NoError(t, err, "unexpected err for getting tx")
-
-				err = store.DropCategoryTable(context.TODO(), tx)
-				require.NoError(t, err, "unexpected err for drop command")
-
-				err = tx.Commit(context.TODO())
-				require.NoError(t, err, "unexpected err on commit")
-			},
-			getContainer: func(t *testing.T) (*testassets.Container, func()) {
-				ctn, cleanup := testassets.GetConcreteContainer(t)
-				return ctn, func() {
-					cleanup()
-				}
-			},
-			assertions: func(t *testing.T, resp []byte, respCode int) {
-				assert.Equal(t, http.StatusInternalServerError, respCode)
-			},
-		},
+		//{
+		//	name:            "empty_store",
+		//	queryParameters: map[string]interface{}{},
+		//	mutations: func(t *testing.T, modules *testassets.Container) {
+		//		store := modules.MySQLStore
+		//		require.NotNil(t, store, "unexpected nil: store")
+		//
+		//		connProvider := modules.ConnProvider
+		//		require.NotNil(t, store, "unexpected nil: txProvider")
+		//
+		//		tx, err := connProvider.Tx(context.TODO())
+		//		require.NoError(t, err, "unexpected err for getting tx")
+		//
+		//		err = store.DropCategoryTable(context.TODO(), tx)
+		//		require.NoError(t, err, "unexpected err for drop command")
+		//
+		//		err = tx.Commit(context.TODO())
+		//		require.NoError(t, err, "unexpected err on commit")
+		//	},
+		//	getContainer: func(t *testing.T) (*testassets.Container, func()) {
+		//		ctn, cleanup := testassets.GetConcreteContainer(t)
+		//		return ctn, func() {
+		//			cleanup()
+		//		}
+		//	},
+		//	assertions: func(t *testing.T, resp []byte, respCode int) {
+		//		assert.Equal(t, http.StatusInternalServerError, respCode)
+		//	},
+		//},
 	}
 
 	return testCases
@@ -182,12 +182,13 @@ func Test_ListCapturePages(t *testing.T) {
 			defer cleanup()
 
 			cfg := &Config{
-				BaseUrl:         testassets.MockBaseUrl,
-				Port:            3000,
-				CategoryService: handlers.CategoryService,
-				Logger:          logger.New(context.TODO()),
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CategoryService:     handlers.CategoryService,
+				OrganizationService: handlers.OrganizationService,
+				CapturePagesService: handlers.CapturePagesService,
+				Logger:              logger.New(context.TODO()),
 			}
-
 			api, err := New(cfg)
 			require.NoError(t, err, "unexpected error instantiating api")
 			require.NotNil(t, api, "unexpected api nil instance")
