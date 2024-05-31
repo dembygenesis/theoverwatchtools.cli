@@ -22,6 +22,7 @@ type organizationService interface {
 	CreateOrganization(ctx context.Context, organization *model.CreateOrganization) (*model.Organization, error)
 	DeleteOrganization(ctx context.Context, params *model.DeleteOrganization) error
 	RestoreOrganization(ctx context.Context, params *model.RestoreOrganization) error
+	UpdateOrganization(ctx context.Context, category *model.UpdateOrganization) (*model.Organization, error)
 }
 
 //counterfeiter:generate . capturePagesService

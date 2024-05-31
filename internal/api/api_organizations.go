@@ -119,3 +119,25 @@ func (a *Api) RestoreOrganization(ctx *fiber.Ctx) error {
 
 	return ctx.SendStatus(http.StatusNoContent)
 }
+
+// UpdateOrganization fetches the organizations
+//
+// @Id UpdateOrganization
+// @Summary Update Organization
+// @Description Update an organization
+// @Tags OrganizationService
+// @Accept application/json
+// @Produce application/json
+// @Param filters body model.UpdateOrganization false "Organization body"
+// @Success 200 {object} model.Organization
+// @Failure 400 {object} []string
+// @Failure 500 {object} []string
+// @Router /v1/organization [patch]
+func (a *Api) UpdateOrganization(ctx *fiber.Ctx) error {
+	var body model.UpdateOrganization
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+	category, err := a.cfg.OrganizationService.UpdateOrganization(ctx.Context(), &body)
+	return a.WriteResponse(ctx, http.StatusOK, category, err)
+}

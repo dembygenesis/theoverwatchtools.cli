@@ -25,7 +25,7 @@ func (m *Repository) GetOrganizationTypeById(ctx context.Context, tx persistence
 	}
 
 	if res.Pagination.RowCount != 1 {
-		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, mysqlmodel.TableNames.CategoryType)
+		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, mysqlmodel.TableNames.OrganizationType)
 	}
 
 	return &res.Organizations[0], nil
@@ -47,7 +47,7 @@ func (m *Repository) GetOrganizationTypes(ctx context.Context, tx persistence.Tr
 	return res, nil
 }
 
-// getCategoryTypes performs the actual sql-queries.
+// getOrganizationTypes performs the actual sql-queries.
 func (m *Repository) getOrganizationTypes(
 	ctx context.Context,
 	ctxExec boil.ContextExecutor,

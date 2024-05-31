@@ -34,6 +34,14 @@ func New(cfg *Config) (*Service, error) {
 	return &Service{cfg}, nil
 }
 
+func (i *Service) validateOrganizationTypeId(ctx context.Context, handler persistence.TransactionHandler, id int) error {
+	_, err := i.cfg.Persistor.GetOrganizationTypeById(ctx, handler, id)
+	if err != nil {
+		return fmt.Errorf("invalid organization_type_id: %v", err)
+	}
+	return nil
+}
+
 // ListOrganizations returns paginated organizations
 func (i *Service) ListOrganizations(
 	ctx context.Context,
@@ -177,4 +185,33 @@ func (s *Service) RestoreOrganization(ctx context.Context, params *model.Restore
 	}
 
 	return nil
+}
+
+// UpdateOrganization updates an existing organization.
+func (i *Service) UpdateOrganization(ctx context.Context, params *model.UpdateOrganization) (*model.Organization, error) {
+	tx, err := i.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	if err := params.Validate(); err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
+	}
+
+	if params.OrganizationTypeRefId.Valid {
+		if err := i.validateOrganizationTypeId(ctx, tx, params.OrganizationTypeRefId.Int); err != nil {
+			return nil, fmt.Errorf("organization_type_id: %w", err)
+		}
+	}
+
+	category, err := i.cfg.Persistor.UpdateOrganization(ctx, tx, params)
+	if err != nil {
+		return nil, fmt.Errorf("update organization: %w", err)
+	}
+
+	return category, nil
 }

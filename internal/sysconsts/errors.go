@@ -25,4 +25,5 @@ var (
 	ErrHasNotASingleValidateUpdateParameter = "has not at least one valid update parameter"
 	ErrCategoryTypeRefIdInvalid             = "category_type_ref_id invalid"
 	ErrCategoryNameEmpty                    = "category name empty"
+	ErrOrganizationTypeRefIdInvalid         = "organization_type_ref_id invalid"
 )
