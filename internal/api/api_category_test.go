@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/api/apifakes"
 	"github.com/dembygenesis/local.tools/internal/api/testassets"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
@@ -340,6 +341,8 @@ func Test_ListCategories(t *testing.T) {
 			respBytes, err := io.ReadAll(resp.Body)
 			require.Nil(t, err, "unexpected error reading the response")
 			testCase.assertions(t, respBytes, resp.StatusCode)
+
+			fmt.Println("testing the cat tests")
 		})
 	}
 }
