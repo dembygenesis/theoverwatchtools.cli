@@ -9,6 +9,20 @@ import (
 )
 
 type FakeCapturePagesService struct {
+	CreateCapturePagesStub        func(context.Context, *model.CreateCapturePage) (*model.CapturePages, error)
+	createCapturePagesMutex       sync.RWMutex
+	createCapturePagesArgsForCall []struct {
+		arg1 context.Context
+		arg2 *model.CreateCapturePage
+	}
+	createCapturePagesReturns struct {
+		result1 *model.CapturePages
+		result2 error
+	}
+	createCapturePagesReturnsOnCall map[int]struct {
+		result1 *model.CapturePages
+		result2 error
+	}
 	ListCapturePagesStub        func(context.Context, *model.CapturePagesFilters) (*model.PaginatedCapturePages, error)
 	listCapturePagesMutex       sync.RWMutex
 	listCapturePagesArgsForCall []struct {
@@ -25,6 +39,71 @@ type FakeCapturePagesService struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeCapturePagesService) CreateCapturePages(arg1 context.Context, arg2 *model.CreateCapturePage) (*model.CapturePages, error) {
+	fake.createCapturePagesMutex.Lock()
+	ret, specificReturn := fake.createCapturePagesReturnsOnCall[len(fake.createCapturePagesArgsForCall)]
+	fake.createCapturePagesArgsForCall = append(fake.createCapturePagesArgsForCall, struct {
+		arg1 context.Context
+		arg2 *model.CreateCapturePage
+	}{arg1, arg2})
+	stub := fake.CreateCapturePagesStub
+	fakeReturns := fake.createCapturePagesReturns
+	fake.recordInvocation("CreateCapturePages", []interface{}{arg1, arg2})
+	fake.createCapturePagesMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCapturePagesService) CreateCapturePagesCallCount() int {
+	fake.createCapturePagesMutex.RLock()
+	defer fake.createCapturePagesMutex.RUnlock()
+	return len(fake.createCapturePagesArgsForCall)
+}
+
+func (fake *FakeCapturePagesService) CreateCapturePagesCalls(stub func(context.Context, *model.CreateCapturePage) (*model.CapturePages, error)) {
+	fake.createCapturePagesMutex.Lock()
+	defer fake.createCapturePagesMutex.Unlock()
+	fake.CreateCapturePagesStub = stub
+}
+
+func (fake *FakeCapturePagesService) CreateCapturePagesArgsForCall(i int) (context.Context, *model.CreateCapturePage) {
+	fake.createCapturePagesMutex.RLock()
+	defer fake.createCapturePagesMutex.RUnlock()
+	argsForCall := fake.createCapturePagesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeCapturePagesService) CreateCapturePagesReturns(result1 *model.CapturePages, result2 error) {
+	fake.createCapturePagesMutex.Lock()
+	defer fake.createCapturePagesMutex.Unlock()
+	fake.CreateCapturePagesStub = nil
+	fake.createCapturePagesReturns = struct {
+		result1 *model.CapturePages
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCapturePagesService) CreateCapturePagesReturnsOnCall(i int, result1 *model.CapturePages, result2 error) {
+	fake.createCapturePagesMutex.Lock()
+	defer fake.createCapturePagesMutex.Unlock()
+	fake.CreateCapturePagesStub = nil
+	if fake.createCapturePagesReturnsOnCall == nil {
+		fake.createCapturePagesReturnsOnCall = make(map[int]struct {
+			result1 *model.CapturePages
+			result2 error
+		})
+	}
+	fake.createCapturePagesReturnsOnCall[i] = struct {
+		result1 *model.CapturePages
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeCapturePagesService) ListCapturePages(arg1 context.Context, arg2 *model.CapturePagesFilters) (*model.PaginatedCapturePages, error) {
@@ -95,6 +174,8 @@ func (fake *FakeCapturePagesService) ListCapturePagesReturnsOnCall(i int, result
 func (fake *FakeCapturePagesService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.createCapturePagesMutex.RLock()
+	defer fake.createCapturePagesMutex.RUnlock()
 	fake.listCapturePagesMutex.RLock()
 	defer fake.listCapturePagesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

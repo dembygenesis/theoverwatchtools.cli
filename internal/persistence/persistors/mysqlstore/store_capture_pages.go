@@ -54,27 +54,27 @@ func (m *Repository) GetCapturePageById(ctx context.Context, tx persistence.Tran
 	return &paginated.CapturePages[0], nil
 }
 
-func (m *Repository) CreateCapturePages(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CapturePages) (*model.CapturePages, error) {
+func (m *Repository) CreateCapturePages(ctx context.Context, tx persistence.TransactionHandler, capture_page *model.CapturePages) (*model.CapturePages, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
 	entry := mysqlmodel.CapturePage{
-		Name:             capturePage.Name,
-		CapturePageSetID: capturePage.CapturePageSetId,
-		IsControl:        capturePage.CapturePagesIsControl,
+		Name:             capture_page.Name,
+		CapturePageSetID: capture_page.CapturePageSetId,
+		IsControl:        capture_page.CapturePagesIsControl,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert category: %v", err)
 	}
 
-	capturePage, err = m.GetCapturePageById(ctx, tx, entry.ID)
+	capture_page, err = m.GetCapturePageById(ctx, tx, entry.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get category by id: %v", err)
 	}
 
-	return capturePage, nil
+	return capture_page, nil
 }
 
 // GetCapturePages attempts to fetch the capture pages

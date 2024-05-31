@@ -40,7 +40,7 @@ type Config struct {
 	OrganizationService organizationService `json:"organization_manager" validate:"required"`
 
 	// CapturePagesService is the biz function for capture pages
-	CapturePagesService capturePagesService `json:"capture_pages_service" validate:"required"`
+	CapturePagesService capturePagesService `json:"capture_pages_manager" validate:"required"`
 }
 
 func (a *Config) Validate() error {

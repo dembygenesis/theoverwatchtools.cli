@@ -6,11 +6,15 @@ import (
 	"errors"
 	"github.com/dembygenesis/local.tools/internal/api/apifakes"
 	"github.com/dembygenesis/local.tools/internal/api/testassets"
+	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/model/modelhelpers"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -294,47 +298,47 @@ func getTestCasesListCategories() []testCaseListCategory {
 	return testCases
 }
 
-//func Test_ListCategories(t *testing.T) {
-//	for _, testCase := range getTestCasesListCategories() {
-//		require.NotEmpty(t, testCase.name, "unexpected empty test name")
-//
-//		t.Run(testCase.name, func(t *testing.T) {
-//			if testCase.queryParameters == nil {
-//				testCase.queryParameters = make(map[string]interface{})
-//			}
-//
-//			handlers, cleanup := testCase.getContainer(t)
-//			defer cleanup()
-//
-//			cfg := &Config{
-//				BaseUrl:         testassets.MockBaseUrl,
-//				Port:            3000,
-//				CategoryService: handlers.CategoryService,
-//				Logger:          logger.New(context.TODO()),
-//			}
-//
-//			api, err := New(cfg)
-//			require.NoError(t, err, "unexpected error instantiating api")
-//			require.NotNil(t, api, "unexpected api nil instance")
-//
-//			url := strutil.AppendQueryToURL("/api/v1/category", testCase.queryParameters)
-//			req := httptest.NewRequest(http.MethodGet, url, nil)
-//			req.Header = map[string][]string{
-//				"Content-Type":    {"application/json"},
-//				"Accept-Encoding": {"gzip", "deflate", "br"},
-//			}
-//
-//			testCase.mutations(t, handlers)
-//
-//			resp, err := api.app.Test(req, 100)
-//			require.NoError(t, err, "unexpected error executing test")
-//
-//			respBytes, err := io.ReadAll(resp.Body)
-//			require.Nil(t, err, "unexpected error reading the response")
-//			testCase.assertions(t, respBytes, resp.StatusCode)
-//		})
-//	}
-//}
+func Test_ListCategories(t *testing.T) {
+	for _, testCase := range getTestCasesListCategories() {
+		require.NotEmpty(t, testCase.name, "unexpected empty test name")
+
+		t.Run(testCase.name, func(t *testing.T) {
+			if testCase.queryParameters == nil {
+				testCase.queryParameters = make(map[string]interface{})
+			}
+
+			handlers, cleanup := testCase.getContainer(t)
+			defer cleanup()
+
+			cfg := &Config{
+				BaseUrl:         testassets.MockBaseUrl,
+				Port:            3000,
+				CategoryService: handlers.CategoryService,
+				Logger:          logger.New(context.TODO()),
+			}
+
+			api, err := New(cfg)
+			require.NoError(t, err, "unexpected error instantiating api")
+			require.NotNil(t, api, "unexpected api nil instance")
+
+			url := strutil.AppendQueryToURL("/api/v1/category", testCase.queryParameters)
+			req := httptest.NewRequest(http.MethodGet, url, nil)
+			req.Header = map[string][]string{
+				"Content-Type":    {"application/json"},
+				"Accept-Encoding": {"gzip", "deflate", "br"},
+			}
+
+			testCase.mutations(t, handlers)
+
+			resp, err := api.app.Test(req, 100)
+			require.NoError(t, err, "unexpected error executing test")
+
+			respBytes, err := io.ReadAll(resp.Body)
+			require.Nil(t, err, "unexpected error reading the response")
+			testCase.assertions(t, respBytes, resp.StatusCode)
+		})
+	}
+}
 
 type testCaseUpdateCategory struct {
 	name              string
