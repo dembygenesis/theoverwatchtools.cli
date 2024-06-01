@@ -67,6 +67,11 @@ type CleanFn func(ignoreErrors ...bool)
 func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
 	m.Lock()
 	fmt.Println("==== locked testSpawnMariaDBrs")
+
+	// os.Setenv("DOCKER_HOST", "unix:///var/run/docker.sock")
+	os.Setenv("DOCKER_HOST", "unix:///Users/dembygenesisabella/.docker/run/docker.sock")
+	os.Setenv("DOCKER_CONTEXT", "desktop-linux")
+
 	defer m.Unlock()
 
 	// Set database logs on for testing
