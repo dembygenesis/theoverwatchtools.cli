@@ -85,6 +85,7 @@ func New() (*App, error) {
 		key := split[0]
 		val := split[1]
 		viper.Set(key, val)
+		fmt.Println("===== key, val:", key, val)
 	}
 
 	err = viper.Unmarshal(&config.Settings)
