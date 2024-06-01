@@ -10,8 +10,34 @@ import (
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
+
+// DropCapturePagesTable drops the capture pages table (for testing purposes).
+func (m *Repository) DropCapturePagesTable(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("extract context executor: %v", err)
+	}
+
+	dropStmts := []string{
+		"SET FOREIGN_KEY_CHECKS = 0;",
+		"DROP TABLE capture_pages;",
+		"SET FOREIGN_KEY_CHECKS = 1;",
+	}
+
+	for _, stmt := range dropStmts {
+		if _, err := queries.Raw(stmt).Exec(ctxExec); err != nil {
+			return fmt.Errorf("dropping capture pages table sql stmt: %v", err)
+		}
+	}
+
+	return nil
+}
 
 // AddCapturePage attempts to add a new capture page
 func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capture_page *model.CapturePages) (*model.CapturePages, error) {
@@ -85,7 +111,10 @@ func (m *Repository) GetCapturePages(ctx context.Context, tx persistence.Transac
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
+	fmt.Println("these are the filter ========>", strutil.GetAsJson(filters))
+
 	res, err := m.getCapturePages(ctx, ctxExec, filters)
+	fmt.Println("these are the res ========>", strutil.GetAsJson(res))
 	if err != nil {
 		return nil, fmt.Errorf("read capture pages: %v", err)
 	}

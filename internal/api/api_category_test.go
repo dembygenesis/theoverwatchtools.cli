@@ -3,9 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/api/apifakes"
 	"github.com/dembygenesis/local.tools/internal/api/testassets"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/dembygenesis/local.tools/internal/model"
@@ -32,84 +30,84 @@ type testCaseCreateCategory struct {
 	assertions        func(t *testing.T, resp []byte, respCode int)
 }
 
-func getTestCasesCreateCategory() []testCaseCreateCategory {
-	return []testCaseCreateCategory{
-		{
-			name: "success",
-			body: map[string]interface{}{
-				"name":                 "Example",
-				"category_type_ref_id": 1,
-			},
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
-					cleanup()
-				}
-			},
-			assertions: func(t *testing.T, resp []byte, respCode int) {
-				respStr := string(resp)
-				require.NotNilf(t, resp, "unexpected nil response: %s", respStr)
-				require.Equal(t, http.StatusCreated, respCode, "unexpected non-equal response code: %s", respStr)
-
-				var category *model.Category
-				err := json.Unmarshal(resp, &category)
-				require.NoError(t, err, "unexpected error unmarshalling the response")
-				require.NotNil(t, category, "unexpected nil category")
-
-				modelhelpers.AssertNonEmptyCategories(t, []model.Category{*category})
-			},
-		},
-		{
-			name: "fail-empty-body",
-			body: map[string]interface{}{},
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
-					cleanup()
-				}
-			},
-			assertions: func(t *testing.T, resp []byte, respCode int) {
-				assert.NotNil(t, resp, "unexpected nil response")
-				assert.Equal(t, respCode, http.StatusBadRequest)
-				require.Contains(t, string(resp), "validate:")
-			},
-		},
-		{
-			name: "fail-invalid-category-ref-id",
-			body: map[string]interface{}{
-				"name":                 "Example",
-				"category_type_ref_id": 19999,
-			},
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
-					cleanup()
-				}
-			},
-			assertions: func(t *testing.T, resp []byte, respCode int) {
-				assert.NotNil(t, resp, "unexpected nil response")
-				assert.Equal(t, respCode, http.StatusBadRequest)
-				require.Contains(t, string(resp), "invalid category_type_id")
-			},
-		},
-		{
-			name: "fail-mock-server-error",
-			body: map[string]interface{}{
-				"name":                 "Example",
-				"category_type_ref_id": 1,
-			},
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				fakeCategoryService := apifakes.FakeCategoryService{}
-				fakeCategoryService.CreateCategoryReturns(nil, errors.New("mock error"))
-				return &testServices{catService: &fakeCategoryService}, func() {}
-			},
-			assertions: func(t *testing.T, resp []byte, respCode int) {
-				require.NotNil(t, resp, "unexpected nil response")
-				assert.Equal(t, http.StatusInternalServerError, respCode)
-			},
-		},
-	}
-}
+//func getTestCasesCreateCategory() []testCaseCreateCategory {
+//	return []testCaseCreateCategory{
+//		{
+//			name: "success",
+//			body: map[string]interface{}{
+//				"name":                 "Example",
+//				"category_type_ref_id": 1,
+//			},
+//			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
+//				container, cleanup := testassets.GetConcreteContainer(t)
+//				return &testServices{catService: container.CategoryService}, func() {
+//					cleanup()
+//				}
+//			},
+//			assertions: func(t *testing.T, resp []byte, respCode int) {
+//				respStr := string(resp)
+//				require.NotNilf(t, resp, "unexpected nil response: %s", respStr)
+//				require.Equal(t, http.StatusCreated, respCode, "unexpected non-equal response code: %s", respStr)
+//
+//				var category *model.Category
+//				err := json.Unmarshal(resp, &category)
+//				require.NoError(t, err, "unexpected error unmarshalling the response")
+//				require.NotNil(t, category, "unexpected nil category")
+//
+//				modelhelpers.AssertNonEmptyCategories(t, []model.Category{*category})
+//			},
+//		},
+//		{
+//			name: "fail-empty-body",
+//			body: map[string]interface{}{},
+//			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
+//				container, cleanup := testassets.GetConcreteContainer(t)
+//				return &testServices{catService: container.CategoryService}, func() {
+//					cleanup()
+//				}
+//			},
+//			assertions: func(t *testing.T, resp []byte, respCode int) {
+//				assert.NotNil(t, resp, "unexpected nil response")
+//				assert.Equal(t, respCode, http.StatusBadRequest)
+//				require.Contains(t, string(resp), "validate:")
+//			},
+//		},
+//		{
+//			name: "fail-invalid-category-ref-id",
+//			body: map[string]interface{}{
+//				"name":                 "Example",
+//				"category_type_ref_id": 19999,
+//			},
+//			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
+//				container, cleanup := testassets.GetConcreteContainer(t)
+//				return &testServices{catService: container.CategoryService}, func() {
+//					cleanup()
+//				}
+//			},
+//			assertions: func(t *testing.T, resp []byte, respCode int) {
+//				assert.NotNil(t, resp, "unexpected nil response")
+//				assert.Equal(t, respCode, http.StatusBadRequest)
+//				require.Contains(t, string(resp), "invalid category_type_id")
+//			},
+//		},
+//		{
+//			name: "fail-mock-server-error",
+//			body: map[string]interface{}{
+//				"name":                 "Example",
+//				"category_type_ref_id": 1,
+//			},
+//			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
+//				fakeCategoryService := apifakes.FakeCategoryService{}
+//				fakeCategoryService.CreateCategoryReturns(nil, errors.New("mock error"))
+//				return &testServices{catService: &fakeCategoryService}, func() {}
+//			},
+//			assertions: func(t *testing.T, resp []byte, respCode int) {
+//				require.NotNil(t, resp, "unexpected nil response")
+//				assert.Equal(t, http.StatusInternalServerError, respCode)
+//			},
+//		},
+//	}
+//}
 
 //func Test_CreateCategory(t *testing.T) {
 //	for _, testCase := range getTestCasesCreateCategory() {
@@ -311,6 +309,7 @@ func Test_ListCategories(t *testing.T) {
 			}
 
 			handlers, cleanup := testCase.getContainer(t)
+			fmt.Println("===============>", strutil.GetAsJson(handlers))
 			defer cleanup()
 
 			cfg := &Config{
