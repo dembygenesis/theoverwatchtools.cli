@@ -18,6 +18,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"testing"
 	"time"
 )
@@ -169,5 +170,185 @@ func TestService_GetCapturePages(t *testing.T) {
 			paginatedCapturePages, err := svc.ListCapturePages(tt.args.ctx, tt.args.filter)
 			tt.assertions(t, paginatedCapturePages, err)
 		})
+	}
+}
+
+// test post method
+
+type argsCreateCapturePages struct {
+	ctx          context.Context
+	capturepages *model.CreateCapturePage
+}
+
+type testCaseCreateCapturePages struct {
+	name            string
+	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
+	args            argsCreateCapturePages
+	mutations       func(t *testing.T, db *sqlx.DB)
+	assertions      func(t *testing.T, category *model.CapturePages, err error)
+}
+
+func TestService_CreateCapturePages(t *testing.T) {
+	for _, tt := range getTestCasesCreateCapturePages() {
+		t.Run(tt.name, func(t *testing.T) {
+			_dependencies, cleanup := tt.getDependencies(t)
+			defer cleanup()
+
+			svc, err := New(&Config{
+				TxProvider: _dependencies.TxProvider,
+				Logger:     _dependencies.Logger,
+				Persistor:  _dependencies.Persistor,
+			})
+			require.NoError(t, err, "unexpected new error")
+
+			tt.mutations(t, _dependencies.Db)
+
+			capturepages, err := svc.CreateCapturePages(tt.args.ctx, tt.args.capturepages)
+			tt.assertions(t, capturepages, err)
+		})
+	}
+}
+
+func getTestCasesCreateCapturePages() []testCaseCreateCapturePages {
+	return []testCaseCreateCapturePages{
+		{
+			name:            "success",
+			getDependencies: getConcreteDependencies,
+			args: argsCreateCapturePages{
+				ctx: context.TODO(),
+				capturepages: &model.CreateCapturePage{
+					CapturePageSetId: 1,
+					Name:             "Example",
+					IsControl:        1,
+				},
+			},
+			assertions: func(t *testing.T, capturepages *model.CapturePages, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, capturepages, "unexpected nil capture page")
+
+				require.NotEqual(t, 0, capturepages.Id, "unexpected nil capture page")
+				require.NotEmpty(t, capturepages.Name, "unexpected empty capture page name")
+				require.NotEqual(t, 0, capturepages.CapturePageSetId, "unexpected empty capture page set id")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+		},
+		{
+			name:            "success",
+			getDependencies: getConcreteDependencies,
+			args: argsCreateCapturePages{
+				ctx: context.TODO(),
+				capturepages: &model.CreateCapturePage{
+					CapturePageSetId: 1,
+					Name:             "Example",
+					IsControl:        1,
+				},
+			},
+			assertions: func(t *testing.T, capturepages *model.CapturePages, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, capturepages, "unexpected nil capture page")
+
+				require.NotEqual(t, 0, capturepages.Id, "unexpected nil capture page")
+				require.NotEmpty(t, capturepages.Name, "unexpected empty capture page name")
+				require.NotEqual(t, 0, capturepages.CapturePageSetId, "unexpected empty capture page set id")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+		},
+		{
+			name:            "fail-internal-error",
+			getDependencies: getConcreteDependencies,
+			args: argsCreateCapturePages{
+				ctx: context.TODO(),
+				capturepages: &model.CreateCapturePage{
+					CapturePageSetId: 1,
+					Name:             "Example",
+					IsControl:        1,
+				},
+			},
+			assertions: func(t *testing.T, capturepages *model.CapturePages, err error) {
+				assert.Error(t, err, "unexpected error")
+				assert.Nil(t, capturepages, "unexpected nil capture page")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				testhelper.DropTable(t, db, mysqlmodel.TableNames.CapturePages)
+			},
+		},
+		{
+			name:            "fail-invalid-args",
+			getDependencies: getConcreteDependencies,
+			args: argsCreateCapturePages{
+				ctx: context.TODO(),
+				capturepages: &model.CreateCapturePage{
+					CapturePageSetId: 0,
+					Name:             "Example",
+					IsControl:        0,
+				},
+			},
+			assertions: func(t *testing.T, capturepages *model.CapturePages, err error) {
+				assert.Error(t, err, "unexpected error")
+				assert.Nil(t, capturepages, "unexpected nil capture page")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+		},
+		{
+			name:            "fail-unique",
+			getDependencies: getConcreteDependencies,
+			args: argsCreateCapturePages{
+				ctx: context.TODO(),
+				capturepages: &model.CreateCapturePage{
+					CapturePageSetId: 1,
+					Name:             "Example",
+					IsControl:        1,
+				},
+			},
+			assertions: func(t *testing.T, capturepages *model.CapturePages, err error) {
+				assert.Error(t, err, "unexpected error")
+				assert.Nil(t, capturepages, "unexpected nil capture page")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				entry := mysqlmodel.CapturePage{
+					Name:             "Example",
+					CapturePageSetID: 1,
+					IsControl:        1,
+				}
+				err := entry.Insert(context.TODO(), db, boil.Infer())
+				require.NoError(t, err, "unexpected insert error")
+			},
+		},
+		{
+			name: "fail-mock",
+			getDependencies: func(t *testing.T) (*dependencies, func(ignoreErrors ...bool)) {
+				fakeCleanup := func(ignoreErrors ...bool) {}
+				mockTxProvider := persistencefakes.FakeTransactionProvider{}
+				mockTxProvider.TxReturns(&persistencefakes.FakeTransactionHandler{}, errors.New(mockDbReturnsErr))
+
+				return &dependencies{
+					Persistor:  &capturepageslogicfakes.FakePersistor{},
+					TxProvider: &mockTxProvider,
+					Logger:     mockLogger,
+					Cleanup:    fakeCleanup,
+				}, fakeCleanup
+			},
+			args: argsCreateCapturePages{
+				ctx: context.TODO(),
+				capturepages: &model.CreateCapturePage{
+					CapturePageSetId: 1,
+					Name:             "Example",
+					IsControl:        1,
+				},
+			},
+			assertions: func(t *testing.T, category *model.CapturePages, err error) {
+				assert.Error(t, err, "unexpected error")
+				assert.Nil(t, category, "unexpected nil capture page")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+		},
 	}
 }
