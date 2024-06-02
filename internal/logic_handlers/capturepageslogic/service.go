@@ -65,7 +65,7 @@ func (i *Service) CreateCapturePages(ctx context.Context, params *model.CreateCa
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusBadRequest,
-			Err:        fmt.Errorf("invalid category_type_id: %v", err),
+			Err:        fmt.Errorf("invalid capture_pages_sets_id: %v", err),
 		})
 	}
 

@@ -65,6 +65,11 @@ type FakeOrganizationService struct {
 	invocationsMutex sync.RWMutex
 }
 
+func (fake *FakeOrganizationService) UpdateOrganization(ctx context.Context, category *model.UpdateOrganization) (*model.Organization, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (fake *FakeOrganizationService) CreateOrganization(arg1 context.Context, arg2 *model.CreateOrganization) (*model.Organization, error) {
 	fake.createOrganizationMutex.Lock()
 	ret, specificReturn := fake.createOrganizationReturnsOnCall[len(fake.createOrganizationArgsForCall)]
