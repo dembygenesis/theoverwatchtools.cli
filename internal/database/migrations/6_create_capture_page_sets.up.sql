@@ -24,4 +24,5 @@ INSERT INTO `capture_page_sets` (
     `name`, `url_name`, `created_by`, `updated_by`, `organization_id`
 ) VALUES
       ('Test Page Set 1', 'test-page-set-1', 1, 1, 1),
-      ('Test Page Set 2', 'test-page-set-2', 1, 1, 1);
+      ('Test Page Set 2', 'test-page-set-2', 1, 1, 1),
+      ('Test Page Set 3', 'test-page-set-3', 1, 1, 1);

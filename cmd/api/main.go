@@ -9,7 +9,7 @@ import (
 func main() {
 	builder, err := dic.NewBuilder()
 	if err != nil {
-		log.Fatalf("builder: %v", err)
+		log.Fatalf("builder: %vgit remote add ", err)
 	}
 
 	ctn := builder.Build()

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
+	"strings"
 	"testing"
 )
 
@@ -177,6 +178,85 @@ func Test_GetCapturePages(t *testing.T) {
 			testCase.mutations(t, db)
 			paginated, err := m.GetCapturePages(testCtx, txHandlerDb, testCase.filter)
 			testCase.assertions(t, db, paginated, err)
+		})
+	}
+}
+
+//test for the post method
+
+type createCapturePagesTestCase struct {
+	name             string
+	capturePageName  string
+	capturePageSetId int
+	assertions       func(t *testing.T, db *sqlx.DB, capturepages *model.CapturePages, err error)
+}
+
+func getAddCapturePageTestCases() []createCapturePagesTestCase {
+	return []createCapturePagesTestCase{
+		{
+			name:             "success",
+			capturePageName:  "Example Capture Page",
+			capturePageSetId: 1,
+			assertions: func(t *testing.T, db *sqlx.DB, capturepages *model.CapturePages, err error) {
+				assert.NotNil(t, capturepages, "unexpected nil capture pages")
+				assert.NoError(t, err, "unexpected non-nil error")
+
+				modelhelpers.AssertNonEmptyCapturePages(t, []model.CapturePages{*capturepages})
+			},
+		},
+		{
+			name:             "fail-name-exceeds-limit",
+			capturePageName:  strings.Repeat("a", 256),
+			capturePageSetId: 1,
+			assertions: func(t *testing.T, db *sqlx.DB, capturepages *model.CapturePages, err error) {
+				assert.Nil(t, capturepages, "unexpected non-nil capture pages")
+				assert.Error(t, err, "unexpected nil-error")
+			},
+		},
+		{
+			name:             "fail-invalid-capture-pages-set-id",
+			capturePageName:  strings.Repeat("a", 255),
+			capturePageSetId: 199,
+			assertions: func(t *testing.T, db *sqlx.DB, capturepages *model.CapturePages, err error) {
+				assert.Nil(t, capturepages, "unexpected non-nil capture pages")
+				assert.Error(t, err, "unexpected nil-error")
+			},
+		},
+	}
+}
+
+func Test_AddCapturePage(t *testing.T) {
+	for _, testCase := range getAddCapturePageTestCases() {
+		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+		t.Run(testCase.name, func(t *testing.T) {
+			defer cleanup()
+			cfg := &Config{
+				Logger:        testLogger,
+				QueryTimeouts: testQueryTimeouts,
+			}
+
+			m, err := New(cfg)
+			require.NoError(t, err, "unexpected error")
+			require.NotNil(t, m, "unexpected nil")
+
+			txHandler, err := mysqltx.New(&mysqltx.Config{
+				Logger:       testLogger,
+				Db:           db,
+				DatabaseName: cp.Database,
+			})
+			require.NoError(t, err, "unexpected error creating the tx handler")
+
+			txHandlerDb, err := txHandler.Db(testCtx)
+			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+			cat := &model.CapturePages{
+				Name:             testCase.capturePageName,
+				CapturePageSetId: testCase.capturePageSetId,
+			}
+
+			cat, err = m.AddCapturePage(testCtx, txHandlerDb, cat)
+			testCase.assertions(t, db, cat, err)
 		})
 	}
 }

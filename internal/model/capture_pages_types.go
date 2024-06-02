@@ -1,7 +1,7 @@
 package model
 
 type PaginatedCapturePagesTypes struct {
-	CapturePages []CapturePageType `json:"category_types"`
+	CapturePages []CapturePageType `json:"capture_pages"`
 	Pagination   *Pagination       `json:"pagination"`
 }
 

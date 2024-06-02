@@ -8,11 +8,12 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-// GetCapturePageTypeById attempts to fetch the category.
+// GetCapturePageTypeById attempts to fetch the capture pages.
 func (m *Repository) GetCapturePageTypeById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.CapturePageType, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
@@ -24,6 +25,9 @@ func (m *Repository) GetCapturePageTypeById(ctx context.Context, tx persistence.
 		return nil, fmt.Errorf("read capture pages: %v", err)
 	}
 
+	fmt.Println(strutil.GetAsJson(res))
+	fmt.Println("this is res.Pagination.RowCount =>>>>>>>>>", strutil.GetAsJson(res.Pagination.RowCount))
+
 	if res.Pagination.RowCount != 1 {
 		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, mysqlmodel.TableNames.CapturePageSets)
 	}
@@ -31,7 +35,7 @@ func (m *Repository) GetCapturePageTypeById(ctx context.Context, tx persistence.
 	return &res.CapturePages[0], nil
 }
 
-// GetCapturePageTypes attempts to fetch the category
+// GetCapturePageTypes attempts to fetch the capture pages
 // entries using the given transaction layer.
 func (m *Repository) GetCapturePageTypes(ctx context.Context, tx persistence.TransactionHandler, filters *model.CapturePagesTypeFilters) (*model.PaginatedCapturePagesTypes, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)

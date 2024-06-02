@@ -14,11 +14,11 @@ type RestoreCapturePages struct {
 	ID int `json:"id" validate:"required,greater_than_zero"`
 }
 
-// CreateCapturePage struct for creating a new category
+// CreateCapturePage struct for creating a new capture page
 type CreateCapturePage struct {
 	CapturePageSetId int    `json:"capture_page_set_id" validate:"required,greater_than_zero"`
 	Name             string `json:"name" validate:"required"`
-	IsControl        int    `json:"is_control" validate:"required,oneof= 1 0"`
+	//IsControl        int    `json:"is_control" validate:"required,oneof= 1 0"`
 }
 
 // CapturePagesFilters contains the capture pages filters.
@@ -42,9 +42,9 @@ type CapturePages struct {
 // ToCapturePage converts the CreateCapturePage to a Capture Page.
 func (c *CreateCapturePage) ToCapturePage() *CapturePages {
 	capturepage := &CapturePages{
-		Name:                  c.Name,
-		CapturePageSetId:      c.CapturePageSetId,
-		CapturePagesIsControl: c.IsControl,
+		Name:             c.Name,
+		CapturePageSetId: c.CapturePageSetId,
+		//CapturePagesIsControl: c.IsControl,
 	}
 	return capturepage
 }
