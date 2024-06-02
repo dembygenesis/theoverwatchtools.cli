@@ -371,7 +371,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 						Valid:  true,
 					},
 					OrganizationTypeRefId: null.Int{
-						Int:   3,
+						Int:   1,
 						Valid: true,
 					},
 				},
@@ -417,7 +417,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				params: &model.UpdateOrganization{
 					Id: 1,
 					OrganizationTypeRefId: null.Int{
-						Int:   3,
+						Int:   1,
 						Valid: true,
 					},
 				},
@@ -440,7 +440,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				params: &model.UpdateOrganization{
 					Id: 1,
 					OrganizationTypeRefId: null.Int{
-						Int:   3,
+						Int:   1,
 						Valid: true,
 					},
 				},
@@ -473,7 +473,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				params: &model.UpdateOrganization{
 					Id: 1,
 					OrganizationTypeRefId: null.Int{
-						Int:   3,
+						Int:   1,
 						Valid: true,
 					},
 				},

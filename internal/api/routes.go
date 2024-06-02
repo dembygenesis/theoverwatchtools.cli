@@ -52,7 +52,7 @@ func (a *Api) Routes() error {
 	groupOrganization := v1.Group("/organization")
 	groupOrganization.Name("List Organizations").Get("", a.ListOrganizations)
 	groupOrganization.Name("Create Organization").Post("", a.CreateOrganization)
-	groupCategory.Name("Update Organization").Patch("", a.UpdateCategory)
+	groupOrganization.Name("Update Organization").Patch("", a.UpdateOrganization)
 	groupOrganization.Name("Delete Organization").Delete("/:id", a.DeleteOrganization)
 	groupOrganization.Name("Restore Organization").Patch("/:id", a.RestoreOrganization)
 

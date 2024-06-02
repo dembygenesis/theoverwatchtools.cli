@@ -8,6 +8,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -23,6 +24,8 @@ func (m *Repository) GetCategoryTypeById(ctx context.Context, tx persistence.Tra
 	if err != nil {
 		return nil, fmt.Errorf("read categories: %v", err)
 	}
+
+	fmt.Println("the res cats --- ", strutil.GetAsJson(res.Pagination))
 
 	if res.Pagination.RowCount != 1 {
 		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, mysqlmodel.TableNames.CategoryType)

@@ -8,6 +8,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
+	"github.com/dembygenesis/local.tools/internal/utils_common"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
@@ -201,6 +202,8 @@ func (i *Service) UpdateOrganization(ctx context.Context, params *model.UpdateOr
 	if err := params.Validate(); err != nil {
 		return nil, fmt.Errorf("validate: %w", err)
 	}
+
+	fmt.Println("the params organization type ref id ---- ", utils_common.GetJSON(params.OrganizationTypeRefId.Int))
 
 	if params.OrganizationTypeRefId.Valid {
 		if err := i.validateOrganizationTypeId(ctx, tx, params.OrganizationTypeRefId.Int); err != nil {
