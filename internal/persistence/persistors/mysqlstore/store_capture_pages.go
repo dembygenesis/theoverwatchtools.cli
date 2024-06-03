@@ -92,12 +92,14 @@ func (m *Repository) CreateCapturePages(ctx context.Context, tx persistence.Tran
 		IsControl:        capture_page.CapturePagesIsControl,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
-		return nil, fmt.Errorf("insert category: %v", err)
+		return nil, fmt.Errorf("insert capture page: %v", err)
 	}
+
+	fmt.Println("the capture page id ----- ", entry.ID)
 
 	capture_page, err = m.GetCapturePageById(ctx, tx, entry.ID)
 	if err != nil {
-		return nil, fmt.Errorf("get category by id: %v", err)
+		return nil, fmt.Errorf("get capture page by id: %v", err)
 	}
 
 	return capture_page, nil
@@ -111,10 +113,8 @@ func (m *Repository) GetCapturePages(ctx context.Context, tx persistence.Transac
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
-	fmt.Println("these are the filter ========>", strutil.GetAsJson(filters))
-
 	res, err := m.getCapturePages(ctx, ctxExec, filters)
-	fmt.Println("these are the res ========>", strutil.GetAsJson(res))
+
 	if err != nil {
 		return nil, fmt.Errorf("read capture pages: %v", err)
 	}

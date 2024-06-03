@@ -468,9 +468,9 @@ func getTestCasesDeleteOrganization() []testCaseDeleteOrganization {
 					}
 			},
 			mutations: func(t *testing.T, modules *testassets.Container) {
-				// Optional: Perform any mutations needed before the test
+
 			},
-			orgID: 1, // Ensure the organization ID to delete is provided
+			orgID: 1,
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				require.Equal(t, http.StatusOK, respCode)
 				var organization *model.Organization

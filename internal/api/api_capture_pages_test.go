@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/api/apifakes"
 	"github.com/dembygenesis/local.tools/internal/api/testassets"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/dembygenesis/local.tools/internal/model"
@@ -259,21 +261,21 @@ func getTestCasesCreateCapturePages() []testCaseCreateCapturePages {
 				modelhelpers.AssertNonEmptyCapturePages(t, []model.CapturePages{*capturepages})
 			},
 		},
-		//{
-		//	name: "fail-empty-body",
-		//	body: map[string]interface{}{},
-		//	fnGetTestServices: func(t *testing.T) (*testServicesCP, func()) {
-		//		container, cleanup := testassets.GetConcreteContainer(t)
-		//		return &testServicesCP{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService}, func() {
-		//			cleanup()
-		//		}
-		//	},
-		//	assertions: func(t *testing.T, resp []byte, respCode int) {
-		//		assert.NotNil(t, resp, "unexpected nil response")
-		//		assert.Equal(t, respCode, http.StatusBadRequest)
-		//		require.Contains(t, string(resp), "validate:")
-		//	},
-		//},
+		{
+			name: "fail-empty-body",
+			body: map[string]interface{}{},
+			fnGetTestServices: func(t *testing.T) (*testServicesCP, func()) {
+				container, cleanup := testassets.GetConcreteContainer(t)
+				return &testServicesCP{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService}, func() {
+					cleanup()
+				}
+			},
+			assertions: func(t *testing.T, resp []byte, respCode int) {
+				assert.NotNil(t, resp, "unexpected nil response")
+				assert.Equal(t, respCode, http.StatusBadRequest)
+				require.Contains(t, string(resp), "validate:")
+			},
+		},
 		{
 			name: "fail-invalid-capture-page-set-id",
 			body: map[string]interface{}{
@@ -283,37 +285,41 @@ func getTestCasesCreateCapturePages() []testCaseCreateCapturePages {
 			},
 			fnGetTestServices: func(t *testing.T) (*testServicesCP, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServicesCP{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService}, func() {
-					cleanup()
-				}
+				return &testServicesCP{
+						catService:      container.CategoryService,
+						orgService:      container.OrganizationService,
+						capPagesService: container.CapturePagesService,
+					}, func() {
+						cleanup()
+					}
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 
 				assert.NotNil(t, resp, "unexpected nil response")
 				assert.Equal(t, respCode, http.StatusBadRequest)
-				require.Contains(t, string(resp), "invalid capture_page_set_id")
+				require.Contains(t, string(resp), "invalid capture_pages_sets_id")
 			},
 		},
-		//{
-		//	name: "fail-mock-server-error",
-		//	body: map[string]interface{}{
-		//		"name":                "Example",
-		//		"capture_page_set_id": 1,
-		//	},
-		//	fnGetTestServices: func(t *testing.T) (*testServicesCP, func()) {
-		//		fakeCategoryService := apifakes.FakeCategoryService{}
-		//		fakeCategoryService.CreateCategoryReturns(nil, errors.New("mock error"))
-		//		fakeOrganizationService := apifakes.FakeOrganizationService{}
-		//		fakeOrganizationService.CreateOrganizationReturns(nil, errors.New("mock error"))
-		//		fakeCapturePagesService := apifakes.FakeCapturePagesService{}
-		//		fakeCapturePagesService.CreateCapturePagesReturns(nil, errors.New("mock error"))
-		//		return &testServicesCP{catService: &fakeCategoryService, orgService: &fakeOrganizationService, capPagesService: &fakeCapturePagesService}, func() {}
-		//	},
-		//	assertions: func(t *testing.T, resp []byte, respCode int) {
-		//		require.NotNil(t, resp, "unexpected nil response")
-		//		assert.Equal(t, http.StatusInternalServerError, respCode)
-		//	},
-		//},
+		{
+			name: "fail-mock-server-error",
+			body: map[string]interface{}{
+				"name":                "Example",
+				"capture_page_set_id": 1,
+			},
+			fnGetTestServices: func(t *testing.T) (*testServicesCP, func()) {
+				fakeCategoryService := apifakes.FakeCategoryService{}
+				fakeCategoryService.CreateCategoryReturns(nil, errors.New("mock error"))
+				fakeOrganizationService := apifakes.FakeOrganizationService{}
+				fakeOrganizationService.CreateOrganizationReturns(nil, errors.New("mock error"))
+				fakeCapturePagesService := apifakes.FakeCapturePagesService{}
+				fakeCapturePagesService.CreateCapturePagesReturns(nil, errors.New("mock error"))
+				return &testServicesCP{catService: &fakeCategoryService, orgService: &fakeOrganizationService, capPagesService: &fakeCapturePagesService}, func() {}
+			},
+			assertions: func(t *testing.T, resp []byte, respCode int) {
+				require.NotNil(t, resp, "unexpected nil response")
+				assert.Equal(t, http.StatusInternalServerError, respCode)
+			},
+		},
 	}
 }
 
