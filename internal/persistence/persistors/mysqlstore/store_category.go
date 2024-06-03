@@ -163,6 +163,8 @@ func (m *Repository) GetCategories(ctx context.Context, tx persistence.Transacti
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
+	fmt.Println("the filters cats --- ", strutil.GetAsJson(filters))
+
 	res, err := m.getCategories(ctx, ctxExec, filters)
 	if err != nil {
 		return nil, fmt.Errorf("read categories: %v", err)

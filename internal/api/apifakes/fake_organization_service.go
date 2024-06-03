@@ -61,13 +61,22 @@ type FakeOrganizationService struct {
 	restoreOrganizationReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateOrganizationStub        func(context.Context, *model.UpdateOrganization) (*model.Organization, error)
+	updateOrganizationMutex       sync.RWMutex
+	updateOrganizationArgsForCall []struct {
+		arg1 context.Context
+		arg2 *model.UpdateOrganization
+	}
+	updateOrganizationReturns struct {
+		result1 *model.Organization
+		result2 error
+	}
+	updateOrganizationReturnsOnCall map[int]struct {
+		result1 *model.Organization
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *FakeOrganizationService) UpdateOrganization(ctx context.Context, category *model.UpdateOrganization) (*model.Organization, error) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (fake *FakeOrganizationService) CreateOrganization(arg1 context.Context, arg2 *model.CreateOrganization) (*model.Organization, error) {
@@ -324,6 +333,71 @@ func (fake *FakeOrganizationService) RestoreOrganizationReturnsOnCall(i int, res
 	}{result1}
 }
 
+func (fake *FakeOrganizationService) UpdateOrganization(arg1 context.Context, arg2 *model.UpdateOrganization) (*model.Organization, error) {
+	fake.updateOrganizationMutex.Lock()
+	ret, specificReturn := fake.updateOrganizationReturnsOnCall[len(fake.updateOrganizationArgsForCall)]
+	fake.updateOrganizationArgsForCall = append(fake.updateOrganizationArgsForCall, struct {
+		arg1 context.Context
+		arg2 *model.UpdateOrganization
+	}{arg1, arg2})
+	stub := fake.UpdateOrganizationStub
+	fakeReturns := fake.updateOrganizationReturns
+	fake.recordInvocation("UpdateOrganization", []interface{}{arg1, arg2})
+	fake.updateOrganizationMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeOrganizationService) UpdateOrganizationCallCount() int {
+	fake.updateOrganizationMutex.RLock()
+	defer fake.updateOrganizationMutex.RUnlock()
+	return len(fake.updateOrganizationArgsForCall)
+}
+
+func (fake *FakeOrganizationService) UpdateOrganizationCalls(stub func(context.Context, *model.UpdateOrganization) (*model.Organization, error)) {
+	fake.updateOrganizationMutex.Lock()
+	defer fake.updateOrganizationMutex.Unlock()
+	fake.UpdateOrganizationStub = stub
+}
+
+func (fake *FakeOrganizationService) UpdateOrganizationArgsForCall(i int) (context.Context, *model.UpdateOrganization) {
+	fake.updateOrganizationMutex.RLock()
+	defer fake.updateOrganizationMutex.RUnlock()
+	argsForCall := fake.updateOrganizationArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeOrganizationService) UpdateOrganizationReturns(result1 *model.Organization, result2 error) {
+	fake.updateOrganizationMutex.Lock()
+	defer fake.updateOrganizationMutex.Unlock()
+	fake.UpdateOrganizationStub = nil
+	fake.updateOrganizationReturns = struct {
+		result1 *model.Organization
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeOrganizationService) UpdateOrganizationReturnsOnCall(i int, result1 *model.Organization, result2 error) {
+	fake.updateOrganizationMutex.Lock()
+	defer fake.updateOrganizationMutex.Unlock()
+	fake.UpdateOrganizationStub = nil
+	if fake.updateOrganizationReturnsOnCall == nil {
+		fake.updateOrganizationReturnsOnCall = make(map[int]struct {
+			result1 *model.Organization
+			result2 error
+		})
+	}
+	fake.updateOrganizationReturnsOnCall[i] = struct {
+		result1 *model.Organization
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeOrganizationService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -335,6 +409,8 @@ func (fake *FakeOrganizationService) Invocations() map[string][][]interface{} {
 	defer fake.listOrganizationsMutex.RUnlock()
 	fake.restoreOrganizationMutex.RLock()
 	defer fake.restoreOrganizationMutex.RUnlock()
+	fake.updateOrganizationMutex.RLock()
+	defer fake.updateOrganizationMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

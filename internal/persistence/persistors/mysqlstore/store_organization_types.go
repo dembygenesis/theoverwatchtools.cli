@@ -8,12 +8,14 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // GetOrganizationTypeById attempts to fetch the organization.
 func (m *Repository) GetOrganizationTypeById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.OrganizationType, error) {
+	fmt.Println("the id ---- ", strutil.GetAsJson(id))
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
@@ -23,6 +25,8 @@ func (m *Repository) GetOrganizationTypeById(ctx context.Context, tx persistence
 	if err != nil {
 		return nil, fmt.Errorf("read organizations: %v", err)
 	}
+
+	fmt.Println("the res --- ", strutil.GetAsJson(res.Pagination))
 
 	if res.Pagination.RowCount != 1 {
 		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, mysqlmodel.TableNames.OrganizationType)
