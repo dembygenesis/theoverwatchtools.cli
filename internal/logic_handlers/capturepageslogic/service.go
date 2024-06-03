@@ -62,6 +62,7 @@ func (i *Service) CreateCapturePages(ctx context.Context, params *model.CreateCa
 
 	_, err = i.cfg.Persistor.GetCapturePageTypeById(ctx, tx, capture_page.CapturePageSetId)
 	if err != nil {
+		fmt.Println("the error --- ", err)
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusBadRequest,
 			Err:        fmt.Errorf("invalid capture_pages_sets_id: %v", err),
