@@ -36,7 +36,7 @@ func (c *UpdateCategory) Validate() error {
 		if c.CategoryTypeRefId.Int > 0 {
 			hasAtLeastOneUpdateParameters = true
 		} else {
-			errList.Add(sysconsts.ErrCategoryTypeRefIdInvalid)
+			errList.Add(sysconsts.ErrCapturePageSetId)
 		}
 	}
 

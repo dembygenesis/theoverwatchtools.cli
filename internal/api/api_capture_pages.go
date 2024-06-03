@@ -64,3 +64,25 @@ func (a *Api) CreateCapturePages(ctx *fiber.Ctx) error {
 	capturepage, err := a.cfg.CapturePagesService.CreateCapturePages(ctx.Context(), &body)
 	return a.WriteResponse(ctx, http.StatusCreated, capturepage, err)
 }
+
+// UpdateCapturePage fetches the capture pages
+//
+// @Id UpdateCapturePage
+// @Summary Update Capture page
+// @Description Update a capture page
+// @Tags CapturePagesService
+// @Accept application/json
+// @Produce application/json
+// @Param filters body model.UpdateCapturePages false "Category body"
+// @Success 200 {object} model.Category
+// @Failure 400 {object} []string
+// @Failure 500 {object} []string
+// @Router /v1/capturepages [patch]
+func (a *Api) UpdateCapturePages(ctx *fiber.Ctx) error {
+	var body model.UpdateCapturePages
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+	capturepages, err := a.cfg.CapturePagesService.UpdateCapturePages(ctx.Context(), &body)
+	return a.WriteResponse(ctx, http.StatusOK, capturepages, err)
+}

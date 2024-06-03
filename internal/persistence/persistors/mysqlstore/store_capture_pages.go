@@ -39,6 +39,43 @@ func (m *Repository) DropCapturePagesTable(
 	return nil
 }
 
+func (m *Repository) UpdateCapturePages(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateCapturePages) (*model.CapturePages, error) {
+	if params == nil {
+		return nil, ErrCatNil
+	}
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %v", err)
+	}
+
+	entry := &mysqlmodel.CapturePage{ID: params.Id}
+	cols := []string{mysqlmodel.CapturePageColumns.ID}
+
+	fmt.Println("====== entry UpdateCapturePages:", strutil.GetAsJson(entry))
+	fmt.Println("====== params UpdateCapturePages:", strutil.GetAsJson(params))
+
+	if params.CapturePageSetId.Valid {
+		entry.CapturePageSetID = params.CapturePageSetId.Int
+		cols = append(cols, mysqlmodel.CapturePageColumns.CapturePageSetID)
+	}
+	if params.Name.Valid {
+		entry.Name = params.Name.String
+		cols = append(cols, mysqlmodel.CapturePageColumns.Name)
+	}
+
+	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
+	if err != nil {
+		return nil, fmt.Errorf("update failed: %v", err)
+	}
+
+	capturepages, err := m.GetCapturePageById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get capture page by id: %v", err)
+	}
+
+	return capturepages, nil
+}
+
 // AddCapturePage attempts to add a new capture page
 func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capture_page *model.CapturePages) (*model.CapturePages, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
@@ -71,7 +108,6 @@ func (m *Repository) GetCapturePageById(ctx context.Context, tx persistence.Tran
 	if err != nil {
 		return nil, fmt.Errorf("capture page filtered by id: %v", err)
 	}
-
 	if paginated.Pagination.RowCount != 1 {
 
 		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, id)
@@ -92,12 +128,12 @@ func (m *Repository) CreateCapturePages(ctx context.Context, tx persistence.Tran
 		IsControl:        capture_page.CapturePagesIsControl,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
-		return nil, fmt.Errorf("insert category: %v", err)
+		return nil, fmt.Errorf("insert capture page: %v", err)
 	}
 
 	capture_page, err = m.GetCapturePageById(ctx, tx, entry.ID)
 	if err != nil {
-		return nil, fmt.Errorf("get category by id: %v", err)
+		return nil, fmt.Errorf("get capture page by id: %v", err)
 	}
 
 	return capture_page, nil
