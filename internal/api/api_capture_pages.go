@@ -128,7 +128,7 @@ func (a *Api) DeleteCapturePages(ctx *fiber.Ctx) error {
 // @Success 204 "No Content"
 // @Failure 400 {object} []string
 // @Failure 500 {object} []string
-// @Router /v1/capturepages/{id}/restore [patch]
+// @Router /v1/capturepages/{id} [patch]
 func (a *Api) RestoreCapturePages(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	capturePageID, err := strconv.Atoi(id)
