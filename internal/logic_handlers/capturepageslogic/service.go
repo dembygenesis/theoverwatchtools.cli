@@ -169,3 +169,32 @@ func (s *Service) DeleteCapturePages(ctx context.Context, params *model.DeleteCa
 
 	return nil
 }
+
+// RestoreCapturePages restores a deleted capture page by ID.
+func (s *Service) RestoreCapturePages(ctx context.Context, params *model.RestoreCapturePages) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	err = s.cfg.Persistor.RestoreCapturePages(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("restore capture page: %v", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %v", err),
+		})
+	}
+
+	return nil
+}

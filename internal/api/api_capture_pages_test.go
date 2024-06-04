@@ -501,3 +501,74 @@ func Test_DeleteCapturePages(t *testing.T) {
 		})
 	}
 }
+
+// test for restore method
+
+type testCaseRestoreCapturePages struct {
+	name              string
+	fnGetTestServices func(t *testing.T) (*testServices, func())
+	mutations         func(t *testing.T, modules *testassets.Container)
+	capID             int
+	assertions        func(t *testing.T, resp []byte, respCode int)
+}
+
+func getTestCasesRestoreCapturePages() []testCaseRestoreCapturePages {
+	return []testCaseRestoreCapturePages{
+		{
+			name: "success",
+			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
+				container, cleanup := testassets.GetConcreteContainer(t)
+				return &testServices{
+						catService:      container.CategoryService,
+						orgService:      container.OrganizationService,
+						capPagesService: container.CapturePagesService,
+					}, func() {
+						cleanup()
+					}
+			},
+			mutations: func(t *testing.T, modules *testassets.Container) {
+
+			},
+			capID: 1,
+			assertions: func(t *testing.T, resp []byte, respCode int) {
+				require.Equal(t, http.StatusOK, respCode)
+				var capturepages *model.CapturePages
+				err := json.Unmarshal(resp, &capturepages)
+				require.NoError(t, err, "unexpected error unmarshalling the response")
+				modelhelpers.AssertNonEmptyCapturePages(t, []model.CapturePages{*capturepages})
+			},
+		},
+	}
+}
+
+func Test_RestoreCapturePages(t *testing.T) {
+	for _, testCase := range getTestCasesRestoreCapturePages() {
+		t.Run(testCase.name, func(t *testing.T) {
+			handlers, cleanup := testCase.fnGetTestServices(t)
+			defer cleanup()
+
+			cfg := &Config{
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CapturePagesService: handlers.capPagesService,
+				CategoryService:     handlers.catService,
+				OrganizationService: handlers.orgService,
+				Logger:              logger.New(context.TODO()),
+			}
+
+			api, err := New(cfg)
+			require.NoError(t, err, "unexpected error instantiating api")
+			require.NotNil(t, api, "unexpected api nil instance")
+
+			url := fmt.Sprintf("/api/v1/capturepages/%d", testCase.capID)
+			req := httptest.NewRequest(http.MethodPatch, url, nil)
+			req.Header = map[string][]string{
+				"Content-Type":    {"application/json"},
+				"Accept-Encoding": {"gzip", "deflate", "br"},
+			}
+
+			_, err = api.app.Test(req, 100)
+			require.NoError(t, err, "unexpected error executing test")
+		})
+	}
+}

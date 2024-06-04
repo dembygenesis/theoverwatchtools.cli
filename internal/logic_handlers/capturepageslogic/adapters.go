@@ -15,4 +15,5 @@ type persistor interface {
 	GetCapturePageTypeById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.CapturePageType, error)
 	UpdateCapturePages(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateCapturePages) (*model.CapturePages, error)
 	DeleteCapturePages(ctx context.Context, tx persistence.TransactionHandler, id int) error
+	RestoreCapturePages(ctx context.Context, tx persistence.TransactionHandler, id int) error
 }

@@ -31,7 +31,7 @@ type capturePagesService interface {
 	CreateCapturePages(ctx context.Context, capturepage *model.CreateCapturePage) (*model.CapturePages, error)
 	UpdateCapturePages(ctx context.Context, capturepage *model.UpdateCapturePages) (*model.CapturePages, error)
 	DeleteCapturePages(ctx context.Context, params *model.DeleteCapturePages) error
-	//RestoreCategory(ctx context.Context, params *model.RestoreCapturePages) error
+	RestoreCapturePages(ctx context.Context, params *model.RestoreCapturePages) error
 }
 
 //counterfeiter:generate . userService

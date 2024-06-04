@@ -116,3 +116,32 @@ func (a *Api) DeleteCapturePages(ctx *fiber.Ctx) error {
 
 	return ctx.SendStatus(http.StatusNoContent)
 }
+
+// RestoreCapturePages restores a capture page by ID
+// @Summary Restore a capture page by ID
+// @Description Restores a capture page by ID
+// @Tags CapturePagesService
+// @Accept application/json
+// @Produce application/json
+// @Param id path int true "capture page ID"
+// @Param body model.RestoreCapturePages false "Restore parameters"
+// @Success 204 "No Content"
+// @Failure 400 {object} []string
+// @Failure 500 {object} []string
+// @Router /v1/capturepages/{id}/restore [patch]
+func (a *Api) RestoreCapturePages(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	capturePageID, err := strconv.Atoi(id)
+	if err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+
+	restoreParams := &model.RestoreCapturePages{ID: capturePageID}
+
+	err = a.cfg.CapturePagesService.RestoreCapturePages(ctx.Context(), restoreParams)
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
+	}
+
+	return ctx.SendStatus(http.StatusNoContent)
+}

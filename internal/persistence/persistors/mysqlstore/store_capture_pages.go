@@ -298,3 +298,22 @@ func (m *Repository) DeleteCapturePages(
 
 	return nil
 }
+
+// RestoreCapturePages restores a capture pages.
+func (m *Repository) RestoreCapturePages(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+	id int,
+) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("get ctx exec: %v", err)
+	}
+
+	entry := &mysqlmodel.CapturePage{ID: id, IsControl: 1}
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("is_control")); err != nil {
+		return fmt.Errorf("restore: %w", err)
+	}
+
+	return nil
+}

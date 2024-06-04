@@ -68,6 +68,19 @@ type FakePersistor struct {
 		result1 *model.PaginatedCapturePages
 		result2 error
 	}
+	RestoreCapturePagesStub        func(context.Context, persistence.TransactionHandler, int) error
+	restoreCapturePagesMutex       sync.RWMutex
+	restoreCapturePagesArgsForCall []struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}
+	restoreCapturePagesReturns struct {
+		result1 error
+	}
+	restoreCapturePagesReturnsOnCall map[int]struct {
+		result1 error
+	}
 	UpdateCapturePagesStub        func(context.Context, persistence.TransactionHandler, *model.UpdateCapturePages) (*model.CapturePages, error)
 	updateCapturePagesMutex       sync.RWMutex
 	updateCapturePagesArgsForCall []struct {
@@ -348,6 +361,69 @@ func (fake *FakePersistor) GetCapturePagesReturnsOnCall(i int, result1 *model.Pa
 	}{result1, result2}
 }
 
+func (fake *FakePersistor) RestoreCapturePages(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 int) error {
+	fake.restoreCapturePagesMutex.Lock()
+	ret, specificReturn := fake.restoreCapturePagesReturnsOnCall[len(fake.restoreCapturePagesArgsForCall)]
+	fake.restoreCapturePagesArgsForCall = append(fake.restoreCapturePagesArgsForCall, struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}{arg1, arg2, arg3})
+	stub := fake.RestoreCapturePagesStub
+	fakeReturns := fake.restoreCapturePagesReturns
+	fake.recordInvocation("RestoreCapturePages", []interface{}{arg1, arg2, arg3})
+	fake.restoreCapturePagesMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakePersistor) RestoreCapturePagesCallCount() int {
+	fake.restoreCapturePagesMutex.RLock()
+	defer fake.restoreCapturePagesMutex.RUnlock()
+	return len(fake.restoreCapturePagesArgsForCall)
+}
+
+func (fake *FakePersistor) RestoreCapturePagesCalls(stub func(context.Context, persistence.TransactionHandler, int) error) {
+	fake.restoreCapturePagesMutex.Lock()
+	defer fake.restoreCapturePagesMutex.Unlock()
+	fake.RestoreCapturePagesStub = stub
+}
+
+func (fake *FakePersistor) RestoreCapturePagesArgsForCall(i int) (context.Context, persistence.TransactionHandler, int) {
+	fake.restoreCapturePagesMutex.RLock()
+	defer fake.restoreCapturePagesMutex.RUnlock()
+	argsForCall := fake.restoreCapturePagesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakePersistor) RestoreCapturePagesReturns(result1 error) {
+	fake.restoreCapturePagesMutex.Lock()
+	defer fake.restoreCapturePagesMutex.Unlock()
+	fake.RestoreCapturePagesStub = nil
+	fake.restoreCapturePagesReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakePersistor) RestoreCapturePagesReturnsOnCall(i int, result1 error) {
+	fake.restoreCapturePagesMutex.Lock()
+	defer fake.restoreCapturePagesMutex.Unlock()
+	fake.RestoreCapturePagesStub = nil
+	if fake.restoreCapturePagesReturnsOnCall == nil {
+		fake.restoreCapturePagesReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.restoreCapturePagesReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakePersistor) UpdateCapturePages(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.UpdateCapturePages) (*model.CapturePages, error) {
 	fake.updateCapturePagesMutex.Lock()
 	ret, specificReturn := fake.updateCapturePagesReturnsOnCall[len(fake.updateCapturePagesArgsForCall)]
@@ -425,6 +501,8 @@ func (fake *FakePersistor) Invocations() map[string][][]interface{} {
 	defer fake.getCapturePageTypeByIdMutex.RUnlock()
 	fake.getCapturePagesMutex.RLock()
 	defer fake.getCapturePagesMutex.RUnlock()
+	fake.restoreCapturePagesMutex.RLock()
+	defer fake.restoreCapturePagesMutex.RUnlock()
 	fake.updateCapturePagesMutex.RLock()
 	defer fake.updateCapturePagesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
