@@ -44,6 +44,8 @@ type Handler struct {
 // of data access objects via check its `hType`, and not as a serving controller.
 func parseExecutorInstance(i interface{}) (*Handler, error) {
 	mySQLTxHandler, ok := i.(*Handler)
+
+	fmt.Println("the ok --- ", ok)
 	if !ok {
 		return nil, errors.New(sysconsts.ErrNonMySQLTxInstance)
 	}
@@ -62,6 +64,7 @@ func parseExecutorInstance(i interface{}) (*Handler, error) {
 
 // GetCtxExecutor returns the context executor.
 func GetCtxExecutor(i interface{}) (boil.ContextExecutor, error) {
+	fmt.Println("the i in GetCtxExecutor --- ", i)
 	txHandler, err := parseExecutorInstance(i)
 	if err != nil {
 		return nil, fmt.Errorf("parse executor: %v", err)
