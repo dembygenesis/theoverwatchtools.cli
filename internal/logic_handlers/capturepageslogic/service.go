@@ -139,3 +139,33 @@ func (i *Service) UpdateCapturePages(ctx context.Context, params *model.UpdateCa
 
 	return capturepages, nil
 }
+
+// DeleteCapturePages deletes a capture page by ID.
+func (s *Service) DeleteCapturePages(ctx context.Context, params *model.DeleteCapturePages) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	fmt.Println("the params id ---- ", params.ID)
+	err = s.cfg.Persistor.DeleteCapturePages(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("delete capture page: %v", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %v", err),
+		})
+	}
+
+	return nil
+}

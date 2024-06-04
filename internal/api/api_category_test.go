@@ -245,64 +245,64 @@ func getTestCasesListCategories() []testCaseListCategory {
 				assert.Equal(t, respPaginated.Pagination.Page, 2, "unexpected page")
 			},
 		},
-		//{
-		//	name: "success-all-filters",
-		//	queryParameters: map[string]interface{}{
-		//		"ids_in":                []int{1, 2, 3},
-		//		"category_type_id_in":   []int{1},
-		//		"category_type_name_in": []string{"User Types"},
-		//		"category_name_in":      []string{"Admin"},
-		//	},
-		//	mutations: func(t *testing.T, modules *testassets.Container) {
-		//
-		//	},
-		//	getContainer: func(t *testing.T) (*testassets.Container, func()) {
-		//		ctn, cleanup := testassets.GetConcreteContainer(t)
-		//		return ctn, func() {
-		//			cleanup()
-		//		}
-		//	},
-		//	assertions: func(t *testing.T, resp []byte, respCode int) {
-		//		var respPaginated model.PaginatedCategories
-		//		err := json.Unmarshal(resp, &respPaginated)
-		//		require.NoError(t, err, "unexpected error unmarshalling the response")
-		//
-		//		assert.Equal(t, http.StatusOK, respCode, "unexpected non-equal response code")
-		//		assert.True(t, len(respPaginated.Categories) > 0, "unexpected empty categories")
-		//		assert.True(t, respPaginated.Pagination.MaxRows > 0, "unexpected empty rows")
-		//		assert.True(t, respPaginated.Pagination.RowCount > 0, "unexpected empty count")
-		//		assert.True(t, len(respPaginated.Pagination.Pages) > 0, "unexpected empty pages")
-		//	},
-		//},
-		//{
-		//	name:            "empty_store",
-		//	queryParameters: map[string]interface{}{},
-		//	mutations: func(t *testing.T, modules *testassets.Container) {
-		//		store := modules.MySQLStore
-		//		require.NotNil(t, store, "unexpected nil: store")
-		//
-		//		connProvider := modules.ConnProvider
-		//		require.NotNil(t, store, "unexpected nil: txProvider")
-		//
-		//		tx, err := connProvider.Tx(context.TODO())
-		//		require.NoError(t, err, "unexpected err for getting tx")
-		//
-		//		err = store.DropCategoryTable(context.TODO(), tx)
-		//		require.NoError(t, err, "unexpected err for drop command")
-		//
-		//		err = tx.Commit(context.TODO())
-		//		require.NoError(t, err, "unexpected err on commit")
-		//	},
-		//	getContainer: func(t *testing.T) (*testassets.Container, func()) {
-		//		ctn, cleanup := testassets.GetConcreteContainer(t)
-		//		return ctn, func() {
-		//			cleanup()
-		//		}
-		//	},
-		//	assertions: func(t *testing.T, resp []byte, respCode int) {
-		//		assert.Equal(t, http.StatusInternalServerError, respCode)
-		//	},
-		//},
+		{
+			name: "success-all-filters",
+			queryParameters: map[string]interface{}{
+				"ids_in":                []int{1, 2, 3},
+				"category_type_id_in":   []int{1},
+				"category_type_name_in": []string{"User Types"},
+				"category_name_in":      []string{"Admin"},
+			},
+			mutations: func(t *testing.T, modules *testassets.Container) {
+
+			},
+			getContainer: func(t *testing.T) (*testassets.Container, func()) {
+				ctn, cleanup := testassets.GetConcreteContainer(t)
+				return ctn, func() {
+					cleanup()
+				}
+			},
+			assertions: func(t *testing.T, resp []byte, respCode int) {
+				var respPaginated model.PaginatedCategories
+				err := json.Unmarshal(resp, &respPaginated)
+				require.NoError(t, err, "unexpected error unmarshalling the response")
+
+				assert.Equal(t, http.StatusOK, respCode, "unexpected non-equal response code")
+				assert.True(t, len(respPaginated.Categories) > 0, "unexpected empty categories")
+				assert.True(t, respPaginated.Pagination.MaxRows > 0, "unexpected empty rows")
+				assert.True(t, respPaginated.Pagination.RowCount > 0, "unexpected empty count")
+				assert.True(t, len(respPaginated.Pagination.Pages) > 0, "unexpected empty pages")
+			},
+		},
+		{
+			name:            "empty_store",
+			queryParameters: map[string]interface{}{},
+			mutations: func(t *testing.T, modules *testassets.Container) {
+				store := modules.MySQLStore
+				require.NotNil(t, store, "unexpected nil: store")
+
+				connProvider := modules.ConnProvider
+				require.NotNil(t, store, "unexpected nil: txProvider")
+
+				tx, err := connProvider.Tx(context.TODO())
+				require.NoError(t, err, "unexpected err for getting tx")
+
+				err = store.DropCategoryTable(context.TODO(), tx)
+				require.NoError(t, err, "unexpected err for drop command")
+
+				err = tx.Commit(context.TODO())
+				require.NoError(t, err, "unexpected err on commit")
+			},
+			getContainer: func(t *testing.T) (*testassets.Container, func()) {
+				ctn, cleanup := testassets.GetConcreteContainer(t)
+				return ctn, func() {
+					cleanup()
+				}
+			},
+			assertions: func(t *testing.T, resp []byte, respCode int) {
+				assert.Equal(t, http.StatusInternalServerError, respCode)
+			},
+		},
 	}
 
 	return testCases

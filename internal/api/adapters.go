@@ -30,7 +30,7 @@ type capturePagesService interface {
 	ListCapturePages(ctx context.Context, filters *model.CapturePagesFilters) (*model.PaginatedCapturePages, error)
 	CreateCapturePages(ctx context.Context, capturepage *model.CreateCapturePage) (*model.CapturePages, error)
 	UpdateCapturePages(ctx context.Context, capturepage *model.UpdateCapturePages) (*model.CapturePages, error)
-	//DeleteCategory(ctx context.Context, params *model.DeleteCapturePages) error
+	DeleteCapturePages(ctx context.Context, params *model.DeleteCapturePages) error
 	//RestoreCategory(ctx context.Context, params *model.RestoreCapturePages) error
 }
 

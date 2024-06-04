@@ -18,7 +18,7 @@ type osLayer interface {
 	CopyRootPathToClipboard(root string, exclude []string) ([]string, error)
 }
 
-func New(conf *config.Config, osLayer osLayer) (StringUtils, error) {
+func New(conf *config.App, osLayer osLayer) (StringUtils, error) {
 	if conf == nil {
 		return nil, models.ErrConfigNil
 	}
@@ -26,7 +26,7 @@ func New(conf *config.Config, osLayer osLayer) (StringUtils, error) {
 }
 
 type stringUtils struct {
-	conf    *config.Config
+	conf    *config.App
 	osLayer osLayer
 }
 

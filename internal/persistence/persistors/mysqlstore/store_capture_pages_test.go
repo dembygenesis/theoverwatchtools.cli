@@ -1,14 +1,17 @@
 package mysqlstore
 
 import (
+	"context"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/model/modelhelpers"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"strings"
 	"testing"
 )
@@ -257,6 +260,169 @@ func Test_AddCapturePage(t *testing.T) {
 
 			cat, err = m.AddCapturePage(testCtx, txHandlerDb, cat)
 			testCase.assertions(t, db, cat, err)
+		})
+	}
+}
+
+//test for the update method
+
+func Test_UpdateCapturePages_Success(t *testing.T) {
+	db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+	defer cleanup()
+
+	cfg := &Config{
+		Logger:        testLogger,
+		QueryTimeouts: testQueryTimeouts,
+	}
+
+	m, err := New(cfg)
+	require.NoError(t, err, "unexpected error")
+	require.NotNil(t, m, "unexpected nil")
+
+	txHandler, err := mysqltx.New(&mysqltx.Config{
+		Logger:       testLogger,
+		Db:           db,
+		DatabaseName: cp.Database,
+	})
+	require.NoError(t, err, "unexpected error creating the tx handler")
+
+	txHandlerDb, err := txHandler.Db(testCtx)
+	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+	paginatedCapturePages, err := m.GetCapturePages(testCtx, txHandlerDb, nil)
+	require.NoError(t, err, "unexpected error fetching the capture pages from the database")
+	require.NotNil(t, txHandlerDb, "unexpected nil capture pages")
+	require.True(t, len(paginatedCapturePages.CapturePages) > 0, "unexpected empty capture pages")
+
+	updateCapturePages := model.UpdateCapturePages{
+		Id: 1,
+		CapturePageSetId: null.Int{
+			Int:   paginatedCapturePages.CapturePages[0].CapturePageSetId,
+			Valid: true,
+		},
+		Name: null.String{
+			String: paginatedCapturePages.CapturePages[0].Name + " new",
+			Valid:  true,
+		},
+	}
+
+	capt, err := m.UpdateCapturePages(testCtx, txHandlerDb, &updateCapturePages)
+	require.NoError(t, err, "unexpected error updating a conflicting capture pages from the database")
+	assert.Equal(t, paginatedCapturePages.CapturePages[0].Name+" new", capt.Name)
+}
+
+func Test_UpdateCapturePages_Fail(t *testing.T) {
+	db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+	defer cleanup()
+
+	cfg := &Config{
+		Logger:        testLogger,
+		QueryTimeouts: testQueryTimeouts,
+	}
+
+	m, err := New(cfg)
+	require.NoError(t, err, "unexpected error")
+	require.NotNil(t, m, "unexpected nil")
+
+	txHandler, err := mysqltx.New(&mysqltx.Config{
+		Logger:       testLogger,
+		Db:           db,
+		DatabaseName: cp.Database,
+	})
+	require.NoError(t, err, "unexpected error creating the tx handler")
+
+	txHandlerDb, err := txHandler.Db(testCtx)
+	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+	paginatedCapturePages, err := m.GetCapturePages(testCtx, txHandlerDb, nil)
+	require.NoError(t, err, "unexpected error fetching the capture pages from the database")
+	require.NotNil(t, txHandlerDb, "unexpected nil capture pages")
+	require.True(t, len(paginatedCapturePages.CapturePages) > 0, "unexpected empty capture pages")
+
+	updateCapturePages := model.UpdateCapturePages{
+		Id: paginatedCapturePages.CapturePages[1].Id,
+		CapturePageSetId: null.Int{
+			Int:   paginatedCapturePages.CapturePages[0].CapturePageSetId,
+			Valid: true,
+		},
+		Name: null.String{
+			String: paginatedCapturePages.CapturePages[0].Name,
+			Valid:  true,
+		},
+	}
+
+	cat, err := m.UpdateCapturePages(testCtx, txHandlerDb, &updateCapturePages)
+	require.Error(t, err, "unexpected nil error fetching a conflicting capture pages from the database")
+	assert.Contains(t, err.Error(), "Duplicate entry")
+	assert.Nil(t, cat, "unexpected non nil entry")
+}
+
+//test for the delete method
+
+type deleteCapturePagesTestCase struct {
+	name       string
+	id         int
+	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations  func(t *testing.T, db *sqlx.DB)
+}
+
+func getDeleteCapturePagesTestCases() []deleteCapturePagesTestCase {
+	return []deleteCapturePagesTestCase{
+		{
+			name: "success",
+			id:   1,
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Nil(t, err, "unexpected non-nil error")
+				entry, err := mysqlmodel.FindCapturePage(context.TODO(), db, id)
+				require.NoError(t, err, "unexpected error fetching the capture page")
+
+				assert.Equal(t, 0, entry.IsControl)
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				entry := mysqlmodel.CapturePage{
+					CapturePageSetID: 1,
+					Name:             "test",
+				}
+				err := entry.Insert(context.TODO(), db, boil.Infer())
+				assert.NoError(t, err, "unexpected insert error")
+			},
+		},
+	}
+}
+
+func Test_DeleteCapturePage(t *testing.T) {
+	for _, testCase := range getDeleteCapturePagesTestCases() {
+		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+		t.Run(testCase.name, func(t *testing.T) {
+			require.NotNil(t, testCase.mutations, "unexpected nil mutations")
+			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
+
+			defer cleanup()
+			cfg := &Config{
+				Logger:        testLogger,
+				QueryTimeouts: testQueryTimeouts,
+			}
+
+			m, err := New(cfg)
+			require.NoError(t, err, "unexpected error")
+			require.NotNil(t, m, "unexpected nil")
+
+			txHandler, err := mysqltx.New(&mysqltx.Config{
+				Logger:       testLogger,
+				Db:           db,
+				DatabaseName: cp.Database,
+			})
+			require.NoError(t, err, "unexpected error creating the tx handler")
+
+			txHandlerDb, err := txHandler.Db(testCtx)
+			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+			testCase.mutations(t, db)
+			err = m.DeleteCapturePages(testCtx, txHandlerDb, testCase.id)
+			testCase.assertions(t, db, testCase.id, err)
 		})
 	}
 }

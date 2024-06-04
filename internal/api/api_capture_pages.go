@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/volatiletech/null/v8"
 	"net/http"
+	"strconv"
 )
 
 // ListCapturePages fetches the capture pages
@@ -25,7 +26,7 @@ func (a *Api) ListCapturePages(ctx *fiber.Ctx) error {
 	filter := model.CapturePagesFilters{
 		CapturePagesIsControl: null.Bool{
 			Bool:  true,
-			Valid: false,
+			Valid: true,
 		},
 	}
 
@@ -85,4 +86,33 @@ func (a *Api) UpdateCapturePages(ctx *fiber.Ctx) error {
 	}
 	capturepages, err := a.cfg.CapturePagesService.UpdateCapturePages(ctx.Context(), &body)
 	return a.WriteResponse(ctx, http.StatusOK, capturepages, err)
+}
+
+// DeleteCapturePages deletes a capture page by ID
+//
+// @Summary Delete a capture page by ID
+// @Description Deletes a capture page by ID
+// @Tags CapturePageService
+// @Accept application/json
+// @Produce application/json
+// @Param filters body model.DeleteCapturePages true "Capture Page ID to delete"
+// @Success 204 "No Content"
+// @Failure 400 {object} []string
+// @Failure 500 {object} []string
+// @Router /v1/capturepages/{id} [delete]
+func (a *Api) DeleteCapturePages(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	capturePageId, err := strconv.Atoi(id)
+	if err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+
+	deleteParams := &model.DeleteCapturePages{ID: capturePageId}
+
+	err = a.cfg.CapturePagesService.DeleteCapturePages(ctx.Context(), deleteParams)
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
+	}
+
+	return ctx.SendStatus(http.StatusNoContent)
 }

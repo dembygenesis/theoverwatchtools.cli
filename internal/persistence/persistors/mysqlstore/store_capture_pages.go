@@ -77,27 +77,26 @@ func (m *Repository) UpdateCapturePages(ctx context.Context, tx persistence.Tran
 }
 
 // AddCapturePage attempts to add a new capture page
-func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capture_page *model.CapturePages) (*model.CapturePages, error) {
+func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CapturePages) (*model.CapturePages, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
 	entry := &mysqlmodel.CapturePage{
-		Name:             capture_page.Name,
-		CapturePageSetID: capture_page.CapturePageSetId,
-		IsControl:        capture_page.CapturePagesIsControl,
+		Name:             capturePage.Name,
+		CapturePageSetID: capturePage.CapturePageSetId,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert capture page: %v", err)
 	}
 
-	capture_page, err = m.GetCapturePageById(ctx, tx, entry.ID)
+	capturePage, err = m.GetCapturePageById(ctx, tx, entry.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get capture page by id: %v", err)
 	}
 
-	return capture_page, nil
+	return capturePage, nil
 }
 
 // GetCapturePageById attempts to fetch the capture page.
@@ -116,16 +115,15 @@ func (m *Repository) GetCapturePageById(ctx context.Context, tx persistence.Tran
 	return &paginated.CapturePages[0], nil
 }
 
-func (m *Repository) CreateCapturePages(ctx context.Context, tx persistence.TransactionHandler, capture_page *model.CapturePages) (*model.CapturePages, error) {
+func (m *Repository) CreateCapturePages(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CapturePages) (*model.CapturePages, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
 	entry := mysqlmodel.CapturePage{
-		Name:             capture_page.Name,
-		CapturePageSetID: capture_page.CapturePageSetId,
-		IsControl:        capture_page.CapturePagesIsControl,
+		Name:             capturePage.Name,
+		CapturePageSetID: capturePage.CapturePageSetId,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert capture page: %v", err)
@@ -133,12 +131,12 @@ func (m *Repository) CreateCapturePages(ctx context.Context, tx persistence.Tran
 
 	fmt.Println("the capture page id ----- ", entry.ID)
 
-	capture_page, err = m.GetCapturePageById(ctx, tx, entry.ID)
+	capturePage, err = m.GetCapturePageById(ctx, tx, entry.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get capture page by id: %v", err)
 	}
 
-	return capture_page, nil
+	return capturePage, nil
 }
 
 // GetCapturePages attempts to fetch the capture pages
@@ -280,4 +278,23 @@ func (m *Repository) getCapturePages(
 	fmt.Println("the res return --- ", strutil.GetAsJson(res))
 
 	return &paginated, nil
+}
+
+// DeleteCapturePages delete the capture page.
+func (m *Repository) DeleteCapturePages(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+	id int,
+) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("get ctx exec: %v", err)
+	}
+
+	entry := &mysqlmodel.CapturePage{ID: id, IsControl: 0}
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("is_control")); err != nil {
+		return fmt.Errorf("delete: %w", err)
+	}
+
+	return nil
 }
