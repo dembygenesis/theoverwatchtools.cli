@@ -515,3 +515,119 @@ func TestService_UpdateCapturePages(t *testing.T) {
 		})
 	}
 }
+
+// test delete method
+
+type argsDeleteCapturePages struct {
+	ctx    context.Context
+	params *model.DeleteCapturePages
+}
+
+type testCaseDeleteCapturePages struct {
+	name            string
+	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
+	args            argsDeleteCapturePages
+	mutations       func(t *testing.T, db *sqlx.DB)
+	assertions      func(t *testing.T, params *model.DeleteCapturePages, err error)
+}
+
+func getTestCasesDeleteCapturePages() []testCaseDeleteCapturePages {
+	return []testCaseDeleteCapturePages{
+		{
+			name: "success",
+			args: argsDeleteCapturePages{
+				ctx: context.TODO(),
+				params: &model.DeleteCapturePages{
+					ID: 0,
+				},
+			},
+			getDependencies: getConcreteDependencies,
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+			assertions: func(t *testing.T, params *model.DeleteCapturePages, err error) {
+				require.NoError(t, err, "unexpected error")
+				assert.Equal(t, params.ID, 0)
+			},
+		},
+	}
+}
+
+func TestService_DeleteCapturePages(t *testing.T) {
+	for _, tt := range getTestCasesDeleteCapturePages() {
+		t.Run(tt.name, func(t *testing.T) {
+			_dependencies, cleanup := tt.getDependencies(t)
+			defer cleanup()
+
+			svc, err := New(&Config{
+				TxProvider: _dependencies.TxProvider,
+				Logger:     _dependencies.Logger,
+				Persistor:  _dependencies.Persistor,
+			})
+			require.NoError(t, err, "unexpected new error")
+
+			tt.mutations(t, _dependencies.Db)
+
+			err = svc.DeleteCapturePages(tt.args.ctx, tt.args.params)
+			tt.assertions(t, tt.args.params, err)
+		})
+	}
+}
+
+// test restore method
+
+type argsRestoreCapturePages struct {
+	ctx    context.Context
+	params *model.RestoreCapturePages
+}
+
+type testCaseRestoreCapturePages struct {
+	name            string
+	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
+	args            argsRestoreCapturePages
+	mutations       func(t *testing.T, db *sqlx.DB)
+	assertions      func(t *testing.T, params *model.RestoreCapturePages, err error)
+}
+
+func getTestCasesRestoreCapturePages() []testCaseRestoreCapturePages {
+	return []testCaseRestoreCapturePages{
+		{
+			name: "success",
+			args: argsRestoreCapturePages{
+				ctx: context.TODO(),
+				params: &model.RestoreCapturePages{
+					ID: 1,
+				},
+			},
+			getDependencies: getConcreteDependencies,
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+			assertions: func(t *testing.T, params *model.RestoreCapturePages, err error) {
+				require.NoError(t, err, "unexpected error")
+				assert.Equal(t, params.ID, 1)
+			},
+		},
+	}
+}
+
+func TestService_RestoreCapturePages(t *testing.T) {
+	for _, tt := range getTestCasesRestoreCapturePages() {
+		t.Run(tt.name, func(t *testing.T) {
+			_dependencies, cleanup := tt.getDependencies(t)
+			defer cleanup()
+
+			svc, err := New(&Config{
+				TxProvider: _dependencies.TxProvider,
+				Logger:     _dependencies.Logger,
+				Persistor:  _dependencies.Persistor,
+			})
+			require.NoError(t, err, "unexpected new error")
+
+			tt.mutations(t, _dependencies.Db)
+
+			err = svc.RestoreCapturePages(tt.args.ctx, tt.args.params)
+			tt.assertions(t, tt.args.params, err)
+		})
+	}
+}

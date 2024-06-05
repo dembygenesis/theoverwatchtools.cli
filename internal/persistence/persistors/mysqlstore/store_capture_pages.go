@@ -51,9 +51,6 @@ func (m *Repository) UpdateCapturePages(ctx context.Context, tx persistence.Tran
 	entry := &mysqlmodel.CapturePage{ID: params.Id}
 	cols := []string{mysqlmodel.CapturePageColumns.ID}
 
-	fmt.Println("====== entry UpdateCapturePages:", strutil.GetAsJson(entry))
-	fmt.Println("====== params UpdateCapturePages:", strutil.GetAsJson(params))
-
 	if params.CapturePageSetId.Valid {
 		entry.CapturePageSetID = params.CapturePageSetId.Int
 		cols = append(cols, mysqlmodel.CapturePageColumns.CapturePageSetID)
@@ -62,13 +59,13 @@ func (m *Repository) UpdateCapturePages(ctx context.Context, tx persistence.Tran
 		entry.Name = params.Name.String
 		cols = append(cols, mysqlmodel.CapturePageColumns.Name)
 	}
-
 	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
 	if err != nil {
 		return nil, fmt.Errorf("update failed: %v", err)
 	}
 
 	capturepages, err := m.GetCapturePageById(ctx, tx, entry.ID)
+	tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get capture page by id: %v", err)
 	}

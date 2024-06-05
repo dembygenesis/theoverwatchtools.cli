@@ -65,6 +65,7 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 	}
 
 	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
+	tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("update failed: %v", err)
 	}
