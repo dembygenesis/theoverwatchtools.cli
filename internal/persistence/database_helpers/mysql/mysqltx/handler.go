@@ -38,6 +38,10 @@ type Handler struct {
 	logger *logrus.Entry
 }
 
+func (m *Handler) GetCtxExecutor(i interface{}) (boil.ContextExecutor, error) {
+	return GetCtxExecutor(i)
+}
+
 // parseExecutorInstance is a function with a primary use-case of
 // fetching a Handler instance from an interface, and also
 // validating the instance's responsibility is to serve as a provider

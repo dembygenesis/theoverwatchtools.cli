@@ -114,7 +114,6 @@ func (m *Repository) GetCapturePages(ctx context.Context, tx persistence.Transac
 	}
 
 	res, err := m.getCapturePages(ctx, ctxExec, filters)
-
 	if err != nil {
 		return nil, fmt.Errorf("read capture pages: %v", err)
 	}
@@ -231,7 +230,7 @@ func (m *Repository) getCapturePages(
 	queryMods = append(queryMods, qm.Limit(pagination.MaxRows), qm.Offset(pagination.Offset))
 	q = mysqlmodel.CapturePages(queryMods...)
 
-	fmt.Println("the q --- ", strutil.GetAsJson(q))
+	fmt.Println("the ctxExec ---  ", ctxExec)
 
 	if err = q.Bind(ctx, ctxExec, &res); err != nil {
 		return nil, fmt.Errorf("get capture pages: %v", err)

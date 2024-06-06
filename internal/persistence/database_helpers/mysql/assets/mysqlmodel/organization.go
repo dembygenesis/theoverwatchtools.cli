@@ -102,13 +102,16 @@ var OrganizationWhere = struct {
 // OrganizationRels is where relationship names are stored.
 var OrganizationRels = struct {
 	OrganizationTypeRef string
+	ClickTrackerSets    string
 }{
 	OrganizationTypeRef: "OrganizationTypeRef",
+	ClickTrackerSets:    "ClickTrackerSets",
 }
 
 // organizationR is where relationships are stored.
 type organizationR struct {
-	OrganizationTypeRef *OrganizationType `boil:"OrganizationTypeRef" json:"OrganizationTypeRef" toml:"OrganizationTypeRef" yaml:"OrganizationTypeRef"`
+	OrganizationTypeRef *OrganizationType    `boil:"OrganizationTypeRef" json:"OrganizationTypeRef" toml:"OrganizationTypeRef" yaml:"OrganizationTypeRef"`
+	ClickTrackerSets    ClickTrackerSetSlice `boil:"ClickTrackerSets" json:"ClickTrackerSets" toml:"ClickTrackerSets" yaml:"ClickTrackerSets"`
 }
 
 // NewStruct creates a new relationship struct
@@ -121,6 +124,13 @@ func (r *organizationR) GetOrganizationTypeRef() *OrganizationType {
 		return nil
 	}
 	return r.OrganizationTypeRef
+}
+
+func (r *organizationR) GetClickTrackerSets() ClickTrackerSetSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ClickTrackerSets
 }
 
 // organizationL is where Load methods for each relationship are stored.
@@ -236,6 +246,20 @@ func (o *Organization) OrganizationTypeRef(mods ...qm.QueryMod) organizationType
 	return OrganizationTypes(queryMods...)
 }
 
+// ClickTrackerSets retrieves all the click_tracker_set's ClickTrackerSets with an executor.
+func (o *Organization) ClickTrackerSets(mods ...qm.QueryMod) clickTrackerSetQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`click_tracker_sets`.`organization_id`=?", o.ID),
+	)
+
+	return ClickTrackerSets(queryMods...)
+}
+
 // LoadOrganizationTypeRef allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (organizationL) LoadOrganizationTypeRef(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrganization interface{}, mods queries.Applicator) error {
@@ -348,6 +372,112 @@ func (organizationL) LoadOrganizationTypeRef(ctx context.Context, e boil.Context
 	return nil
 }
 
+// LoadClickTrackerSets allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (organizationL) LoadClickTrackerSets(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrganization interface{}, mods queries.Applicator) error {
+	var slice []*Organization
+	var object *Organization
+
+	if singular {
+		var ok bool
+		object, ok = maybeOrganization.(*Organization)
+		if !ok {
+			object = new(Organization)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeOrganization)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeOrganization))
+			}
+		}
+	} else {
+		s, ok := maybeOrganization.(*[]*Organization)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeOrganization)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeOrganization))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &organizationR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &organizationR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`click_tracker_sets`),
+		qm.WhereIn(`click_tracker_sets.organization_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load click_tracker_sets")
+	}
+
+	var resultSlice []*ClickTrackerSet
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice click_tracker_sets")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on click_tracker_sets")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for click_tracker_sets")
+	}
+
+	if singular {
+		object.R.ClickTrackerSets = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &clickTrackerSetR{}
+			}
+			foreign.R.Organization = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.OrganizationID) {
+				local.R.ClickTrackerSets = append(local.R.ClickTrackerSets, foreign)
+				if foreign.R == nil {
+					foreign.R = &clickTrackerSetR{}
+				}
+				foreign.R.Organization = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetOrganizationTypeRef of the organization to the related item.
 // Sets o.R.OrganizationTypeRef to related.
 // Adds o to related.R.OrganizationTypeRefOrganizations.
@@ -390,6 +520,133 @@ func (o *Organization) SetOrganizationTypeRef(ctx context.Context, exec boil.Con
 		}
 	} else {
 		related.R.OrganizationTypeRefOrganizations = append(related.R.OrganizationTypeRefOrganizations, o)
+	}
+
+	return nil
+}
+
+// AddClickTrackerSets adds the given related objects to the existing relationships
+// of the organization, optionally inserting them as new records.
+// Appends related to o.R.ClickTrackerSets.
+// Sets related.R.Organization appropriately.
+func (o *Organization) AddClickTrackerSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerSet) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.OrganizationID, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `click_tracker_sets` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"organization_id"}),
+				strmangle.WhereClause("`", "`", 0, clickTrackerSetPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.OrganizationID, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &organizationR{
+			ClickTrackerSets: related,
+		}
+	} else {
+		o.R.ClickTrackerSets = append(o.R.ClickTrackerSets, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &clickTrackerSetR{
+				Organization: o,
+			}
+		} else {
+			rel.R.Organization = o
+		}
+	}
+	return nil
+}
+
+// SetClickTrackerSets removes all previously related items of the
+// organization replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.Organization's ClickTrackerSets accordingly.
+// Replaces o.R.ClickTrackerSets with related.
+// Sets related.R.Organization's ClickTrackerSets accordingly.
+func (o *Organization) SetClickTrackerSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerSet) error {
+	query := "update `click_tracker_sets` set `organization_id` = null where `organization_id` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.ClickTrackerSets {
+			queries.SetScanner(&rel.OrganizationID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.Organization = nil
+		}
+		o.R.ClickTrackerSets = nil
+	}
+
+	return o.AddClickTrackerSets(ctx, exec, insert, related...)
+}
+
+// RemoveClickTrackerSets relationships from objects passed in.
+// Removes related items from R.ClickTrackerSets (uses pointer comparison, removal does not keep order)
+// Sets related.R.Organization.
+func (o *Organization) RemoveClickTrackerSets(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTrackerSet) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.OrganizationID, nil)
+		if rel.R != nil {
+			rel.R.Organization = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("organization_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.ClickTrackerSets {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.ClickTrackerSets)
+			if ln > 1 && i < ln-1 {
+				o.R.ClickTrackerSets[i] = o.R.ClickTrackerSets[ln-1]
+			}
+			o.R.ClickTrackerSets = o.R.ClickTrackerSets[:ln-1]
+			break
+		}
 	}
 
 	return nil

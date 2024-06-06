@@ -236,6 +236,8 @@ func (q capturePageQuery) Count(ctx context.Context, exec boil.ContextExecutor) 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
+	fmt.Println("the exec here?? --- ", exec)
+
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "mysqlmodel: failed to count capture_pages rows")
