@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/global"
-	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -47,7 +46,6 @@ type Config struct {
 }
 
 func (a *Config) Validate() error {
-	fmt.Println("the a ---- ", strutil.GetAsJson(&Config{}))
 	err := validationutils.Validate(a)
 	if err != nil {
 		return fmt.Errorf("required fields: %v", err)
