@@ -41,6 +41,9 @@ type Config struct {
 
 	// CapturePagesService is the biz function for capture pages
 	CapturePagesService capturePagesService `json:"capture_pages_manager" validate:"required"`
+
+	// CapturePagesService is the biz function for capture pages
+	ClickTrackerService clickTrackerService `json:"click_tracker_service" validate:"required"`
 }
 
 func (a *Config) Validate() error {

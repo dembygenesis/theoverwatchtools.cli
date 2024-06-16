@@ -1119,7 +1119,7 @@ func (userL) LoadCreatedByClickTrackers(ctx context.Context, e boil.ContextExecu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.CreatedBy) {
+			if local.ID == foreign.CreatedBy {
 				local.R.CreatedByClickTrackers = append(local.R.CreatedByClickTrackers, foreign)
 				if foreign.R == nil {
 					foreign.R = &clickTrackerR{}
@@ -1225,7 +1225,7 @@ func (userL) LoadUpdatedByClickTrackers(ctx context.Context, e boil.ContextExecu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.UpdatedBy) {
+			if local.ID == foreign.UpdatedBy {
 				local.R.UpdatedByClickTrackers = append(local.R.UpdatedByClickTrackers, foreign)
 				if foreign.R == nil {
 					foreign.R = &clickTrackerR{}
@@ -1920,7 +1920,7 @@ func (o *User) AddCreatedByClickTrackers(ctx context.Context, exec boil.ContextE
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.CreatedBy, o.ID)
+			rel.CreatedBy = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1941,7 +1941,7 @@ func (o *User) AddCreatedByClickTrackers(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.CreatedBy, o.ID)
+			rel.CreatedBy = o.ID
 		}
 	}
 
@@ -1965,80 +1965,6 @@ func (o *User) AddCreatedByClickTrackers(ctx context.Context, exec boil.ContextE
 	return nil
 }
 
-// SetCreatedByClickTrackers removes all previously related items of the
-// user replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.CreatedByUser's CreatedByClickTrackers accordingly.
-// Replaces o.R.CreatedByClickTrackers with related.
-// Sets related.R.CreatedByUser's CreatedByClickTrackers accordingly.
-func (o *User) SetCreatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTracker) error {
-	query := "update `click_trackers` set `created_by` = null where `created_by` = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.CreatedByClickTrackers {
-			queries.SetScanner(&rel.CreatedBy, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.CreatedByUser = nil
-		}
-		o.R.CreatedByClickTrackers = nil
-	}
-
-	return o.AddCreatedByClickTrackers(ctx, exec, insert, related...)
-}
-
-// RemoveCreatedByClickTrackers relationships from objects passed in.
-// Removes related items from R.CreatedByClickTrackers (uses pointer comparison, removal does not keep order)
-// Sets related.R.CreatedByUser.
-func (o *User) RemoveCreatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTracker) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.CreatedBy, nil)
-		if rel.R != nil {
-			rel.R.CreatedByUser = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("created_by")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.CreatedByClickTrackers {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.CreatedByClickTrackers)
-			if ln > 1 && i < ln-1 {
-				o.R.CreatedByClickTrackers[i] = o.R.CreatedByClickTrackers[ln-1]
-			}
-			o.R.CreatedByClickTrackers = o.R.CreatedByClickTrackers[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddUpdatedByClickTrackers adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.UpdatedByClickTrackers.
@@ -2047,7 +1973,7 @@ func (o *User) AddUpdatedByClickTrackers(ctx context.Context, exec boil.ContextE
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.UpdatedBy, o.ID)
+			rel.UpdatedBy = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2068,7 +1994,7 @@ func (o *User) AddUpdatedByClickTrackers(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.UpdatedBy, o.ID)
+			rel.UpdatedBy = o.ID
 		}
 	}
 
@@ -2089,80 +2015,6 @@ func (o *User) AddUpdatedByClickTrackers(ctx context.Context, exec boil.ContextE
 			rel.R.UpdatedByUser = o
 		}
 	}
-	return nil
-}
-
-// SetUpdatedByClickTrackers removes all previously related items of the
-// user replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.UpdatedByUser's UpdatedByClickTrackers accordingly.
-// Replaces o.R.UpdatedByClickTrackers with related.
-// Sets related.R.UpdatedByUser's UpdatedByClickTrackers accordingly.
-func (o *User) SetUpdatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTracker) error {
-	query := "update `click_trackers` set `updated_by` = null where `updated_by` = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.UpdatedByClickTrackers {
-			queries.SetScanner(&rel.UpdatedBy, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.UpdatedByUser = nil
-		}
-		o.R.UpdatedByClickTrackers = nil
-	}
-
-	return o.AddUpdatedByClickTrackers(ctx, exec, insert, related...)
-}
-
-// RemoveUpdatedByClickTrackers relationships from objects passed in.
-// Removes related items from R.UpdatedByClickTrackers (uses pointer comparison, removal does not keep order)
-// Sets related.R.UpdatedByUser.
-func (o *User) RemoveUpdatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTracker) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.UpdatedBy, nil)
-		if rel.R != nil {
-			rel.R.UpdatedByUser = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("updated_by")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.UpdatedByClickTrackers {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.UpdatedByClickTrackers)
-			if ln > 1 && i < ln-1 {
-				o.R.UpdatedByClickTrackers[i] = o.R.UpdatedByClickTrackers[ln-1]
-			}
-			o.R.UpdatedByClickTrackers = o.R.UpdatedByClickTrackers[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 

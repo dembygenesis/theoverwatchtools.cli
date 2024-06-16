@@ -187,9 +187,12 @@ func (m *Repository) GetCategoryByName(ctx context.Context, tx persistence.Trans
 	paginated, err := m.GetCategories(ctx, tx, &model.CategoryFilters{
 		CategoryNameIn: []string{name},
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("category filtered by name: %v", err)
 	}
+
+	fmt.Println("paginated.Pagination.RowCount ---- ", strutil.GetAsJson(paginated.Pagination.RowCount))
 
 	if paginated.Pagination.RowCount != 1 {
 		return nil, errors.New(sysconsts.ErrExpectedExactlyOneEntry)

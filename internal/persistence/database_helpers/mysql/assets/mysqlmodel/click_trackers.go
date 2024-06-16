@@ -30,9 +30,9 @@ type ClickTracker struct {
 	RedirectURL       null.String `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
 	Clicks            null.Int    `boil:"clicks" json:"clicks,omitempty" toml:"clicks" yaml:"clicks,omitempty"`
 	UniqueClicks      null.Int    `boil:"unique_clicks" json:"unique_clicks,omitempty" toml:"unique_clicks" yaml:"unique_clicks,omitempty"`
-	CreatedBy         null.Int    `boil:"created_by" json:"created_by,omitempty" toml:"created_by" yaml:"created_by,omitempty"`
-	UpdatedBy         null.Int    `boil:"updated_by" json:"updated_by,omitempty" toml:"updated_by" yaml:"updated_by,omitempty"`
-	ClickTrackerSetID null.Int    `boil:"click_tracker_set_id" json:"click_tracker_set_id,omitempty" toml:"click_tracker_set_id" yaml:"click_tracker_set_id,omitempty"`
+	CreatedBy         int         `boil:"created_by" json:"created_by" toml:"created_by" yaml:"created_by"`
+	UpdatedBy         int         `boil:"updated_by" json:"updated_by" toml:"updated_by" yaml:"updated_by"`
+	ClickTrackerSetID int         `boil:"click_tracker_set_id" json:"click_tracker_set_id" toml:"click_tracker_set_id" yaml:"click_tracker_set_id"`
 	CountryID         null.Int    `boil:"country_id" json:"country_id,omitempty" toml:"country_id" yaml:"country_id,omitempty"`
 	CreatedAt         null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt         null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
@@ -155,9 +155,9 @@ var ClickTrackerWhere = struct {
 	RedirectURL       whereHelpernull_String
 	Clicks            whereHelpernull_Int
 	UniqueClicks      whereHelpernull_Int
-	CreatedBy         whereHelpernull_Int
-	UpdatedBy         whereHelpernull_Int
-	ClickTrackerSetID whereHelpernull_Int
+	CreatedBy         whereHelperint
+	UpdatedBy         whereHelperint
+	ClickTrackerSetID whereHelperint
 	CountryID         whereHelpernull_Int
 	CreatedAt         whereHelpernull_Time
 	UpdatedAt         whereHelpernull_Time
@@ -169,9 +169,9 @@ var ClickTrackerWhere = struct {
 	RedirectURL:       whereHelpernull_String{field: "`click_trackers`.`redirect_url`"},
 	Clicks:            whereHelpernull_Int{field: "`click_trackers`.`clicks`"},
 	UniqueClicks:      whereHelpernull_Int{field: "`click_trackers`.`unique_clicks`"},
-	CreatedBy:         whereHelpernull_Int{field: "`click_trackers`.`created_by`"},
-	UpdatedBy:         whereHelpernull_Int{field: "`click_trackers`.`updated_by`"},
-	ClickTrackerSetID: whereHelpernull_Int{field: "`click_trackers`.`click_tracker_set_id`"},
+	CreatedBy:         whereHelperint{field: "`click_trackers`.`created_by`"},
+	UpdatedBy:         whereHelperint{field: "`click_trackers`.`updated_by`"},
+	ClickTrackerSetID: whereHelperint{field: "`click_trackers`.`click_tracker_set_id`"},
 	CountryID:         whereHelpernull_Int{field: "`click_trackers`.`country_id`"},
 	CreatedAt:         whereHelpernull_Time{field: "`click_trackers`.`created_at`"},
 	UpdatedAt:         whereHelpernull_Time{field: "`click_trackers`.`updated_at`"},
@@ -237,8 +237,8 @@ type clickTrackerL struct{}
 
 var (
 	clickTrackerAllColumns            = []string{"id", "name", "url_name", "redirect_url", "clicks", "unique_clicks", "created_by", "updated_by", "click_tracker_set_id", "country_id", "created_at", "updated_at", "deleted_at"}
-	clickTrackerColumnsWithoutDefault = []string{"name", "url_name", "redirect_url", "created_by", "updated_by", "click_tracker_set_id", "country_id", "created_at", "updated_at", "deleted_at"}
-	clickTrackerColumnsWithDefault    = []string{"id", "clicks", "unique_clicks"}
+	clickTrackerColumnsWithoutDefault = []string{"name", "url_name", "redirect_url", "created_by", "updated_by", "click_tracker_set_id", "country_id", "deleted_at"}
+	clickTrackerColumnsWithDefault    = []string{"id", "clicks", "unique_clicks", "created_at", "updated_at"}
 	clickTrackerPrimaryKeyColumns     = []string{"id"}
 	clickTrackerGeneratedColumns      = []string{}
 )
@@ -411,9 +411,7 @@ func (clickTrackerL) LoadCreatedByUser(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &clickTrackerR{}
 		}
-		if !queries.IsNil(object.CreatedBy) {
-			args[object.CreatedBy] = struct{}{}
-		}
+		args[object.CreatedBy] = struct{}{}
 
 	} else {
 		for _, obj := range slice {
@@ -421,9 +419,7 @@ func (clickTrackerL) LoadCreatedByUser(ctx context.Context, e boil.ContextExecut
 				obj.R = &clickTrackerR{}
 			}
 
-			if !queries.IsNil(obj.CreatedBy) {
-				args[obj.CreatedBy] = struct{}{}
-			}
+			args[obj.CreatedBy] = struct{}{}
 
 		}
 	}
@@ -480,7 +476,7 @@ func (clickTrackerL) LoadCreatedByUser(ctx context.Context, e boil.ContextExecut
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.CreatedBy, foreign.ID) {
+			if local.CreatedBy == foreign.ID {
 				local.R.CreatedByUser = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
@@ -527,9 +523,7 @@ func (clickTrackerL) LoadUpdatedByUser(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &clickTrackerR{}
 		}
-		if !queries.IsNil(object.UpdatedBy) {
-			args[object.UpdatedBy] = struct{}{}
-		}
+		args[object.UpdatedBy] = struct{}{}
 
 	} else {
 		for _, obj := range slice {
@@ -537,9 +531,7 @@ func (clickTrackerL) LoadUpdatedByUser(ctx context.Context, e boil.ContextExecut
 				obj.R = &clickTrackerR{}
 			}
 
-			if !queries.IsNil(obj.UpdatedBy) {
-				args[obj.UpdatedBy] = struct{}{}
-			}
+			args[obj.UpdatedBy] = struct{}{}
 
 		}
 	}
@@ -596,7 +588,7 @@ func (clickTrackerL) LoadUpdatedByUser(ctx context.Context, e boil.ContextExecut
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.UpdatedBy, foreign.ID) {
+			if local.UpdatedBy == foreign.ID {
 				local.R.UpdatedByUser = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
@@ -643,9 +635,7 @@ func (clickTrackerL) LoadClickTrackerSet(ctx context.Context, e boil.ContextExec
 		if object.R == nil {
 			object.R = &clickTrackerR{}
 		}
-		if !queries.IsNil(object.ClickTrackerSetID) {
-			args[object.ClickTrackerSetID] = struct{}{}
-		}
+		args[object.ClickTrackerSetID] = struct{}{}
 
 	} else {
 		for _, obj := range slice {
@@ -653,9 +643,7 @@ func (clickTrackerL) LoadClickTrackerSet(ctx context.Context, e boil.ContextExec
 				obj.R = &clickTrackerR{}
 			}
 
-			if !queries.IsNil(obj.ClickTrackerSetID) {
-				args[obj.ClickTrackerSetID] = struct{}{}
-			}
+			args[obj.ClickTrackerSetID] = struct{}{}
 
 		}
 	}
@@ -712,7 +700,7 @@ func (clickTrackerL) LoadClickTrackerSet(ctx context.Context, e boil.ContextExec
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ClickTrackerSetID, foreign.ID) {
+			if local.ClickTrackerSetID == foreign.ID {
 				local.R.ClickTrackerSet = foreign
 				if foreign.R == nil {
 					foreign.R = &clickTrackerSetR{}
@@ -869,7 +857,7 @@ func (o *ClickTracker) SetCreatedByUser(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.CreatedBy, related.ID)
+	o.CreatedBy = related.ID
 	if o.R == nil {
 		o.R = &clickTrackerR{
 			CreatedByUser: related,
@@ -886,39 +874,6 @@ func (o *ClickTracker) SetCreatedByUser(ctx context.Context, exec boil.ContextEx
 		related.R.CreatedByClickTrackers = append(related.R.CreatedByClickTrackers, o)
 	}
 
-	return nil
-}
-
-// RemoveCreatedByUser relationship.
-// Sets o.R.CreatedByUser to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ClickTracker) RemoveCreatedByUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.CreatedBy, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("created_by")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.CreatedByUser = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.CreatedByClickTrackers {
-		if queries.Equal(o.CreatedBy, ri.CreatedBy) {
-			continue
-		}
-
-		ln := len(related.R.CreatedByClickTrackers)
-		if ln > 1 && i < ln-1 {
-			related.R.CreatedByClickTrackers[i] = related.R.CreatedByClickTrackers[ln-1]
-		}
-		related.R.CreatedByClickTrackers = related.R.CreatedByClickTrackers[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -949,7 +904,7 @@ func (o *ClickTracker) SetUpdatedByUser(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.UpdatedBy, related.ID)
+	o.UpdatedBy = related.ID
 	if o.R == nil {
 		o.R = &clickTrackerR{
 			UpdatedByUser: related,
@@ -966,39 +921,6 @@ func (o *ClickTracker) SetUpdatedByUser(ctx context.Context, exec boil.ContextEx
 		related.R.UpdatedByClickTrackers = append(related.R.UpdatedByClickTrackers, o)
 	}
 
-	return nil
-}
-
-// RemoveUpdatedByUser relationship.
-// Sets o.R.UpdatedByUser to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ClickTracker) RemoveUpdatedByUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.UpdatedBy, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("updated_by")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.UpdatedByUser = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.UpdatedByClickTrackers {
-		if queries.Equal(o.UpdatedBy, ri.UpdatedBy) {
-			continue
-		}
-
-		ln := len(related.R.UpdatedByClickTrackers)
-		if ln > 1 && i < ln-1 {
-			related.R.UpdatedByClickTrackers[i] = related.R.UpdatedByClickTrackers[ln-1]
-		}
-		related.R.UpdatedByClickTrackers = related.R.UpdatedByClickTrackers[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1029,7 +951,7 @@ func (o *ClickTracker) SetClickTrackerSet(ctx context.Context, exec boil.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ClickTrackerSetID, related.ID)
+	o.ClickTrackerSetID = related.ID
 	if o.R == nil {
 		o.R = &clickTrackerR{
 			ClickTrackerSet: related,
@@ -1046,39 +968,6 @@ func (o *ClickTracker) SetClickTrackerSet(ctx context.Context, exec boil.Context
 		related.R.ClickTrackers = append(related.R.ClickTrackers, o)
 	}
 
-	return nil
-}
-
-// RemoveClickTrackerSet relationship.
-// Sets o.R.ClickTrackerSet to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ClickTracker) RemoveClickTrackerSet(ctx context.Context, exec boil.ContextExecutor, related *ClickTrackerSet) error {
-	var err error
-
-	queries.SetScanner(&o.ClickTrackerSetID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("click_tracker_set_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ClickTrackerSet = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ClickTrackers {
-		if queries.Equal(o.ClickTrackerSetID, ri.ClickTrackerSetID) {
-			continue
-		}
-
-		ln := len(related.R.ClickTrackers)
-		if ln > 1 && i < ln-1 {
-			related.R.ClickTrackers[i] = related.R.ClickTrackers[ln-1]
-		}
-		related.R.ClickTrackers = related.R.ClickTrackers[:ln-1]
-		break
-	}
 	return nil
 }
 

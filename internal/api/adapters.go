@@ -33,6 +33,11 @@ type capturePagesService interface {
 	//RestoreCapturePages(ctx context.Context, params *model.RestoreCapturePages) error
 }
 
+type clickTrackerService interface {
+	ListClickTrackers(ctx context.Context, filters *model.ClickTrackerFilters) (*model.PaginatedClickTrackers, error)
+	CreateClickTracker(ctx context.Context, params *model.CreateClickTracker) (*model.ClickTracker, error)
+}
+
 //counterfeiter:generate . userService
 type userService interface {
 	ListUsers(ctx context.Context, filters *model.UserFilters) (*model.PaginatedUsers, error)

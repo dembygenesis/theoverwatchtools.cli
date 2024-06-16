@@ -49,7 +49,6 @@ func (m *Handler) GetCtxExecutor(i interface{}) (boil.ContextExecutor, error) {
 func parseExecutorInstance(i interface{}) (*Handler, error) {
 	mySQLTxHandler, ok := i.(*Handler)
 
-	fmt.Println("the ok --- ", ok)
 	if !ok {
 		return nil, errors.New(sysconsts.ErrNonMySQLTxInstance)
 	}

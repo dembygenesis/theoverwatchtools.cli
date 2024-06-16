@@ -61,6 +61,10 @@ func (a *Api) Routes() error {
 	groupCapturePages.Name("List Capture Pages").Get("", a.ListCapturePages)
 	groupCapturePages.Name("Create Capture Pages").Post("", a.CreateCapturePages)
 
+	groupClickTrackers := v1.Group("/clicktrackers")
+	groupClickTrackers.Name("List Click Trackers").Get("", a.ListClickTrackers)
+	groupClickTrackers.Name("Create Click Tracker").Post("", a.CreateClickTracker)
+
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {
 		return fmt.Errorf("load static routes: %w", err)

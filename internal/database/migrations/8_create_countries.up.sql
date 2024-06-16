@@ -8,3 +8,9 @@ CREATE TABLE countries (
                            INDEX idx_code (code),
                            INDEX idx_name (name)
 );
+
+INSERT INTO countries (code, name, created_at, updated_at)
+VALUES
+    ('US', 'United States', NOW(), NOW()),
+    ('UK', 'United Kingdom', NOW(), NOW()),
+    ('CA', 'Canada', NOW(), NOW());

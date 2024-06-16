@@ -764,7 +764,7 @@ func (clickTrackerSetL) LoadClickTrackers(ctx context.Context, e boil.ContextExe
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ClickTrackerSetID) {
+			if local.ID == foreign.ClickTrackerSetID {
 				local.R.ClickTrackers = append(local.R.ClickTrackers, foreign)
 				if foreign.R == nil {
 					foreign.R = &clickTrackerR{}
@@ -1026,7 +1026,7 @@ func (o *ClickTrackerSet) AddClickTrackers(ctx context.Context, exec boil.Contex
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ClickTrackerSetID, o.ID)
+			rel.ClickTrackerSetID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1047,7 +1047,7 @@ func (o *ClickTrackerSet) AddClickTrackers(ctx context.Context, exec boil.Contex
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ClickTrackerSetID, o.ID)
+			rel.ClickTrackerSetID = o.ID
 		}
 	}
 
@@ -1068,80 +1068,6 @@ func (o *ClickTrackerSet) AddClickTrackers(ctx context.Context, exec boil.Contex
 			rel.R.ClickTrackerSet = o
 		}
 	}
-	return nil
-}
-
-// SetClickTrackers removes all previously related items of the
-// click_tracker_set replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ClickTrackerSet's ClickTrackers accordingly.
-// Replaces o.R.ClickTrackers with related.
-// Sets related.R.ClickTrackerSet's ClickTrackers accordingly.
-func (o *ClickTrackerSet) SetClickTrackers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTracker) error {
-	query := "update `click_trackers` set `click_tracker_set_id` = null where `click_tracker_set_id` = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ClickTrackers {
-			queries.SetScanner(&rel.ClickTrackerSetID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ClickTrackerSet = nil
-		}
-		o.R.ClickTrackers = nil
-	}
-
-	return o.AddClickTrackers(ctx, exec, insert, related...)
-}
-
-// RemoveClickTrackers relationships from objects passed in.
-// Removes related items from R.ClickTrackers (uses pointer comparison, removal does not keep order)
-// Sets related.R.ClickTrackerSet.
-func (o *ClickTrackerSet) RemoveClickTrackers(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTracker) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ClickTrackerSetID, nil)
-		if rel.R != nil {
-			rel.R.ClickTrackerSet = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("click_tracker_set_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ClickTrackers {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ClickTrackers)
-			if ln > 1 && i < ln-1 {
-				o.R.ClickTrackers[i] = o.R.ClickTrackers[ln-1]
-			}
-			o.R.ClickTrackers = o.R.ClickTrackers[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 

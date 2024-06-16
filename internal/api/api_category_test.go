@@ -24,6 +24,7 @@ type testServices struct {
 	catService      categoryService
 	orgService      organizationService
 	capPagesService capturePagesService
+	ctService       clickTrackerService
 }
 
 type testCaseCreateCategory struct {

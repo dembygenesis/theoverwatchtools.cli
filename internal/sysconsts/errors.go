@@ -26,4 +26,8 @@ var (
 	ErrCategoryTypeRefIdInvalid             = "category_type_ref_id invalid"
 	ErrCategoryNameEmpty                    = "category name empty"
 	ErrOrganizationTypeRefIdInvalid         = "organization_type_ref_id invalid"
+	ErrInvalidUrlName                       = "invalid URL name"
+	ErrInvalidRedirectUrl                   = "invalid redirect URL"
+	ErrInvalidClicks                        = "invalid clicks value"
+	ErrInvalidUniqueClicks                  = "invalid unique clicks value"
 )
