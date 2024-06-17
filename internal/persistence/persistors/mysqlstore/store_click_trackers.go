@@ -389,3 +389,26 @@ func (m *Repository) CreateClickTracker(ctx context.Context, tx persistence.Tran
 
 	return clickTracker, nil
 }
+
+// AddClickTracker attempts to add a new category
+func (m *Repository) AddClickTracker(ctx context.Context, tx persistence.TransactionHandler, clickTracker *model.ClickTracker) (*model.ClickTracker, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %v", err)
+	}
+
+	entry := &mysqlmodel.ClickTracker{
+		Name:              clickTracker.Name,
+		ClickTrackerSetID: clickTracker.ClickTrackerSetId,
+	}
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("insert click tracker: %v", err)
+	}
+
+	clickTracker, err = m.GetClickTrackerById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get category by id: %v", err)
+	}
+
+	return clickTracker, nil
+}

@@ -112,7 +112,7 @@ func getTestCasesListClickTrackers() []testCaseListClickTracker {
 		{
 			name: "success-all-filters",
 			queryParameters: map[string]interface{}{
-				"ids_in":                    []int{1, 2, 3},
+				"ids_in":                    []int{1},
 				"click_tracker_set_id":      []int{1},
 				"click_tracker_set_name_in": []string{"Tracker Set 1"},
 				"name_in":                   []string{"Tracker 1"},
