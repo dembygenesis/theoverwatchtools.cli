@@ -39,6 +39,11 @@ func main() {
 		log.Fatalf("capture pages mgr: %v", err)
 	}
 
+	clickTrackersMgr, err := ctn.SafeGetLogicClickTrackers()
+	if err != nil {
+		log.Fatalf("click trackers mgr: %v", err)
+	}
+
 	apiCfg := &api.Config{
 		BaseUrl:             cfg.API.BaseUrl,
 		Logger:              _logger,
@@ -46,6 +51,7 @@ func main() {
 		CategoryService:     categoryMgr,
 		OrganizationService: organizationMgr,
 		CapturePagesService: capturePagesMgr,
+		ClickTrackerService: clickTrackersMgr,
 	}
 
 	_api, err := api.New(apiCfg)

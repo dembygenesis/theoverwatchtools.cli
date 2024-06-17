@@ -64,6 +64,10 @@ func (a *Api) Routes() error {
 	groupCapturePages.Name("Delete Capture Page").Delete("/:id", a.DeleteCapturePages)
 	groupCapturePages.Name("Restore Capture Page").Patch("/:id", a.RestoreCapturePages)
 
+	groupClickTrackers := v1.Group("/clicktrackers")
+	groupClickTrackers.Name("List Click Trackers").Get("", a.ListClickTrackers)
+	groupClickTrackers.Name("Create Click Tracker").Post("", a.CreateClickTracker)
+
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {
 		return fmt.Errorf("load static routes: %w", err)

@@ -24,6 +24,7 @@ type testServices struct {
 	catService      categoryService
 	orgService      organizationService
 	capPagesService capturePagesService
+	ctService       clickTrackerService
 }
 
 type testCaseCreateCategory struct {
@@ -381,8 +382,9 @@ func getTestCasesUpdateCategory() []testCaseUpdateCategory {
 
 			},
 			body: map[string]interface{}{
-				"id":   1,
-				"name": "demby",
+				"id":                   1,
+				"category_type_ref_id": 1,
+				"name":                 "Lawrence",
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				require.Equal(t, http.StatusOK, respCode)

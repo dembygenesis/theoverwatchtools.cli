@@ -27,6 +27,9 @@ func GetConcreteContainer(t *testing.T) (*Container, mysqlhelper.CleanFn) {
 	capturePages, err := ctn.SafeGetLogicCapturePages()
 	require.NoError(t, err, "unexpected error: SafeGetLogicCapturePages")
 
+	clickTrackers, err := ctn.SafeGetLogicClickTrackers()
+	require.NoError(t, err, "unexpected error: SafeGetLogicCapturePages")
+
 	mysqlStore, err := ctn.SafeGetPersistenceMysql()
 	require.NoError(t, err, "unexpected error: SafeGetPersistenceMysql")
 
@@ -37,6 +40,7 @@ func GetConcreteContainer(t *testing.T) (*Container, mysqlhelper.CleanFn) {
 		CategoryService:     category,
 		OrganizationService: organization,
 		CapturePagesService: capturePages,
+		ClickTrackerService: clickTrackers,
 		MySQLStore:          mysqlStore,
 		ConnProvider:        mysqlTxProvider,
 	}, cleanup

@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/dembygenesis/local.tools/internal/persistence"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type FakeTransactionHandler struct {
@@ -19,6 +20,19 @@ type FakeTransactionHandler struct {
 	}
 	commitReturnsOnCall map[int]struct {
 		result1 error
+	}
+	GetCtxExecutorStub        func(interface{}) (boil.ContextExecutor, error)
+	getCtxExecutorMutex       sync.RWMutex
+	getCtxExecutorArgsForCall []struct {
+		arg1 interface{}
+	}
+	getCtxExecutorReturns struct {
+		result1 boil.ContextExecutor
+		result2 error
+	}
+	getCtxExecutorReturnsOnCall map[int]struct {
+		result1 boil.ContextExecutor
+		result2 error
 	}
 	RollbackStub        func(context.Context)
 	rollbackMutex       sync.RWMutex
@@ -90,6 +104,70 @@ func (fake *FakeTransactionHandler) CommitReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeTransactionHandler) GetCtxExecutor(arg1 interface{}) (boil.ContextExecutor, error) {
+	fake.getCtxExecutorMutex.Lock()
+	ret, specificReturn := fake.getCtxExecutorReturnsOnCall[len(fake.getCtxExecutorArgsForCall)]
+	fake.getCtxExecutorArgsForCall = append(fake.getCtxExecutorArgsForCall, struct {
+		arg1 interface{}
+	}{arg1})
+	stub := fake.GetCtxExecutorStub
+	fakeReturns := fake.getCtxExecutorReturns
+	fake.recordInvocation("GetCtxExecutor", []interface{}{arg1})
+	fake.getCtxExecutorMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeTransactionHandler) GetCtxExecutorCallCount() int {
+	fake.getCtxExecutorMutex.RLock()
+	defer fake.getCtxExecutorMutex.RUnlock()
+	return len(fake.getCtxExecutorArgsForCall)
+}
+
+func (fake *FakeTransactionHandler) GetCtxExecutorCalls(stub func(interface{}) (boil.ContextExecutor, error)) {
+	fake.getCtxExecutorMutex.Lock()
+	defer fake.getCtxExecutorMutex.Unlock()
+	fake.GetCtxExecutorStub = stub
+}
+
+func (fake *FakeTransactionHandler) GetCtxExecutorArgsForCall(i int) interface{} {
+	fake.getCtxExecutorMutex.RLock()
+	defer fake.getCtxExecutorMutex.RUnlock()
+	argsForCall := fake.getCtxExecutorArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeTransactionHandler) GetCtxExecutorReturns(result1 boil.ContextExecutor, result2 error) {
+	fake.getCtxExecutorMutex.Lock()
+	defer fake.getCtxExecutorMutex.Unlock()
+	fake.GetCtxExecutorStub = nil
+	fake.getCtxExecutorReturns = struct {
+		result1 boil.ContextExecutor
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeTransactionHandler) GetCtxExecutorReturnsOnCall(i int, result1 boil.ContextExecutor, result2 error) {
+	fake.getCtxExecutorMutex.Lock()
+	defer fake.getCtxExecutorMutex.Unlock()
+	fake.GetCtxExecutorStub = nil
+	if fake.getCtxExecutorReturnsOnCall == nil {
+		fake.getCtxExecutorReturnsOnCall = make(map[int]struct {
+			result1 boil.ContextExecutor
+			result2 error
+		})
+	}
+	fake.getCtxExecutorReturnsOnCall[i] = struct {
+		result1 boil.ContextExecutor
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeTransactionHandler) Rollback(arg1 context.Context) {
 	fake.rollbackMutex.Lock()
 	fake.rollbackArgsForCall = append(fake.rollbackArgsForCall, struct {
@@ -127,6 +205,8 @@ func (fake *FakeTransactionHandler) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.commitMutex.RLock()
 	defer fake.commitMutex.RUnlock()
+	fake.getCtxExecutorMutex.RLock()
+	defer fake.getCtxExecutorMutex.RUnlock()
 	fake.rollbackMutex.RLock()
 	defer fake.rollbackMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

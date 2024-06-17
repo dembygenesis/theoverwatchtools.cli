@@ -75,8 +75,51 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 		return nil, fmt.Errorf("get category by id: %v", err)
 	}
 
+	if err := tx.Commit(ctx); err != nil {
+		fmt.Println("Error during transaction commit")
+		return nil, fmt.Errorf("commit failed: %v", err)
+	}
+
 	return category, nil
 }
+
+//func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateCategory) (*model.Category, error) {
+//	if params == nil {
+//		return nil, ErrCatNil
+//	}
+//
+//	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+//	if err != nil {
+//		return nil, fmt.Errorf("extract context executor: %v", err)
+//	}
+//
+//	entry := &mysqlmodel.Category{ID: params.Id}
+//	cols := []string{mysqlmodel.CategoryColumns.ID}
+//
+//	if params.CategoryTypeRefId.Valid {
+//		entry.CategoryTypeRefID = params.CategoryTypeRefId.Int
+//		cols = append(cols, mysqlmodel.CategoryColumns.CategoryTypeRefID)
+//	}
+//	if params.Name.Valid {
+//		entry.Name = params.Name.String
+//		cols = append(cols, mysqlmodel.CategoryColumns.Name)
+//	}
+//
+//	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
+//	if err != nil {
+//		return nil, fmt.Errorf("update failed: %v", err)
+//	}
+//
+//
+//	category, err := m.GetCategoryById(context.Background(), nil, entry.ID)
+//	if err != nil {
+//		return nil, fmt.Errorf("get category by id: %v", err)
+//	}
+//
+//	fmt.Println("Category retrieved successfully")
+//
+//	return category, nil
+//}
 
 // AddCategory attempts to add a new category
 func (m *Repository) AddCategory(ctx context.Context, tx persistence.TransactionHandler, category *model.Category) (*model.Category, error) {
@@ -145,9 +188,12 @@ func (m *Repository) GetCategoryByName(ctx context.Context, tx persistence.Trans
 	paginated, err := m.GetCategories(ctx, tx, &model.CategoryFilters{
 		CategoryNameIn: []string{name},
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("category filtered by name: %v", err)
 	}
+
+	fmt.Println("paginated.Pagination.RowCount ---- ", strutil.GetAsJson(paginated.Pagination.RowCount))
 
 	if paginated.Pagination.RowCount != 1 {
 		return nil, errors.New(sysconsts.ErrExpectedExactlyOneEntry)
@@ -159,6 +205,7 @@ func (m *Repository) GetCategoryByName(ctx context.Context, tx persistence.Trans
 // GetCategories attempts to fetch the category
 // entries using the given transaction layer.
 func (m *Repository) GetCategories(ctx context.Context, tx persistence.TransactionHandler, filters *model.CategoryFilters) (*model.PaginatedCategories, error) {
+	fmt.Println("the tx in the GetCategoris --- ")
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)

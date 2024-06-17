@@ -6,6 +6,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/capturepageslogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
+	"github.com/dembygenesis/local.tools/internal/logic_handlers/clicktrackerlogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/marketinglogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/organizationlogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/userlogic"
@@ -23,10 +24,30 @@ const (
 	logicOrganization    = "logic_organization"
 	logicCapturePages    = "logic_capture_pages"
 	logicCapturePageSets = "logic_capture_pages_sets"
+	logicClickTrackers   = "logic_click_trackers"
 )
 
 func GetLogicHandlers() []dingo.Def {
 	return []dingo.Def{
+		{
+			Name: logicClickTrackers,
+			Build: func(
+				cfg *config.App,
+				logger *logrus.Entry,
+				txProvider *mysqlconn.Provider,
+				store *mysqlstore.Repository,
+			) (*clicktrackerlogic.Service, error) {
+				logic, err := clicktrackerlogic.New(&clicktrackerlogic.Config{
+					TxProvider: txProvider,
+					Logger:     logger,
+					Persistor:  store,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("logiccapturepagesset: %v", err)
+				}
+				return logic, nil
+			},
+		},
 		{
 			Name: logicCapturePageSets,
 			Build: func(

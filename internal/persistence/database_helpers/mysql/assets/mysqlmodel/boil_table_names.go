@@ -8,6 +8,9 @@ var TableNames = struct {
 	CapturePages     string
 	Category         string
 	CategoryType     string
+	ClickTrackerSets string
+	ClickTrackers    string
+	Countries        string
 	Organization     string
 	OrganizationType string
 	SchemaMigrations string
@@ -17,6 +20,9 @@ var TableNames = struct {
 	CapturePages:     "capture_pages",
 	Category:         "category",
 	CategoryType:     "category_type",
+	ClickTrackerSets: "click_tracker_sets",
+	ClickTrackers:    "click_trackers",
+	Countries:        "countries",
 	Organization:     "organization",
 	OrganizationType: "organization_type",
 	SchemaMigrations: "schema_migrations",

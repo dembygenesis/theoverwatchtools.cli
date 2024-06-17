@@ -3,6 +3,7 @@ module github.com/dembygenesis/local.tools
 go 1.21
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/atotto/clipboard v0.1.4
 	github.com/docker/docker v25.0.5+incompatible
 	github.com/docker/go-connections v0.5.0
