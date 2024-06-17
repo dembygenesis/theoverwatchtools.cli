@@ -42,14 +42,9 @@ type CreateClickTracker struct {
 
 // UpdateClickTracker struct for updating an existing ClickTracker
 type UpdateClickTracker struct {
-	Id           int         `json:"id" validate:"required,greater_than_zero"`
-	Name         null.String `json:"name"`
-	UrlName      null.String `json:"url_name"`
-	RedirectUrl  null.String `json:"redirect_url"`
-	Clicks       null.Int    `json:"clicks"`
-	UniqueClicks null.Int    `json:"unique_clicks"`
-	UpdatedBy    int         `json:"updated_by" validate:"required,greater_than_zero"`
-	CountryId    null.Int    `json:"country_id"`
+	Id                int         `json:"id" validate:"required,greater_than_zero"`
+	Name              null.String `json:"name"`
+	ClickTrackerSetId null.Int    `json:"click_tracker_set_id_id"`
 }
 
 // DeleteClickTracker struct for deleting a ClickTracker
@@ -118,38 +113,6 @@ func (c *UpdateClickTracker) Validate() error {
 		}
 	}
 
-	if c.UrlName.Valid {
-		if strings.TrimSpace(c.UrlName.String) != "" {
-			hasAtLeastOneUpdateParameter = true
-		} else {
-			errList.Add(sysconsts.ErrInvalidUrlName)
-		}
-	}
-
-	if c.RedirectUrl.Valid {
-		if strings.TrimSpace(c.RedirectUrl.String) != "" {
-			hasAtLeastOneUpdateParameter = true
-		} else {
-			errList.Add(sysconsts.ErrInvalidRedirectUrl)
-		}
-	}
-
-	if c.Clicks.Valid {
-		if c.Clicks.Int >= 0 {
-			hasAtLeastOneUpdateParameter = true
-		} else {
-			errList.Add(sysconsts.ErrInvalidClicks)
-		}
-	}
-
-	if c.UniqueClicks.Valid {
-		if c.UniqueClicks.Int >= 0 {
-			hasAtLeastOneUpdateParameter = true
-		} else {
-			errList.Add(sysconsts.ErrInvalidUniqueClicks)
-		}
-	}
-
 	if !hasAtLeastOneUpdateParameter {
 		return errors.New(sysconsts.ErrHasNotASingleValidateUpdateParameter)
 	}
@@ -177,22 +140,6 @@ func (c *UpdateClickTracker) ToClickTracker(existing *ClickTracker) *ClickTracke
 	if c.Name.Valid {
 		existing.Name = c.Name.String
 	}
-	if c.UrlName.Valid {
-		existing.UrlName = null.StringFrom(c.UrlName.String) // Convert string to null.String
-	}
-	if c.RedirectUrl.Valid {
-		existing.RedirectUrl = null.StringFrom(c.RedirectUrl.String) // Convert string to null.String
-	}
-	if c.Clicks.Valid {
-		existing.Clicks = null.IntFrom(c.Clicks.Int) // Convert int to null.Int
-	}
-	if c.UniqueClicks.Valid {
-		existing.UniqueClicks = null.IntFrom(c.UniqueClicks.Int) // Convert int to null.Int
-	}
-	if c.CountryId.Valid {
-		existing.CountryId = c.CountryId
-	}
-	existing.UpdatedBy = c.UpdatedBy
 	existing.UpdatedAt = time.Now()
 	return existing
 }
