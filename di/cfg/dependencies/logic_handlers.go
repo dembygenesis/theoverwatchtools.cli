@@ -17,18 +17,38 @@ import (
 )
 
 const (
-	logicCategory        = "logic_category"
-	logicUser            = "logic_user"
-	logicAuth            = "logic_auth"
-	logicMarketing       = "logic_marketing"
-	logicOrganization    = "logic_organization"
-	logicCapturePages    = "logic_capture_pages"
-	logicCapturePageSets = "logic_capture_pages_sets"
-	logicClickTrackers   = "logic_click_trackers"
+	logicCategory         = "logic_category"
+	logicUser             = "logic_user"
+	logicAuth             = "logic_auth"
+	logicMarketing        = "logic_marketing"
+	logicOrganization     = "logic_organization"
+	logicCapturePages     = "logic_capture_pages"
+	logicCapturePageSets  = "logic_capture_pages_sets"
+	logicClickTrackers    = "logic_click_trackers"
+	logicClickTrackerSets = "logic_click_tracker_sets"
 )
 
 func GetLogicHandlers() []dingo.Def {
 	return []dingo.Def{
+		{
+			Name: logicClickTrackerSets,
+			Build: func(
+				cfg *config.App,
+				logger *logrus.Entry,
+				txProvider *mysqlconn.Provider,
+				store *mysqlstore.Repository,
+			) (*clicktrackerlogic.Service, error) {
+				logic, err := clicktrackerlogic.New(&clicktrackerlogic.Config{
+					TxProvider: txProvider,
+					Logger:     logger,
+					Persistor:  store,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("logiccapturepagesset: %v", err)
+				}
+				return logic, nil
+			},
+		},
 		{
 			Name: logicClickTrackers,
 			Build: func(
@@ -43,7 +63,7 @@ func GetLogicHandlers() []dingo.Def {
 					Persistor:  store,
 				})
 				if err != nil {
-					return nil, fmt.Errorf("logiccapturepagesset: %v", err)
+					return nil, fmt.Errorf("logicclick: %v", err)
 				}
 				return logic, nil
 			},

@@ -1,17 +1,57 @@
 package model
 
 import (
+	"errors"
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/dembygenesis/local.tools/internal/utilities/errs"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/volatiletech/null/v8"
+	"strings"
 )
 
 type DeleteCapturePages struct {
 	ID int `json:"id" validate:"required,greater_than_zero"`
 }
 
+type UpdateCapturePages struct {
+	Id               int         `json:"id" validate:"required,greater_than_zero"`
+	CapturePageSetId null.Int    `json:"capture_page_set_id"`
+	Name             null.String `json:"name"`
+}
+
 type RestoreCapturePages struct {
 	ID int `json:"id" validate:"required,greater_than_zero"`
+}
+
+func (c *UpdateCapturePages) Validate() error {
+	var errList errs.List
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %w", err)
+	}
+
+	hasAtLeastOneUpdateParameters := false
+	if c.CapturePageSetId.Valid {
+		if c.CapturePageSetId.Int > 0 {
+			hasAtLeastOneUpdateParameters = true
+		} else {
+			errList.Add(sysconsts.ErrCapturePageSetId)
+		}
+	}
+
+	if c.Name.Valid {
+		if c.Name.Valid && strings.TrimSpace(c.Name.String) != "" {
+			hasAtLeastOneUpdateParameters = true
+		} else {
+			errList.Add(sysconsts.ErrCapturePageSetId)
+		}
+	}
+
+	if !hasAtLeastOneUpdateParameters {
+		return errors.New(sysconsts.ErrHasNotASingleValidateUpdateParameter)
+	}
+
+	return nil
 }
 
 // CreateCapturePage struct for creating a new capture page

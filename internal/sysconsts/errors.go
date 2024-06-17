@@ -24,6 +24,7 @@ var (
 	ErrExpectedExactlyOneEntry              = "expected exactly one entry for entity: %v"
 	ErrHasNotASingleValidateUpdateParameter = "has not at least one valid update parameter"
 	ErrCategoryTypeRefIdInvalid             = "category_type_ref_id invalid"
+	ErrCapturePageSetId                     = "capture_page_set_id invalid"
 	ErrCategoryNameEmpty                    = "category name empty"
 	ErrOrganizationTypeRefIdInvalid         = "organization_type_ref_id invalid"
 	ErrInvalidUrlName                       = "invalid URL name"

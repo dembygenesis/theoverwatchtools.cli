@@ -60,6 +60,9 @@ func (a *Api) Routes() error {
 	groupCapturePages := v1.Group("/capturepages")
 	groupCapturePages.Name("List Capture Pages").Get("", a.ListCapturePages)
 	groupCapturePages.Name("Create Capture Pages").Post("", a.CreateCapturePages)
+	groupCapturePages.Name("Update Capture Page").Patch("", a.UpdateCapturePages)
+	groupCapturePages.Name("Delete Capture Page").Delete("/:id", a.DeleteCapturePages)
+	groupCapturePages.Name("Restore Capture Page").Patch("/:id", a.RestoreCapturePages)
 
 	groupClickTrackers := v1.Group("/clicktrackers")
 	groupClickTrackers.Name("List Click Trackers").Get("", a.ListClickTrackers)

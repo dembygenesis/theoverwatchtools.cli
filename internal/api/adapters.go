@@ -20,17 +20,18 @@ type categoryService interface {
 type organizationService interface {
 	ListOrganizations(ctx context.Context, filters *model.OrganizationFilters) (*model.PaginatedOrganizations, error)
 	CreateOrganization(ctx context.Context, organization *model.CreateOrganization) (*model.Organization, error)
+	UpdateOrganization(ctx context.Context, category *model.UpdateOrganization) (*model.Organization, error)
 	DeleteOrganization(ctx context.Context, params *model.DeleteOrganization) error
 	RestoreOrganization(ctx context.Context, params *model.RestoreOrganization) error
-	UpdateOrganization(ctx context.Context, category *model.UpdateOrganization) (*model.Organization, error)
 }
 
 //counterfeiter:generate . capturePagesService
 type capturePagesService interface {
 	ListCapturePages(ctx context.Context, filters *model.CapturePagesFilters) (*model.PaginatedCapturePages, error)
 	CreateCapturePages(ctx context.Context, capturepage *model.CreateCapturePage) (*model.CapturePages, error)
-	//DeleteCapturePages(ctx context.Context, params *model.DeleteCapturePages) error
-	//RestoreCapturePages(ctx context.Context, params *model.RestoreCapturePages) error
+	UpdateCapturePages(ctx context.Context, capturepage *model.UpdateCapturePages) (*model.CapturePages, error)
+	DeleteCapturePages(ctx context.Context, params *model.DeleteCapturePages) error
+	RestoreCapturePages(ctx context.Context, params *model.RestoreCapturePages) error
 }
 
 type clickTrackerService interface {

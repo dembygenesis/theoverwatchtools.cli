@@ -32,14 +32,13 @@ func New(cfg *Config) (*Service, error) {
 	return &Service{cfg}, nil
 }
 
-//
-//func (i *Service) validateCapturePageTypeId(ctx context.Context, handler persistence.TransactionHandler, id int) error {
-//	_, err := i.cfg.Persistor.GetCapturePageTypeById(ctx, handler, id)
-//	if err != nil {
-//		return fmt.Errorf("invalid capture_page_type_id: %v", err)
-//	}
-//	return nil
-//}
+func (i *Service) validateCapturePageTypeId(ctx context.Context, handler persistence.TransactionHandler, id int) error {
+	_, err := i.cfg.Persistor.GetCapturePageTypeById(ctx, handler, id)
+	if err != nil {
+		return fmt.Errorf("invalid capture_page_type_id: %v", err)
+	}
+	return nil
+}
 
 // CreateCapturePages creates a new capture page.
 func (i *Service) CreateCapturePages(ctx context.Context, params *model.CreateCapturePage) (*model.CapturePages, error) {
@@ -110,4 +109,93 @@ func (i *Service) ListCapturePages(
 	}
 
 	return paginated, nil
+}
+
+// UpdateCapturePages updates an existing capture page.
+func (i *Service) UpdateCapturePages(ctx context.Context, params *model.UpdateCapturePages) (*model.CapturePages, error) {
+	tx, err := i.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	if err := params.Validate(); err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
+	}
+
+	if params.CapturePageSetId.Valid {
+		if err := i.validateCapturePageTypeId(ctx, tx, params.CapturePageSetId.Int); err != nil {
+			return nil, fmt.Errorf("capture_page_set_id: %w", err)
+		}
+	}
+
+	capturepages, err := i.cfg.Persistor.UpdateCapturePages(ctx, tx, params)
+	//tx.Commit(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("update capture pages: %w", err)
+	}
+
+	return capturepages, nil
+}
+
+// DeleteCapturePages deletes a capture page by ID.
+func (s *Service) DeleteCapturePages(ctx context.Context, params *model.DeleteCapturePages) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	fmt.Println("the params id ---- ", params.ID)
+	err = s.cfg.Persistor.DeleteCapturePages(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("delete capture page: %v", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %v", err),
+		})
+	}
+
+	return nil
+}
+
+// RestoreCapturePages restores a deleted capture page by ID.
+func (s *Service) RestoreCapturePages(ctx context.Context, params *model.RestoreCapturePages) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	err = s.cfg.Persistor.RestoreCapturePages(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("restore capture page: %v", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %v", err),
+		})
+	}
+
+	return nil
 }

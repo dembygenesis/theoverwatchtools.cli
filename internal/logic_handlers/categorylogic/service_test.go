@@ -38,6 +38,7 @@ type dependencies struct {
 	Cleanup    func(ignoreErrors ...bool)
 }
 
+// get
 type argsGetCategories struct {
 	ctx    context.Context
 	filter *model.CategoryFilters
@@ -174,6 +175,7 @@ func TestService_GetCategories(t *testing.T) {
 	}
 }
 
+// create
 type argsCreateCategory struct {
 	ctx      context.Context
 	category *model.CreateCategory
