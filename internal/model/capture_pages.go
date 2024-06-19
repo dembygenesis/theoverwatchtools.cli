@@ -16,8 +16,8 @@ type DeleteCapturePages struct {
 
 type UpdateCapturePages struct {
 	Id               int         `json:"id" validate:"required,greater_than_zero"`
-	CapturePageSetId null.Int    `json:"capture_page_set_id"`
 	Name             null.String `json:"name"`
+	CapturePageSetId null.Int    `json:"capture_page_set_id"`
 }
 
 type RestoreCapturePages struct {

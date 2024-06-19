@@ -33,6 +33,40 @@ func (m *Repository) GetClickTrackers(ctx context.Context, tx persistence.Transa
 	return res, nil
 }
 
+func (m *Repository) UpdateClickTrackers(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateClickTracker) (*model.ClickTracker, error) {
+	if params == nil {
+		return nil, ErrCliNil
+	}
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %v", err)
+	}
+
+	entry := &mysqlmodel.ClickTracker{ID: params.Id}
+	cols := []string{mysqlmodel.ClickTrackerColumns.ID}
+
+	if params.ClickTrackerSetId.Valid {
+		entry.ClickTrackerSetID = params.ClickTrackerSetId.Int
+		cols = append(cols, mysqlmodel.ClickTrackerColumns.ClickTrackerSetID)
+	}
+	if params.Name.Valid {
+		entry.Name = params.Name.String
+		cols = append(cols, mysqlmodel.ClickTrackerColumns.Name)
+	}
+	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
+	if err != nil {
+		return nil, fmt.Errorf("update failed: %v", err)
+	}
+
+	clicktracker, err := m.GetClickTrackerById(ctx, tx, entry.ID)
+	tx.Commit(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("update click tracker by id: %v", err)
+	}
+
+	return clicktracker, nil
+}
+
 // DropClickTrackersTable drops the category table (for testing purposes).
 func (m *Repository) DropClickTrackersTable(
 	ctx context.Context,
@@ -411,4 +445,24 @@ func (m *Repository) AddClickTracker(ctx context.Context, tx persistence.Transac
 	}
 
 	return clickTracker, nil
+}
+
+// DeleteClickTracker delete the click tracker.
+func (m *Repository) DeleteClickTracker(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+	id int,
+) error {
+
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("get ctx exec: %v", err)
+	}
+
+	entry := &mysqlmodel.ClickTracker{ID: id, Clicks: 0}
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("clicks")); err != nil {
+		return fmt.Errorf("delete: %w", err)
+	}
+
+	return nil
 }

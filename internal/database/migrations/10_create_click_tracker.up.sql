@@ -4,7 +4,7 @@ CREATE TABLE click_trackers (
                                 name VARCHAR(255) NOT NULL UNIQUE,
                                 url_name VARCHAR(255) UNIQUE,
                                 redirect_url VARCHAR(255),
-                                clicks INT DEFAULT 0,
+                                clicks INT DEFAULT 1,
                                 unique_clicks INT DEFAULT 0,
                                 created_by INT NOT NULL,
                                 updated_by INT NOT NULL,

@@ -75,7 +75,7 @@ func (a *Api) CreateCapturePages(ctx *fiber.Ctx) error {
 // @Accept application/json
 // @Produce application/json
 // @Param filters body model.UpdateCapturePages false "Category body"
-// @Success 200 {object} model.Category
+// @Success 200 {object} model.CapturePages
 // @Failure 400 {object} []string
 // @Failure 500 {object} []string
 // @Router /v1/capturepages [patch]

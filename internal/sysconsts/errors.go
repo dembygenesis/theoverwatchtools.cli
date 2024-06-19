@@ -25,6 +25,7 @@ var (
 	ErrHasNotASingleValidateUpdateParameter = "has not at least one valid update parameter"
 	ErrCategoryTypeRefIdInvalid             = "category_type_ref_id invalid"
 	ErrCapturePageSetId                     = "capture_page_set_id invalid"
+	ErrClickTrackerSetId                    = "click_tracker_set_id invalid"
 	ErrCategoryNameEmpty                    = "category name empty"
 	ErrOrganizationTypeRefIdInvalid         = "organization_type_ref_id invalid"
 	ErrInvalidUrlName                       = "invalid URL name"

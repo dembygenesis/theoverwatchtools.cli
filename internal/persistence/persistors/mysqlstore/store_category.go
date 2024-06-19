@@ -75,51 +75,13 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 		return nil, fmt.Errorf("get category by id: %v", err)
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		fmt.Println("Error during transaction commit")
-		return nil, fmt.Errorf("commit failed: %v", err)
-	}
+	//if err := tx.Commit(ctx); err != nil {
+	//	fmt.Println("Error during transaction commit")
+	//	return nil, fmt.Errorf("commit failed: %v", err)
+	//}
 
 	return category, nil
 }
-
-//func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateCategory) (*model.Category, error) {
-//	if params == nil {
-//		return nil, ErrCatNil
-//	}
-//
-//	ctxExec, err := mysqltx.GetCtxExecutor(tx)
-//	if err != nil {
-//		return nil, fmt.Errorf("extract context executor: %v", err)
-//	}
-//
-//	entry := &mysqlmodel.Category{ID: params.Id}
-//	cols := []string{mysqlmodel.CategoryColumns.ID}
-//
-//	if params.CategoryTypeRefId.Valid {
-//		entry.CategoryTypeRefID = params.CategoryTypeRefId.Int
-//		cols = append(cols, mysqlmodel.CategoryColumns.CategoryTypeRefID)
-//	}
-//	if params.Name.Valid {
-//		entry.Name = params.Name.String
-//		cols = append(cols, mysqlmodel.CategoryColumns.Name)
-//	}
-//
-//	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
-//	if err != nil {
-//		return nil, fmt.Errorf("update failed: %v", err)
-//	}
-//
-//
-//	category, err := m.GetCategoryById(context.Background(), nil, entry.ID)
-//	if err != nil {
-//		return nil, fmt.Errorf("get category by id: %v", err)
-//	}
-//
-//	fmt.Println("Category retrieved successfully")
-//
-//	return category, nil
-//}
 
 // AddCategory attempts to add a new category
 func (m *Repository) AddCategory(ctx context.Context, tx persistence.TransactionHandler, category *model.Category) (*model.Category, error) {

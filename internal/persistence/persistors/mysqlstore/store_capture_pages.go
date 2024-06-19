@@ -144,9 +144,11 @@ func (m *Repository) GetCapturePages(ctx context.Context, tx persistence.Transac
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
-	res, err := m.getCapturePages(ctx, ctxExec, filters)
-	if err != nil {
-		return nil, fmt.Errorf("read capture pages: %v", err)
+	res, err1 := m.getCapturePages(ctx, ctxExec, filters)
+	fmt.Println("===============>", err1)
+
+	if err1 != nil {
+		return nil, fmt.Errorf("read capture pages: %v", err1)
 	}
 
 	return res, nil

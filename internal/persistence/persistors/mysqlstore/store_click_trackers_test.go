@@ -2,6 +2,7 @@ package mysqlstore
 
 import (
 	"fmt"
+	"github.com/volatiletech/null/v8"
 	"testing"
 
 	"github.com/dembygenesis/local.tools/internal/model"
@@ -248,4 +249,99 @@ func Test_AddClickTrackers(t *testing.T) {
 			testCase.assertions(t, db, clickTracker, err)
 		})
 	}
+}
+
+// test for the update method
+// will come back for these two they arent working
+func Test_UpdateClickTracker_Success(t *testing.T) {
+	db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+	defer cleanup()
+
+	cfg := &Config{
+		Logger:        testLogger,
+		QueryTimeouts: testQueryTimeouts,
+	}
+
+	m, err := New(cfg)
+	require.NoError(t, err, "unexpected error")
+	require.NotNil(t, m, "unexpected nil")
+
+	txHandler, err := mysqltx.New(&mysqltx.Config{
+		Logger:       testLogger,
+		Db:           db,
+		DatabaseName: cp.Database,
+	})
+	require.NoError(t, err, "unexpected error creating the tx handler")
+
+	txHandlerDb, err := txHandler.Db(testCtx)
+	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+	paginatedClickTracker, err := m.GetClickTrackers(testCtx, txHandlerDb, nil)
+	require.NoError(t, err, "unexpected error fetching the click trackers from the database")
+	require.NotNil(t, txHandlerDb, "unexpected nil click trackers")
+	require.True(t, len(paginatedClickTracker.ClickTrackers) > 0, "unexpected empty click trackers")
+
+	updateClickTracker := model.UpdateClickTracker{
+		Id: 1,
+		ClickTrackerSetId: null.Int{
+			Int:   paginatedClickTracker.ClickTrackers[0].ClickTrackerSetId,
+			Valid: true,
+		},
+		Name: null.String{
+			String: paginatedClickTracker.ClickTrackers[0].Name + " new",
+			Valid:  true,
+		},
+	}
+
+	clt, err := m.UpdateClickTrackers(testCtx, txHandlerDb, &updateClickTracker)
+	require.NoError(t, err, "unexpected error updating a conflicting click trackers from the database")
+	assert.Equal(t, paginatedClickTracker.ClickTrackers[0].Name+" new", clt.Name)
+}
+
+func Test_UpdateClickTracker_Fail(t *testing.T) {
+	db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+	defer cleanup()
+
+	cfg := &Config{
+		Logger:        testLogger,
+		QueryTimeouts: testQueryTimeouts,
+	}
+
+	m, err := New(cfg)
+	require.NoError(t, err, "unexpected error")
+	require.NotNil(t, m, "unexpected nil")
+
+	txHandler, err := mysqltx.New(&mysqltx.Config{
+		Logger:       testLogger,
+		Db:           db,
+		DatabaseName: cp.Database,
+	})
+	require.NoError(t, err, "unexpected error creating the tx handler")
+
+	txHandlerDb, err := txHandler.Db(testCtx)
+	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+	paginatedClickTracker, err := m.GetClickTrackers(testCtx, txHandlerDb, nil)
+	require.NoError(t, err, "unexpected error fetching the click tracker from the database")
+	require.NotNil(t, txHandlerDb, "unexpected nil click tracker")
+	require.True(t, len(paginatedClickTracker.ClickTrackers) > 0, "unexpected empty click tracker")
+
+	updateClickTracker := model.UpdateClickTracker{
+		Id: paginatedClickTracker.ClickTrackers[1].Id,
+		ClickTrackerSetId: null.Int{
+			Int:   paginatedClickTracker.ClickTrackers[0].ClickTrackerSetId,
+			Valid: true,
+		},
+		Name: null.String{
+			String: paginatedClickTracker.ClickTrackers[0].Name,
+			Valid:  true,
+		},
+	}
+
+	clt, err := m.UpdateClickTrackers(testCtx, txHandlerDb, &updateClickTracker)
+	require.Error(t, err, "unexpected nil error fetching a conflicting click tracker from the database")
+	assert.Contains(t, err.Error(), "Duplicate entry")
+	assert.Nil(t, clt, "unexpected non nil entry")
 }

@@ -18,7 +18,7 @@ type ClickTracker struct {
 	ClickTrackerSetName string      `json:"click_tracker_set_name" boil:"click_tracker_set_name" validate:"required"`
 	UrlName             null.String `json:"url_name" boil:"url_name" validate:"required"`
 	RedirectUrl         null.String `json:"redirect_url" boil:"redirect_url" validate:"required"`
-	Clicks              null.Int    `json:"clicks" boil:"clicks" validate:"min=0"`
+	Clicks              int         `json:"clicks" boil:"clicks" validate:"min=0"`
 	UniqueClicks        null.Int    `json:"unique_clicks" boil:"unique_clicks" validate:"min=0"`
 	CreatedBy           int         `json:"created_by" boil:"created_by" validate:"required,greater_than_zero"`
 	UpdatedBy           int         `json:"updated_by" boil:"updated_by" validate:"required,greater_than_zero"`
@@ -40,11 +40,11 @@ type CreateClickTracker struct {
 	CountryId         null.Int    `json:"country_id"`
 }
 
-// UpdateClickTracker struct for updating an existing ClickTracker
+// UpdateClickTracker struct for updating an existing click tracker
 type UpdateClickTracker struct {
 	Id                int         `json:"id" validate:"required,greater_than_zero"`
 	Name              null.String `json:"name"`
-	ClickTrackerSetId null.Int    `json:"click_tracker_set_id_id"`
+	ClickTrackerSetId null.Int    `json:"click_tracker_set_id"`
 }
 
 // DeleteClickTracker struct for deleting a ClickTracker
@@ -57,20 +57,20 @@ type RestoreClickTracker struct {
 	ID int `json:"id" validate:"required,greater_than_zero"`
 }
 
-// ClickTrackerFilters contains the ClickTracker filters
+// ClickTrackerFilters contains the click tracker filters
 type ClickTrackerFilters struct {
-	IdsIn                 []int    `query:"ids_in" json:"ids_in"`
-	NameIn                []string `query:"name_in" json:"name_in"`
-	ClickTrackerSetNameIn []string `query:"click_tracker_set_name_in" json:"click_tracker_set_name_in"`
-	UrlNameIn             []string `query:"url_name_in" json:"url_name_in"`
-	RedirectUrlIn         []string `query:"redirect_url_in" json:"redirect_url_in"`
-	ClicksIn              []int    `query:"clicks_in" json:"clicks_in"`
-	UniqueClicksIn        []int    `query:"unique_clicks_in" json:"unique_clicks_in"`
-	CreatedByIn           []int    `query:"created_by_in" json:"created_by_in"`
-	UpdatedByIn           []int    `query:"updated_by_in" json:"updated_by_in"`
-	ClickTrackerSetIdIn   []int    `query:"click_tracker_set_id_in" json:"click_tracker_set_id_in"`
-	CountryIdIn           []int    `query:"country_id_in" json:"country_id_in"`
-	PaginationQueryFilters
+	IdsIn                  []int    `query:"ids_in" json:"ids_in"`
+	NameIn                 []string `query:"name_in" json:"name_in"`
+	ClickTrackerSetNameIn  []string `query:"click_tracker_set_name_in" json:"click_tracker_set_name_in"`
+	UrlNameIn              []string `query:"url_name_in" json:"url_name_in"`
+	RedirectUrlIn          []string `query:"redirect_url_in" json:"redirect_url_in"`
+	ClicksIn               []int    `query:"clicks_in" json:"clicks_in"`
+	UniqueClicksIn         []int    `query:"unique_clicks_in" json:"unique_clicks_in"`
+	CreatedByIn            []int    `query:"created_by_in" json:"created_by_in"`
+	UpdatedByIn            []int    `query:"updated_by_in" json:"updated_by_in"`
+	ClickTrackerSetIdIn    []int    `query:"click_tracker_set_id_in" json:"click_tracker_set_id_in"`
+	CountryIdIn            []int    `query:"country_id_in" json:"country_id_in"`
+	PaginationQueryFilters `swaggerignore:"true"`
 }
 
 type PaginatedClickTrackers struct {
@@ -135,7 +135,7 @@ func (c *CreateClickTracker) ToClickTracker() *ClickTracker {
 	}
 }
 
-// ToClickTracker converts the UpdateClickTracker to a ClickTracker.
+// ToClickTracker converts the UpdateClickTracker to a click tracker.
 func (c *UpdateClickTracker) ToClickTracker(existing *ClickTracker) *ClickTracker {
 	if c.Name.Valid {
 		existing.Name = c.Name.String
