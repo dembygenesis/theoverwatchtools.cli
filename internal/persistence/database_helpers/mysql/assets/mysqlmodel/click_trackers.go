@@ -28,7 +28,7 @@ type ClickTracker struct {
 	Name              string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	URLName           null.String `boil:"url_name" json:"url_name,omitempty" toml:"url_name" yaml:"url_name,omitempty"`
 	RedirectURL       null.String `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
-	Clicks            int    `boil:"clicks" json:"clicks,omitempty" toml:"clicks" yaml:"clicks,omitempty"`
+	Clicks            int         `boil:"clicks" json:"clicks" toml:"clicks" yaml:"clicks"`
 	UniqueClicks      null.Int    `boil:"unique_clicks" json:"unique_clicks,omitempty" toml:"unique_clicks" yaml:"unique_clicks,omitempty"`
 	CreatedBy         int         `boil:"created_by" json:"created_by" toml:"created_by" yaml:"created_by"`
 	UpdatedBy         int         `boil:"updated_by" json:"updated_by" toml:"updated_by" yaml:"updated_by"`
@@ -153,7 +153,7 @@ var ClickTrackerWhere = struct {
 	Name              whereHelperstring
 	URLName           whereHelpernull_String
 	RedirectURL       whereHelpernull_String
-	Clicks            whereHelpernull_Int
+	Clicks            whereHelperint
 	UniqueClicks      whereHelpernull_Int
 	CreatedBy         whereHelperint
 	UpdatedBy         whereHelperint
@@ -167,7 +167,7 @@ var ClickTrackerWhere = struct {
 	Name:              whereHelperstring{field: "`click_trackers`.`name`"},
 	URLName:           whereHelpernull_String{field: "`click_trackers`.`url_name`"},
 	RedirectURL:       whereHelpernull_String{field: "`click_trackers`.`redirect_url`"},
-	Clicks:            whereHelpernull_Int{field: "`click_trackers`.`clicks`"},
+	Clicks:            whereHelperint{field: "`click_trackers`.`clicks`"},
 	UniqueClicks:      whereHelpernull_Int{field: "`click_trackers`.`unique_clicks`"},
 	CreatedBy:         whereHelperint{field: "`click_trackers`.`created_by`"},
 	UpdatedBy:         whereHelperint{field: "`click_trackers`.`updated_by`"},

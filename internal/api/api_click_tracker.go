@@ -84,25 +84,17 @@ func (a *Api) UpdateClickTracker(ctx *fiber.Ctx) error {
 func (a *Api) DeleteClickTracker(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	clickTrackerId, err := strconv.Atoi(id)
-	// ///////////////////////////
-	//click := ctx.Params("clicks")
-	//clickTrackerClicks, err := strconv.Atoi(click)
 	if err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
 	}
 
 	deleteParams := &model.DeleteClickTracker{ID: clickTrackerId}
-	clickParams := &model.ClickTracker{Clicks: 1}
-	clickT := clickParams.Clicks
 
 	err = a.cfg.ClickTrackerService.DeleteClickTracker(ctx.Context(), deleteParams)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
 	}
+	
+	return ctx.JSON("del")
 
-	if clickT == 1 {
-		return ctx.JSON("del")
-	} else {
-		return ctx.JSON("Already del")
-	}
 }

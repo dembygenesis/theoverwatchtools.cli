@@ -49,7 +49,8 @@ type UpdateClickTracker struct {
 
 // DeleteClickTracker struct for deleting a ClickTracker
 type DeleteClickTracker struct {
-	ID int `json:"id" validate:"required,greater_than_zero"`
+	ID     int `json:"id" validate:"required,greater_than_zero"`
+	CLICKS int `json:"clicks" validate:"required,greater_than_zero"`
 }
 
 // RestoreClickTracker struct for restoring a deleted ClickTracker

@@ -182,8 +182,8 @@ func (s *Service) DeleteClickTracker(ctx context.Context, params *model.DeleteCl
 	}
 	defer tx.Rollback(ctx)
 
-	fmt.Println("the params id ---- ", params.ID)
-	err = s.cfg.Persistor.DeleteClickTracker(ctx, tx, params.ID)
+	fmt.Println("the params id ------------------- ", params.ID, params.CLICKS)
+	err = s.cfg.Persistor.DeleteClickTracker(ctx, tx, params.ID, params.CLICKS)
 	if err != nil {
 		return errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
