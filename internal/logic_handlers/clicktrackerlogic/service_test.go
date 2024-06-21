@@ -340,3 +340,61 @@ func TestService_UpdateClickTracker(t *testing.T) {
 		})
 	}
 }
+
+// test restore method
+
+type argsRestoreClickTracker struct {
+	ctx    context.Context
+	params *model.RestoreClickTracker
+}
+
+type testCaseRestoreClickTracker struct {
+	name            string
+	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
+	args            argsRestoreClickTracker
+	mutations       func(t *testing.T, db *sqlx.DB)
+	assertions      func(t *testing.T, params *model.RestoreClickTracker, err error)
+}
+
+func getTestCasesRestoreClickTracker() []testCaseRestoreClickTracker {
+	return []testCaseRestoreClickTracker{
+		{
+			name: "success",
+			args: argsRestoreClickTracker{
+				ctx: context.TODO(),
+				params: &model.RestoreClickTracker{
+					ID: 1,
+				},
+			},
+			getDependencies: getConcreteDependencies,
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+			assertions: func(t *testing.T, params *model.RestoreClickTracker, err error) {
+				require.NoError(t, err, "unexpected error")
+				assert.Equal(t, params.ID, 1)
+			},
+		},
+	}
+}
+
+func TestService_RestoreClickTracker(t *testing.T) {
+	for _, tt := range getTestCasesRestoreClickTracker() {
+		t.Run(tt.name, func(t *testing.T) {
+			_dependencies, cleanup := tt.getDependencies(t)
+			defer cleanup()
+
+			svc, err := New(&Config{
+				TxProvider: _dependencies.TxProvider,
+				Logger:     _dependencies.Logger,
+				Persistor:  _dependencies.Persistor,
+			})
+			require.NoError(t, err, "unexpected new error")
+
+			tt.mutations(t, _dependencies.Db)
+
+			err = svc.RestoreClickTracker(tt.args.ctx, tt.args.params)
+			tt.assertions(t, tt.args.params, err)
+		})
+	}
+}

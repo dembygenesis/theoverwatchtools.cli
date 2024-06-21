@@ -110,12 +110,19 @@ func (a *Api) DeleteCategory(ctx *fiber.Ctx) error {
 
 	deleteParams := &model.DeleteCategory{ID: categoryId}
 
+	isDeleted, err := a.cfg.CategoryService.GetCategoryByID(ctx.Context(), categoryId)
+	fmt.Println(strutil.GetAsJson("del cli ------------------------------------ ", isDeleted.IsActive))
+
 	err = a.cfg.CategoryService.DeleteCategory(ctx.Context(), deleteParams)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
 	}
 
-	return ctx.SendStatus(http.StatusNoContent)
+	if isDeleted.IsActive == 0 {
+		return ctx.JSON("Already Deleted")
+	} else {
+		return ctx.JSON("del")
+	}
 }
 
 // RestoreCategory restores a category by ID
@@ -140,10 +147,17 @@ func (a *Api) RestoreCategory(ctx *fiber.Ctx) error {
 
 	restoreParams := &model.RestoreCategory{ID: categoryID}
 
+	isRestored, err := a.cfg.CategoryService.GetCategoryByID(ctx.Context(), categoryID)
+	fmt.Println(strutil.GetAsJson("del cli ------------------------------------ ", isRestored.IsActive))
+
 	err = a.cfg.CategoryService.RestoreCategory(ctx.Context(), restoreParams)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
 	}
 
-	return ctx.SendStatus(http.StatusNoContent)
+	if isRestored.IsActive == 1 {
+		return ctx.JSON("Already Restored")
+	} else {
+		return ctx.JSON("Res")
+	}
 }

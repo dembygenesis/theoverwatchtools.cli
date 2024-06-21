@@ -96,6 +96,7 @@ type Category struct {
 	CategoryTypeRefId int    `json:"category_type_ref_id" boil:"category_type_ref_id" swaggerignore:"true"`
 	Name              string `json:"name" boil:"name"`
 	CategoryType      string `json:"category_type" boil:"category_type"`
+	IsActive          int    `json:"is_active" boil:"is_active"`
 }
 
 func (c *Category) Validate() error {

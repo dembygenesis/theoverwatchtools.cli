@@ -17,4 +17,5 @@ type persistor interface {
 	DeleteOrganization(ctx context.Context, tx persistence.TransactionHandler, id int) error
 	RestoreOrganization(ctx context.Context, tx persistence.TransactionHandler, id int) error
 	UpdateOrganization(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateOrganization) (*model.Organization, error)
+	GetOrganizationById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.Organization, error)
 }

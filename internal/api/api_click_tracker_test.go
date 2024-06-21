@@ -355,3 +355,76 @@ func Test_CreateClickTrackers(t *testing.T) {
 		})
 	}
 }
+
+// test for restore method
+
+type testCaseRestoreClickTrackers struct {
+	name              string
+	fnGetTestServices func(t *testing.T) (*testServices, func())
+	mutations         func(t *testing.T, modules *testassets.Container)
+	cltID             int
+	assertions        func(t *testing.T, resp []byte, respCode int)
+}
+
+func getTestCasesRestoreClickTrackers() []testCaseRestoreClickTrackers {
+	return []testCaseRestoreClickTrackers{
+		{
+			name: "success",
+			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
+				container, cleanup := testassets.GetConcreteContainer(t)
+				return &testServices{
+						catService:      container.CategoryService,
+						orgService:      container.OrganizationService,
+						capPagesService: container.CapturePagesService,
+						ctService:       container.ClickTrackerService,
+					}, func() {
+						cleanup()
+					}
+			},
+			mutations: func(t *testing.T, modules *testassets.Container) {
+
+			},
+			cltID: 1,
+			assertions: func(t *testing.T, resp []byte, respCode int) {
+				require.Equal(t, http.StatusOK, respCode)
+				var clickTracker *model.ClickTracker
+				err := json.Unmarshal(resp, &clickTracker)
+				require.NoError(t, err, "unexpected error unmarshalling the response")
+				modelhelpers.AssertNonEmptyClickTrackers(t, []model.ClickTracker{*clickTracker})
+			},
+		},
+	}
+}
+
+func Test_RestoreClickTrackers(t *testing.T) {
+	for _, testCase := range getTestCasesRestoreClickTrackers() {
+		t.Run(testCase.name, func(t *testing.T) {
+			handlers, cleanup := testCase.fnGetTestServices(t)
+			defer cleanup()
+
+			cfg := &Config{
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CapturePagesService: handlers.capPagesService,
+				CategoryService:     handlers.catService,
+				OrganizationService: handlers.orgService,
+				ClickTrackerService: handlers.ctService,
+				Logger:              logger.New(context.TODO()),
+			}
+
+			api, err := New(cfg)
+			require.NoError(t, err, "unexpected error instantiating api")
+			require.NotNil(t, api, "unexpected api nil instance")
+
+			url := fmt.Sprintf("/api/v1/clicktrackers/%d", testCase.cltID)
+			req := httptest.NewRequest(http.MethodPatch, url, nil)
+			req.Header = map[string][]string{
+				"Content-Type":    {"application/json"},
+				"Accept-Encoding": {"gzip", "deflate", "br"},
+			}
+
+			_, err = api.app.Test(req, 100)
+			require.NoError(t, err, "unexpected error executing test")
+		})
+	}
+}

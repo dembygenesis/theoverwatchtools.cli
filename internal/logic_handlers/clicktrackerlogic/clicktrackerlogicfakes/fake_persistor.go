@@ -98,6 +98,19 @@ type FakePersistor struct {
 		result1 *model.PaginatedClickTrackers
 		result2 error
 	}
+	RestoreClickTrackerStub        func(context.Context, persistence.TransactionHandler, int) error
+	restoreClickTrackerMutex       sync.RWMutex
+	restoreClickTrackerArgsForCall []struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}
+	restoreClickTrackerReturns struct {
+		result1 error
+	}
+	restoreClickTrackerReturnsOnCall map[int]struct {
+		result1 error
+	}
 	UpdateClickTrackersStub        func(context.Context, persistence.TransactionHandler, *model.UpdateClickTracker) (*model.ClickTracker, error)
 	updateClickTrackersMutex       sync.RWMutex
 	updateClickTrackersArgsForCall []struct {
@@ -510,6 +523,69 @@ func (fake *FakePersistor) GetClickTrackersReturnsOnCall(i int, result1 *model.P
 	}{result1, result2}
 }
 
+func (fake *FakePersistor) RestoreClickTracker(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 int) error {
+	fake.restoreClickTrackerMutex.Lock()
+	ret, specificReturn := fake.restoreClickTrackerReturnsOnCall[len(fake.restoreClickTrackerArgsForCall)]
+	fake.restoreClickTrackerArgsForCall = append(fake.restoreClickTrackerArgsForCall, struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}{arg1, arg2, arg3})
+	stub := fake.RestoreClickTrackerStub
+	fakeReturns := fake.restoreClickTrackerReturns
+	fake.recordInvocation("RestoreClickTracker", []interface{}{arg1, arg2, arg3})
+	fake.restoreClickTrackerMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakePersistor) RestoreClickTrackerCallCount() int {
+	fake.restoreClickTrackerMutex.RLock()
+	defer fake.restoreClickTrackerMutex.RUnlock()
+	return len(fake.restoreClickTrackerArgsForCall)
+}
+
+func (fake *FakePersistor) RestoreClickTrackerCalls(stub func(context.Context, persistence.TransactionHandler, int) error) {
+	fake.restoreClickTrackerMutex.Lock()
+	defer fake.restoreClickTrackerMutex.Unlock()
+	fake.RestoreClickTrackerStub = stub
+}
+
+func (fake *FakePersistor) RestoreClickTrackerArgsForCall(i int) (context.Context, persistence.TransactionHandler, int) {
+	fake.restoreClickTrackerMutex.RLock()
+	defer fake.restoreClickTrackerMutex.RUnlock()
+	argsForCall := fake.restoreClickTrackerArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakePersistor) RestoreClickTrackerReturns(result1 error) {
+	fake.restoreClickTrackerMutex.Lock()
+	defer fake.restoreClickTrackerMutex.Unlock()
+	fake.RestoreClickTrackerStub = nil
+	fake.restoreClickTrackerReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakePersistor) RestoreClickTrackerReturnsOnCall(i int, result1 error) {
+	fake.restoreClickTrackerMutex.Lock()
+	defer fake.restoreClickTrackerMutex.Unlock()
+	fake.RestoreClickTrackerStub = nil
+	if fake.restoreClickTrackerReturnsOnCall == nil {
+		fake.restoreClickTrackerReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.restoreClickTrackerReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakePersistor) UpdateClickTrackers(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.UpdateClickTracker) (*model.ClickTracker, error) {
 	fake.updateClickTrackersMutex.Lock()
 	ret, specificReturn := fake.updateClickTrackersReturnsOnCall[len(fake.updateClickTrackersArgsForCall)]
@@ -591,6 +667,8 @@ func (fake *FakePersistor) Invocations() map[string][][]interface{} {
 	defer fake.getClickTrackerSetByIdMutex.RUnlock()
 	fake.getClickTrackersMutex.RLock()
 	defer fake.getClickTrackersMutex.RUnlock()
+	fake.restoreClickTrackerMutex.RLock()
+	defer fake.restoreClickTrackerMutex.RUnlock()
 	fake.updateClickTrackersMutex.RLock()
 	defer fake.updateClickTrackersMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

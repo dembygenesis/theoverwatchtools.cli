@@ -7,6 +7,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/dembygenesis/local.tools/internal/utils_common"
 	"github.com/sirupsen/logrus"
@@ -217,4 +218,19 @@ func (i *Service) UpdateOrganization(ctx context.Context, params *model.UpdateOr
 	}
 
 	return category, nil
+}
+
+// GetOrganizationByID get one organization by id
+func (i *Service) GetOrganizationByID(ctx context.Context, id int) (*model.Organization, error) {
+	db, err := i.cfg.TxProvider.Db(ctx)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+
+	fmt.Println("the filter at the service --- ", strutil.GetAsJson(id))
+	paginated, err := i.cfg.Persistor.GetOrganizationById(ctx, db, id)
+	return paginated, nil
 }

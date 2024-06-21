@@ -39,6 +39,7 @@ type Organization struct {
 	OrganizationTypeRefId int    `json:"organization_type_ref_id" boil:"organization_type_ref_id" swaggerignore:"true"`
 	Name                  string `json:"name" boil:"name"`
 	OrganizationType      string `json:"organization_type" boil:"organization_type"`
+	IsActive              int    `json:"is_active" boil:"is_active"`
 }
 
 func (c *OrganizationFilters) Validate() error {

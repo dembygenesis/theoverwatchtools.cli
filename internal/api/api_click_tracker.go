@@ -1,8 +1,10 @@
 package api
 
 import (
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"strconv"
@@ -90,11 +92,54 @@ func (a *Api) DeleteClickTracker(ctx *fiber.Ctx) error {
 
 	deleteParams := &model.DeleteClickTracker{ID: clickTrackerId}
 
+	isDeleted, err := a.cfg.ClickTrackerService.GetClickTrackerByID(ctx.Context(), clickTrackerId)
+	fmt.Println(strutil.GetAsJson("del cli ------------------------------------ ", isDeleted.Clicks))
+
 	err = a.cfg.ClickTrackerService.DeleteClickTracker(ctx.Context(), deleteParams)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
 	}
-	
-	return ctx.JSON("del")
+
+	if isDeleted.Clicks == 0 {
+		return ctx.JSON("Already Deleted")
+	} else {
+		return ctx.JSON("del")
+	}
+}
+
+// RestoreClickTracker restores a click tracker by ID
+// @Summary Restore a click tracker by ID
+// @Description Restores a click tracker by ID
+// @Tags ClickTrackerService
+// @Accept application/json
+// @Produce application/json
+// @Param id path int true "click tracker ID"
+// @Param body model.RestoreClickTracker false "Restore parameters"
+// @Success 204 "No Content"
+// @Failure 400 {object} []string
+// @Failure 500 {object} []string
+// @Router /v1/clicktrackers/{id} [patch]
+func (a *Api) RestoreClickTracker(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	clickTrackerID, err := strconv.Atoi(id)
+	if err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+
+	restoreParams := &model.RestoreClickTracker{ID: clickTrackerID}
+
+	isRestored, err := a.cfg.ClickTrackerService.GetClickTrackerByID(ctx.Context(), clickTrackerID)
+	fmt.Println(strutil.GetAsJson("del cli ------------------------------------ ", isRestored.Clicks))
+
+	err = a.cfg.ClickTrackerService.RestoreClickTracker(ctx.Context(), restoreParams)
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
+	}
+
+	if isRestored.Clicks == 1 {
+		return ctx.JSON("Already Restored")
+	} else {
+		return ctx.JSON("Res")
+	}
 
 }

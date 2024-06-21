@@ -452,19 +452,39 @@ func (m *Repository) DeleteClickTracker(
 	ctx context.Context,
 	tx persistence.TransactionHandler,
 	id int,
-	clicks int,
 ) error {
-	entry := &mysqlmodel.ClickTracker{ID: id, Clicks: clicks}
+	entry := &mysqlmodel.ClickTracker{ID: id}
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return fmt.Errorf("get ctx exec: %v", err)
 	}
-	fmt.Println("22222222222222222222222222222222 entry", strutil.GetAsJson(entry.Clicks))
 
-	entry = &mysqlmodel.ClickTracker{ID: id, Clicks: 4}
-	fmt.Println("1111111111111111111111 entry", strutil.GetAsJson(entry.Clicks))
+	fmt.Println("###################################################################", id)
+	//val := strutil.GetAsJson(m.GetClickTrackerById(ctx, tx, entry.ID))
+	//fmt.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", m.GetClickTrackerById())
+
+	entry = &mysqlmodel.ClickTracker{ID: id, Clicks: 0}
 	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("clicks")); err != nil {
 		return fmt.Errorf("delete: %w", err)
+	}
+
+	return nil
+}
+
+// RestoreClickTracker restores a click tracker.
+func (m *Repository) RestoreClickTracker(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+	id int,
+) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("get ctx exec: %v", err)
+	}
+
+	entry := &mysqlmodel.ClickTracker{ID: id, Clicks: 1}
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("clicks")); err != nil {
+		return fmt.Errorf("restore: %w", err)
 	}
 
 	return nil

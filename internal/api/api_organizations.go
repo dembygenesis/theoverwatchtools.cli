@@ -1,8 +1,10 @@
 package api
 
 import (
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"strconv"
@@ -82,12 +84,19 @@ func (a *Api) DeleteOrganization(ctx *fiber.Ctx) error {
 
 	deleteParams := &model.DeleteOrganization{ID: organizationId}
 
+	isDeleted, err := a.cfg.OrganizationService.GetOrganizationByID(ctx.Context(), organizationId)
+	fmt.Println(strutil.GetAsJson("del cli ------------------------------------ ", isDeleted.IsActive))
+
 	err = a.cfg.OrganizationService.DeleteOrganization(ctx.Context(), deleteParams)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
 	}
 
-	return ctx.SendStatus(http.StatusNoContent)
+	if isDeleted.IsActive == 0 {
+		return ctx.JSON("Already Deleted")
+	} else {
+		return ctx.JSON("del")
+	}
 }
 
 // RestoreOrganization restores an organization by ID
@@ -112,12 +121,19 @@ func (a *Api) RestoreOrganization(ctx *fiber.Ctx) error {
 
 	restoreParams := &model.RestoreOrganization{ID: organizationID}
 
+	isRestored, err := a.cfg.OrganizationService.GetOrganizationByID(ctx.Context(), organizationID)
+	fmt.Println(strutil.GetAsJson("del cli ------------------------------------ ", isRestored.IsActive))
+
 	err = a.cfg.OrganizationService.RestoreOrganization(ctx.Context(), restoreParams)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
 	}
 
-	return ctx.SendStatus(http.StatusNoContent)
+	if isRestored.IsActive == 1 {
+		return ctx.JSON("Already Restored")
+	} else {
+		return ctx.JSON("Res")
+	}
 }
 
 // UpdateOrganization fetches the organizations

@@ -1,8 +1,10 @@
 package api
 
 import (
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/gofiber/fiber/v2"
 	"github.com/volatiletech/null/v8"
 	"net/http"
@@ -109,12 +111,19 @@ func (a *Api) DeleteCapturePages(ctx *fiber.Ctx) error {
 
 	deleteParams := &model.DeleteCapturePages{ID: capturePageId}
 
+	isDeleted, err := a.cfg.CapturePagesService.GetCapturePageByID(ctx.Context(), capturePageId)
+	fmt.Println(strutil.GetAsJson("del cli ------------------------------------ ", isDeleted.CapturePagesIsControl))
+
 	err = a.cfg.CapturePagesService.DeleteCapturePages(ctx.Context(), deleteParams)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
 	}
 
-	return ctx.SendStatus(http.StatusNoContent)
+	if isDeleted.CapturePagesIsControl == 0 {
+		return ctx.JSON("Already Deleted")
+	} else {
+		return ctx.JSON("del")
+	}
 }
 
 // RestoreCapturePages restores a capture page by ID
@@ -138,10 +147,17 @@ func (a *Api) RestoreCapturePages(ctx *fiber.Ctx) error {
 
 	restoreParams := &model.RestoreCapturePages{ID: capturePageID}
 
+	isRestored, err := a.cfg.CapturePagesService.GetCapturePageByID(ctx.Context(), capturePageID)
+	fmt.Println(strutil.GetAsJson("del cli ------------------------------------ ", isRestored.CapturePagesIsControl))
+
 	err = a.cfg.CapturePagesService.RestoreCapturePages(ctx.Context(), restoreParams)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
 	}
 
-	return ctx.SendStatus(http.StatusNoContent)
+	if isRestored.CapturePagesIsControl == 1 {
+		return ctx.JSON("Already Restored")
+	} else {
+		return ctx.JSON("res")
+	}
 }

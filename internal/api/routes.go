@@ -70,6 +70,7 @@ func (a *Api) Routes() error {
 	groupClickTrackers.Name("Create Click Tracker").Post("", a.CreateClickTracker)
 	groupClickTrackers.Name("Update Click Tracker").Patch("", a.UpdateClickTracker)
 	groupClickTrackers.Name("Delete Click Tracker").Delete("/:id", a.DeleteClickTracker)
+	groupClickTrackers.Name("Restore Click Tracker").Patch("/:id", a.RestoreClickTracker)
 
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {

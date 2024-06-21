@@ -1,8 +1,12 @@
 package mysqlstore
 
 import (
+	"context"
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
+	"github.com/dembygenesis/local.tools/internal/persistence/persistors/mysqlstore/testhelper"
 	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"testing"
 
 	"github.com/dembygenesis/local.tools/internal/model"
@@ -344,4 +348,92 @@ func Test_UpdateClickTracker_Fail(t *testing.T) {
 	require.Error(t, err, "unexpected nil error fetching a conflicting click tracker from the database")
 	assert.Contains(t, err.Error(), "Duplicate entry")
 	assert.Nil(t, clt, "unexpected non nil entry")
+}
+
+//test for the restore method
+
+type restoreClickTrackerTestCase struct {
+	name       string
+	id         int
+	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations  func(t *testing.T, db *sqlx.DB)
+}
+
+func getRestoreClickTrackerTestCases() []restoreClickTrackerTestCase {
+	return []restoreClickTrackerTestCase{
+		{
+			name: "success",
+			id:   1,
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Nil(t, err, "unexpected non-nil error")
+				entry, err := mysqlmodel.FindClickTracker(context.TODO(), db, id)
+				require.NoError(t, err, "unexpected error fetching the click tracker")
+
+				assert.Equal(t, 1, entry.Clicks)
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				entry := mysqlmodel.CapturePage{
+					CapturePageSetID: 1,
+					Name:             "test",
+				}
+				err := entry.Insert(context.TODO(), db, boil.Infer())
+				assert.NoError(t, err, "unexpected insert error")
+
+				entry.Clicks = 0
+				_, err = entry.Update(context.TODO(), db, boil.Infer())
+				assert.NoError(t, err, "unexpected update error")
+
+				err = entry.Reload(context.TODO(), db)
+				assert.NoError(t, err, "unexpected reload error")
+
+				assert.Equal(t, 0, entry.Clicks)
+			},
+		},
+		{
+			name: "fail-missing-entry-to-update",
+			id:   1,
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Error(t, err, "unexpected non-nil error")
+				assert.Contains(t, err.Error(), "restore:")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				testhelper.DropTable(t, db, "click_trackers")
+			},
+		},
+	}
+}
+
+func Test_RestoreClickTracker(t *testing.T) {
+	for _, testCase := range getRestoreClickTrackerTestCases() {
+		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+		t.Run(testCase.name, func(t *testing.T) {
+			require.NotNil(t, testCase.mutations, "unexpected nil mutations")
+			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
+
+			defer cleanup()
+			cfg := &Config{
+				Logger:        testLogger,
+				QueryTimeouts: testQueryTimeouts,
+			}
+
+			m, err := New(cfg)
+			require.NoError(t, err, "unexpected error")
+			require.NotNil(t, m, "unexpected nil")
+
+			txHandler, err := mysqltx.New(&mysqltx.Config{
+				Logger:       testLogger,
+				Db:           db,
+				DatabaseName: cp.Database,
+			})
+			require.NoError(t, err, "unexpected error creating the tx handler")
+
+			txHandlerDb, err := txHandler.Db(testCtx)
+			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+			testCase.mutations(t, db)
+			err = m.RestoreClickTracker(testCtx, txHandlerDb, testCase.id)
+			testCase.assertions(t, db, testCase.id, err)
+		})
+	}
 }
