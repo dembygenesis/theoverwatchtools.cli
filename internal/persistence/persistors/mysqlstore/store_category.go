@@ -52,9 +52,6 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 	entry := &mysqlmodel.Category{ID: params.Id}
 	cols := []string{mysqlmodel.CategoryColumns.ID}
 
-	fmt.Println("====== entry UpdateCategory:", strutil.GetAsJson(entry))
-	fmt.Println("====== params UpdateCategory:", strutil.GetAsJson(params))
-
 	if params.CategoryTypeRefId.Valid {
 		entry.CategoryTypeRefID = params.CategoryTypeRefId.Int
 		cols = append(cols, mysqlmodel.CategoryColumns.CategoryTypeRefID)
@@ -65,12 +62,12 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 	}
 
 	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
-	tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("update failed: %v", err)
 	}
 
 	category, err := m.GetCategoryById(ctx, tx, entry.ID)
+	tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get category by id: %v", err)
 	}

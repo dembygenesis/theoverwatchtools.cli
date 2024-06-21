@@ -132,7 +132,6 @@ func (i *Service) ListCategories(
 
 // UpdateCategory updates an existing category.
 func (i *Service) UpdateCategory(ctx context.Context, params *model.UpdateCategory) (*model.Category, error) {
-	fmt.Println("the ctx passed in the service layer of cats ---- ", strutil.GetAsJson(ctx))
 	tx, err := i.cfg.TxProvider.Tx(ctx)
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{

@@ -134,7 +134,6 @@ func (i *Service) UpdateCapturePages(ctx context.Context, params *model.UpdateCa
 	}
 
 	capturepages, err := i.cfg.Persistor.UpdateCapturePages(ctx, tx, params)
-	//tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("update capture pages: %w", err)
 	}
