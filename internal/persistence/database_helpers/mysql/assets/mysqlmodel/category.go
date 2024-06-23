@@ -79,29 +79,6 @@ var CategoryTableColumns = struct {
 
 // Generated where
 
-type whereHelperint struct{ field string }
-
-func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperint) IN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperint) NIN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
 type whereHelpernull_Int struct{ field string }
 
 func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
@@ -139,55 +116,6 @@ func (w whereHelpernull_Int) NIN(slice []int) qm.QueryMod {
 
 func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
-type whereHelpernull_Time struct{ field string }
-
-func (w whereHelpernull_Time) EQ(x null.Time) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Time) NEQ(x null.Time) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Time) LT(x null.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Time) LTE(x null.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Time) GT(x null.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
-type whereHelperstring struct{ field string }
-
-func (w whereHelperstring) EQ(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperstring) NEQ(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperstring) LT(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperstring) LTE(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperstring) GT(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperstring) GTE(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperstring) LIKE(x string) qm.QueryMod  { return qm.Where(w.field+" LIKE ?", x) }
-func (w whereHelperstring) NLIKE(x string) qm.QueryMod { return qm.Where(w.field+" NOT LIKE ?", x) }
-func (w whereHelperstring) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
 
 var CategoryWhere = struct {
 	ID                whereHelperint
@@ -258,8 +186,6 @@ type (
 	// CategorySlice is an alias for a slice of pointers to Category.
 	// This should almost always be used instead of []Category.
 	CategorySlice []*Category
-	// CategoryHook is the signature for custom Category hook methods
-	CategoryHook func(context.Context, boil.ContextExecutor, *Category) error
 
 	categoryQuery struct {
 		*queries.Query
@@ -287,206 +213,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var categoryAfterSelectMu sync.Mutex
-var categoryAfterSelectHooks []CategoryHook
-
-var categoryBeforeInsertMu sync.Mutex
-var categoryBeforeInsertHooks []CategoryHook
-var categoryAfterInsertMu sync.Mutex
-var categoryAfterInsertHooks []CategoryHook
-
-var categoryBeforeUpdateMu sync.Mutex
-var categoryBeforeUpdateHooks []CategoryHook
-var categoryAfterUpdateMu sync.Mutex
-var categoryAfterUpdateHooks []CategoryHook
-
-var categoryBeforeDeleteMu sync.Mutex
-var categoryBeforeDeleteHooks []CategoryHook
-var categoryAfterDeleteMu sync.Mutex
-var categoryAfterDeleteHooks []CategoryHook
-
-var categoryBeforeUpsertMu sync.Mutex
-var categoryBeforeUpsertHooks []CategoryHook
-var categoryAfterUpsertMu sync.Mutex
-var categoryAfterUpsertHooks []CategoryHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Category) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Category) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Category) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Category) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Category) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Category) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Category) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Category) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Category) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddCategoryHook registers your hook function for all future operations.
-func AddCategoryHook(hookPoint boil.HookPoint, categoryHook CategoryHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		categoryAfterSelectMu.Lock()
-		categoryAfterSelectHooks = append(categoryAfterSelectHooks, categoryHook)
-		categoryAfterSelectMu.Unlock()
-	case boil.BeforeInsertHook:
-		categoryBeforeInsertMu.Lock()
-		categoryBeforeInsertHooks = append(categoryBeforeInsertHooks, categoryHook)
-		categoryBeforeInsertMu.Unlock()
-	case boil.AfterInsertHook:
-		categoryAfterInsertMu.Lock()
-		categoryAfterInsertHooks = append(categoryAfterInsertHooks, categoryHook)
-		categoryAfterInsertMu.Unlock()
-	case boil.BeforeUpdateHook:
-		categoryBeforeUpdateMu.Lock()
-		categoryBeforeUpdateHooks = append(categoryBeforeUpdateHooks, categoryHook)
-		categoryBeforeUpdateMu.Unlock()
-	case boil.AfterUpdateHook:
-		categoryAfterUpdateMu.Lock()
-		categoryAfterUpdateHooks = append(categoryAfterUpdateHooks, categoryHook)
-		categoryAfterUpdateMu.Unlock()
-	case boil.BeforeDeleteHook:
-		categoryBeforeDeleteMu.Lock()
-		categoryBeforeDeleteHooks = append(categoryBeforeDeleteHooks, categoryHook)
-		categoryBeforeDeleteMu.Unlock()
-	case boil.AfterDeleteHook:
-		categoryAfterDeleteMu.Lock()
-		categoryAfterDeleteHooks = append(categoryAfterDeleteHooks, categoryHook)
-		categoryAfterDeleteMu.Unlock()
-	case boil.BeforeUpsertHook:
-		categoryBeforeUpsertMu.Lock()
-		categoryBeforeUpsertHooks = append(categoryBeforeUpsertHooks, categoryHook)
-		categoryBeforeUpsertMu.Unlock()
-	case boil.AfterUpsertHook:
-		categoryAfterUpsertMu.Lock()
-		categoryAfterUpsertHooks = append(categoryAfterUpsertHooks, categoryHook)
-		categoryAfterUpsertMu.Unlock()
-	}
-}
-
 // One returns a single category record from the query.
 func (q categoryQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Category, error) {
 	o := &Category{}
@@ -501,10 +227,6 @@ func (q categoryQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Cat
 		return nil, errors.Wrap(err, "mysqlmodel: failed to execute a one query for category")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -515,14 +237,6 @@ func (q categoryQuery) All(ctx context.Context, exec boil.ContextExecutor) (Cate
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "mysqlmodel: failed to assign all query results to Category slice")
-	}
-
-	if len(categoryAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -666,14 +380,6 @@ func (categoryL) LoadCategoryTypeRef(ctx context.Context, e boil.ContextExecutor
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for category_type")
 	}
 
-	if len(categoryTypeAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -783,13 +489,6 @@ func (categoryL) LoadCategoryTypeRefUsers(ctx context.Context, e boil.ContextExe
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user")
 	}
 
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.CategoryTypeRefUsers = resultSlice
 		for _, foreign := range resultSlice {
@@ -951,10 +650,6 @@ func FindCategory(ctx context.Context, exec boil.ContextExecutor, iD int, select
 		return nil, errors.Wrap(err, "mysqlmodel: unable to select from category")
 	}
 
-	if err = categoryObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return categoryObj, err
-	}
-
 	return categoryObj, nil
 }
 
@@ -966,10 +661,6 @@ func (o *Category) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(categoryColumnsWithDefault, o)
 
@@ -1061,7 +752,7 @@ CacheNoHooks:
 		categoryInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Category.
@@ -1069,9 +760,6 @@ CacheNoHooks:
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Category) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	categoryUpdateCacheMut.RLock()
 	cache, cached := categoryUpdateCache[key]
@@ -1124,7 +812,7 @@ func (o *Category) Update(ctx context.Context, exec boil.ContextExecutor, column
 		categoryUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1201,10 +889,6 @@ var mySQLCategoryUniqueColumns = []string{
 func (o *Category) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("mysqlmodel: no category provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(categoryColumnsWithDefault, o)
@@ -1339,7 +1023,7 @@ CacheNoHooks:
 		categoryUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Category record with an executor.
@@ -1347,10 +1031,6 @@ CacheNoHooks:
 func (o *Category) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("mysqlmodel: no Category provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), categoryPrimaryKeyMapping)
@@ -1369,10 +1049,6 @@ func (o *Category) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "mysqlmodel: failed to get rows affected by delete for category")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1405,14 +1081,6 @@ func (o CategorySlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 		return 0, nil
 	}
 
-	if len(categoryBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), categoryPrimaryKeyMapping)
@@ -1435,14 +1103,6 @@ func (o CategorySlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "mysqlmodel: failed to get rows affected by deleteall for category")
-	}
-
-	if len(categoryAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

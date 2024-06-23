@@ -52,8 +52,25 @@ func (a *Api) Routes() error {
 	groupOrganization := v1.Group("/organization")
 	groupOrganization.Name("List Organizations").Get("", a.ListOrganizations)
 	groupOrganization.Name("Create Organization").Post("", a.CreateOrganization)
+	groupOrganization.Name("Update Organization").Patch("", a.UpdateOrganization)
 	groupOrganization.Name("Delete Organization").Delete("/:id", a.DeleteOrganization)
 	groupOrganization.Name("Restore Organization").Patch("/:id", a.RestoreOrganization)
+
+	// Capture Pages
+	groupCapturePages := v1.Group("/capturepages")
+	groupCapturePages.Name("List Capture Pages").Get("", a.ListCapturePages)
+	groupCapturePages.Name("Create Capture Pages").Post("", a.CreateCapturePages)
+	groupCapturePages.Name("Update Capture Page").Patch("", a.UpdateCapturePages)
+	groupCapturePages.Name("Delete Capture Page").Delete("/:id", a.DeleteCapturePages)
+	groupCapturePages.Name("Restore Capture Page").Patch("/:id", a.RestoreCapturePages)
+
+	// Click Trackers
+	groupClickTrackers := v1.Group("/clicktrackers")
+	groupClickTrackers.Name("List Click Trackers").Get("", a.ListClickTrackers)
+	groupClickTrackers.Name("Create Click Tracker").Post("", a.CreateClickTracker)
+	groupClickTrackers.Name("Update Click Tracker").Patch("", a.UpdateClickTracker)
+	groupClickTrackers.Name("Delete Click Tracker").Delete("/:id", a.DeleteClickTracker)
+	groupClickTrackers.Name("Restore Click Tracker").Patch("/:id", a.RestoreClickTracker)
 
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {

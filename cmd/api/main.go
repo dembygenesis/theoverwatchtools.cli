@@ -9,7 +9,7 @@ import (
 func main() {
 	builder, err := dic.NewBuilder()
 	if err != nil {
-		log.Fatalf("builder: %v", err)
+		log.Fatalf("builder: %vgit remote add ", err)
 	}
 
 	ctn := builder.Build()
@@ -34,12 +34,24 @@ func main() {
 		log.Fatalf("organization mgr: %v", err)
 	}
 
+	capturePagesMgr, err := ctn.SafeGetLogicCapturePages()
+	if err != nil {
+		log.Fatalf("capture pages mgr: %v", err)
+	}
+
+	clickTrackersMgr, err := ctn.SafeGetLogicClickTrackers()
+	if err != nil {
+		log.Fatalf("click trackers mgr: %v", err)
+	}
+
 	apiCfg := &api.Config{
 		BaseUrl:             cfg.API.BaseUrl,
 		Logger:              _logger,
 		Port:                cfg.API.Port,
 		CategoryService:     categoryMgr,
 		OrganizationService: organizationMgr,
+		CapturePagesService: capturePagesMgr,
+		ClickTrackerService: clickTrackersMgr,
 	}
 
 	_api, err := api.New(apiCfg)

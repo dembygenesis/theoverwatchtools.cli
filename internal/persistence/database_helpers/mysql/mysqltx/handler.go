@@ -38,12 +38,17 @@ type Handler struct {
 	logger *logrus.Entry
 }
 
+func (m *Handler) GetCtxExecutor(i interface{}) (boil.ContextExecutor, error) {
+	return GetCtxExecutor(i)
+}
+
 // parseExecutorInstance is a function with a primary use-case of
 // fetching a Handler instance from an interface, and also
 // validating the instance's responsibility is to serve as a provider
 // of data access objects via check its `hType`, and not as a serving controller.
 func parseExecutorInstance(i interface{}) (*Handler, error) {
 	mySQLTxHandler, ok := i.(*Handler)
+
 	if !ok {
 		return nil, errors.New(sysconsts.ErrNonMySQLTxInstance)
 	}
@@ -62,6 +67,7 @@ func parseExecutorInstance(i interface{}) (*Handler, error) {
 
 // GetCtxExecutor returns the context executor.
 func GetCtxExecutor(i interface{}) (boil.ContextExecutor, error) {
+	fmt.Println("the i in GetCtxExecutor --- ", i)
 	txHandler, err := parseExecutorInstance(i)
 	if err != nil {
 		return nil, fmt.Errorf("parse executor: %v", err)

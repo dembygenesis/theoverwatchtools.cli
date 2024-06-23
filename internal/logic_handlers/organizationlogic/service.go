@@ -7,7 +7,9 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
+	"github.com/dembygenesis/local.tools/internal/utils_common"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
@@ -32,6 +34,14 @@ func New(cfg *Config) (*Service, error) {
 		return nil, fmt.Errorf("validate: %v", err)
 	}
 	return &Service{cfg}, nil
+}
+
+func (i *Service) validateOrganizationTypeId(ctx context.Context, handler persistence.TransactionHandler, id int) error {
+	_, err := i.cfg.Persistor.GetOrganizationTypeById(ctx, handler, id)
+	if err != nil {
+		return fmt.Errorf("invalid organization_type_id: %v", err)
+	}
+	return nil
 }
 
 // ListOrganizations returns paginated organizations
@@ -177,4 +187,57 @@ func (s *Service) RestoreOrganization(ctx context.Context, params *model.Restore
 	}
 
 	return nil
+}
+
+// UpdateOrganization updates an existing organization.
+func (i *Service) UpdateOrganization(ctx context.Context, params *model.UpdateOrganization) (*model.Organization, error) {
+	tx, err := i.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	if err := params.Validate(); err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
+	}
+
+	fmt.Println("the params organization type ref id ---- ", utils_common.GetJSON(params.OrganizationTypeRefId.Int))
+
+	if params.OrganizationTypeRefId.Valid {
+		if err := i.validateOrganizationTypeId(ctx, tx, params.OrganizationTypeRefId.Int); err != nil {
+			return nil, fmt.Errorf("organization_type_id: %w", err)
+		}
+	}
+
+	category, err := i.cfg.Persistor.UpdateOrganization(ctx, tx, params)
+	if err != nil {
+		return nil, fmt.Errorf("update organization: %w", err)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit: %v", err),
+		})
+	}
+
+	return category, nil
+}
+
+// GetOrganizationByID get one organization by id
+func (i *Service) GetOrganizationByID(ctx context.Context, id int) (*model.Organization, error) {
+	db, err := i.cfg.TxProvider.Db(ctx)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+
+	fmt.Println("the filter at the service --- ", strutil.GetAsJson(id))
+	paginated, err := i.cfg.Persistor.GetOrganizationById(ctx, db, id)
+	return paginated, nil
 }

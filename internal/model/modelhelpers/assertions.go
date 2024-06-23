@@ -21,3 +21,19 @@ func AssertNonEmptyOrganizations(t *testing.T, organizations []model.Organizatio
 		assert.NotEmpty(t, organization.OrganizationType, "unexpected empty organization type")
 	}
 }
+
+func AssertNonEmptyCapturePages(t *testing.T, capturePages []model.CapturePages) {
+	for _, capturePages := range capturePages {
+		assert.NotEmpty(t, capturePages.Id, "unexpected empty capture page id")
+		assert.NotEmpty(t, capturePages.Name, "unexpected empty capture page name")
+		assert.NotEmpty(t, capturePages.CapturePageSetId, "unexpected empty capture page sets")
+	}
+}
+
+func AssertNonEmptyClickTrackers(t *testing.T, clickTrackers []model.ClickTracker) {
+	for _, clickTrackers := range clickTrackers {
+		assert.NotEmpty(t, clickTrackers.Id, "unexpected empty click tracker id")
+		assert.NotEmpty(t, clickTrackers.Name, "unexpected empty click tracker name")
+		assert.NotEmpty(t, clickTrackers.ClickTrackerSetId, "unexpected empty click tracker sets")
+	}
+}

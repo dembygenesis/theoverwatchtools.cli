@@ -1,9 +1,13 @@
 package model
 
 import (
+	"errors"
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/dembygenesis/local.tools/internal/utilities/errs"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/volatiletech/null/v8"
+	"strings"
 )
 
 type UpdateOrganization struct {
@@ -35,6 +39,7 @@ type Organization struct {
 	OrganizationTypeRefId int    `json:"organization_type_ref_id" boil:"organization_type_ref_id" swaggerignore:"true"`
 	Name                  string `json:"name" boil:"name"`
 	OrganizationType      string `json:"organization_type" boil:"organization_type"`
+	IsActive              int    `json:"is_active" boil:"is_active"`
 }
 
 func (c *OrganizationFilters) Validate() error {
@@ -52,6 +57,36 @@ func (c *OrganizationFilters) Validate() error {
 type CreateOrganization struct {
 	OrganizationTypeRefId int    `json:"organization_type_ref_id" validate:"required,greater_than_zero"`
 	Name                  string `json:"name" validate:"required"`
+}
+
+func (c *UpdateOrganization) Validate() error {
+	var errList errs.List
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %w", err)
+	}
+
+	hasAtLeastOneUpdateParameters := false
+	if c.OrganizationTypeRefId.Valid {
+		if c.OrganizationTypeRefId.Int > 0 {
+			hasAtLeastOneUpdateParameters = true
+		} else {
+			errList.Add(sysconsts.ErrOrganizationTypeRefIdInvalid)
+		}
+	}
+
+	if c.Name.Valid {
+		if c.Name.Valid && strings.TrimSpace(c.Name.String) != "" {
+			hasAtLeastOneUpdateParameters = true
+		} else {
+			errList.Add(sysconsts.ErrOrganizationTypeRefIdInvalid)
+		}
+	}
+
+	if !hasAtLeastOneUpdateParameters {
+		return errors.New(sysconsts.ErrHasNotASingleValidateUpdateParameter)
+	}
+
+	return nil
 }
 
 // ToOrganization converts the CreateOrganization to an Organization.

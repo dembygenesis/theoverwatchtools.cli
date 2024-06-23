@@ -96,6 +96,21 @@ type FakePersistor struct {
 	restoreOrganizationReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateOrganizationStub        func(context.Context, persistence.TransactionHandler, *model.UpdateOrganization) (*model.Organization, error)
+	updateOrganizationMutex       sync.RWMutex
+	updateOrganizationArgsForCall []struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 *model.UpdateOrganization
+	}
+	updateOrganizationReturns struct {
+		result1 *model.Organization
+		result2 error
+	}
+	updateOrganizationReturnsOnCall map[int]struct {
+		result1 *model.Organization
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -490,6 +505,72 @@ func (fake *FakePersistor) RestoreOrganizationReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
+func (fake *FakePersistor) UpdateOrganization(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.UpdateOrganization) (*model.Organization, error) {
+	fake.updateOrganizationMutex.Lock()
+	ret, specificReturn := fake.updateOrganizationReturnsOnCall[len(fake.updateOrganizationArgsForCall)]
+	fake.updateOrganizationArgsForCall = append(fake.updateOrganizationArgsForCall, struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 *model.UpdateOrganization
+	}{arg1, arg2, arg3})
+	stub := fake.UpdateOrganizationStub
+	fakeReturns := fake.updateOrganizationReturns
+	fake.recordInvocation("UpdateOrganization", []interface{}{arg1, arg2, arg3})
+	fake.updateOrganizationMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakePersistor) UpdateOrganizationCallCount() int {
+	fake.updateOrganizationMutex.RLock()
+	defer fake.updateOrganizationMutex.RUnlock()
+	return len(fake.updateOrganizationArgsForCall)
+}
+
+func (fake *FakePersistor) UpdateOrganizationCalls(stub func(context.Context, persistence.TransactionHandler, *model.UpdateOrganization) (*model.Organization, error)) {
+	fake.updateOrganizationMutex.Lock()
+	defer fake.updateOrganizationMutex.Unlock()
+	fake.UpdateOrganizationStub = stub
+}
+
+func (fake *FakePersistor) UpdateOrganizationArgsForCall(i int) (context.Context, persistence.TransactionHandler, *model.UpdateOrganization) {
+	fake.updateOrganizationMutex.RLock()
+	defer fake.updateOrganizationMutex.RUnlock()
+	argsForCall := fake.updateOrganizationArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakePersistor) UpdateOrganizationReturns(result1 *model.Organization, result2 error) {
+	fake.updateOrganizationMutex.Lock()
+	defer fake.updateOrganizationMutex.Unlock()
+	fake.UpdateOrganizationStub = nil
+	fake.updateOrganizationReturns = struct {
+		result1 *model.Organization
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakePersistor) UpdateOrganizationReturnsOnCall(i int, result1 *model.Organization, result2 error) {
+	fake.updateOrganizationMutex.Lock()
+	defer fake.updateOrganizationMutex.Unlock()
+	fake.UpdateOrganizationStub = nil
+	if fake.updateOrganizationReturnsOnCall == nil {
+		fake.updateOrganizationReturnsOnCall = make(map[int]struct {
+			result1 *model.Organization
+			result2 error
+		})
+	}
+	fake.updateOrganizationReturnsOnCall[i] = struct {
+		result1 *model.Organization
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakePersistor) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -505,6 +586,8 @@ func (fake *FakePersistor) Invocations() map[string][][]interface{} {
 	defer fake.getOrganizationsMutex.RUnlock()
 	fake.restoreOrganizationMutex.RLock()
 	defer fake.restoreOrganizationMutex.RUnlock()
+	fake.updateOrganizationMutex.RLock()
+	defer fake.updateOrganizationMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

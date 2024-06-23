@@ -44,6 +44,7 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 	if params == nil {
 		return nil, ErrCatNil
 	}
+
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
@@ -51,9 +52,6 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 
 	entry := &mysqlmodel.Category{ID: params.Id}
 	cols := []string{mysqlmodel.CategoryColumns.ID}
-
-	fmt.Println("====== entry UpdateCategory:", strutil.GetAsJson(entry))
-	fmt.Println("====== params UpdateCategory:", strutil.GetAsJson(params))
 
 	if params.CategoryTypeRefId.Valid {
 		entry.CategoryTypeRefID = params.CategoryTypeRefId.Int
@@ -70,9 +68,15 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 	}
 
 	category, err := m.GetCategoryById(ctx, tx, entry.ID)
+	//tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get category by id: %v", err)
 	}
+
+	//if err := tx.Commit(ctx); err != nil {
+	//	fmt.Println("Error during transaction commit")
+	//	return nil, fmt.Errorf("commit failed: %v", err)
+	//}
 
 	return category, nil
 }
@@ -144,9 +148,12 @@ func (m *Repository) GetCategoryByName(ctx context.Context, tx persistence.Trans
 	paginated, err := m.GetCategories(ctx, tx, &model.CategoryFilters{
 		CategoryNameIn: []string{name},
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("category filtered by name: %v", err)
 	}
+
+	fmt.Println("paginated.Pagination.RowCount ---- ", strutil.GetAsJson(paginated.Pagination.RowCount))
 
 	if paginated.Pagination.RowCount != 1 {
 		return nil, errors.New(sysconsts.ErrExpectedExactlyOneEntry)
@@ -158,10 +165,13 @@ func (m *Repository) GetCategoryByName(ctx context.Context, tx persistence.Trans
 // GetCategories attempts to fetch the category
 // entries using the given transaction layer.
 func (m *Repository) GetCategories(ctx context.Context, tx persistence.TransactionHandler, filters *model.CategoryFilters) (*model.PaginatedCategories, error) {
+	fmt.Println("the tx in the GetCategoris --- ")
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
+
+	fmt.Println("the filters cats --- ", strutil.GetAsJson(filters))
 
 	res, err := m.getCategories(ctx, ctxExec, filters)
 	if err != nil {

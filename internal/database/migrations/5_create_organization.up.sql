@@ -14,5 +14,6 @@ CREATE TABLE `organization` (
 INSERT INTO `organization` (`name`, `organization_type_ref_id`)
 VALUES
     ('TEST DATA 1', 1),
-    ('TEST DATA 2', 1);
+    ('TEST DATA 2', 1),
+    ('TEST DATA 3', 1);
 

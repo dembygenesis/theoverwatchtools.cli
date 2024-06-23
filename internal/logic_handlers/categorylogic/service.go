@@ -156,6 +156,13 @@ func (i *Service) UpdateCategory(ctx context.Context, params *model.UpdateCatego
 		return nil, fmt.Errorf("update category: %w", err)
 	}
 
+	if err = tx.Commit(ctx); err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit: %v", err),
+		})
+	}
+
 	return category, nil
 }
 
@@ -216,4 +223,19 @@ func (s *Service) RestoreCategory(ctx context.Context, params *model.RestoreCate
 	}
 
 	return nil
+}
+
+// GetCategoryByID get a category by ID.
+func (i *Service) GetCategoryByID(ctx context.Context, id int) (*model.Category, error) {
+	db, err := i.cfg.TxProvider.Db(ctx)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+
+	fmt.Println("the filter at the service --- ", strutil.GetAsJson(id))
+	paginated, err := i.cfg.Persistor.GetCategoryById(ctx, db, id)
+	return paginated, nil
 }

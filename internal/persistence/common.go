@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type TransactionProvider interface {
 type TransactionHandler interface {
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context)
+	GetCtxExecutor(i interface{}) (boil.ContextExecutor, error)
 }
 
 // QueryTimeouts contains the general timeout

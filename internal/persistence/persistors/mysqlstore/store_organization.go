@@ -11,8 +11,34 @@ import (
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
+
+// DropOrganizationTable drops the organization table (for testing purposes).
+func (m *Repository) DropOrganizationTable(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("extract context executor: %v", err)
+	}
+
+	dropStmts := []string{
+		"SET FOREIGN_KEY_CHECKS = 0;",
+		"DROP TABLE organization;",
+		"SET FOREIGN_KEY_CHECKS = 1;",
+	}
+
+	for _, stmt := range dropStmts {
+		if _, err := queries.Raw(stmt).Exec(ctxExec); err != nil {
+			return fmt.Errorf("dropping category table sql stmt: %v", err)
+		}
+	}
+
+	return nil
+}
 
 // AddOrganization attempts to add a new organization
 func (m *Repository) AddOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.Organization) (*model.Organization, error) {
@@ -45,7 +71,12 @@ func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.Transa
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
+	fmt.Println("the filters orgs11 --- ", strutil.GetAsJson(filters))
+
 	res, err := m.getOrganizations(ctx, ctxExec, filters)
+
+	fmt.Println("the res orgs ---- ", strutil.GetAsJson(res))
+
 	if err != nil {
 		return nil, fmt.Errorf("read organizations: %v", err)
 	}
@@ -159,7 +190,7 @@ func (m *Repository) getOrganizations(
 	queryMods = append(queryMods, qm.Limit(pagination.MaxRows), qm.Offset(pagination.Offset))
 	q = mysqlmodel.Organizations(queryMods...)
 
-	fmt.Println("the q --- ", q)
+	fmt.Println("the q --- ", strutil.GetAsJson(q))
 
 	if err = q.Bind(ctx, ctxExec, &res); err != nil {
 		return nil, fmt.Errorf("get organizations: %v", err)
@@ -268,7 +299,7 @@ func (m *Repository) RestoreOrganization(
 
 func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateOrganization) (*model.Organization, error) {
 	if params == nil {
-		return nil, ErrCatNil
+		return nil, ErrOrgNil
 	}
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
@@ -288,13 +319,14 @@ func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.Tran
 	}
 
 	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
+	//tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("update failed: %v", err)
 	}
 
 	organization, err := m.GetOrganizationById(ctx, tx, entry.ID)
 	if err != nil {
-		return nil, fmt.Errorf("get category by id: %v", err)
+		return nil, fmt.Errorf("get organization by id: %v", err)
 	}
 
 	return organization, nil

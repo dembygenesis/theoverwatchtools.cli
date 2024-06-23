@@ -290,14 +290,14 @@ func Test_UpdateCategories_Success(t *testing.T) {
 			Valid: true,
 		},
 		Name: null.String{
-			String: paginatedCategories.Categories[0].Name + " new",
+			String: paginatedCategories.Categories[0].Name + " sample_category",
 			Valid:  true,
 		},
 	}
 
 	cat, err := m.UpdateCategory(testCtx, txHandlerDb, &updateCategory)
 	require.NoError(t, err, "unexpected error updating a conflicting category from the database")
-	assert.Equal(t, paginatedCategories.Categories[0].Name+" new", cat.Name)
+	assert.Equal(t, paginatedCategories.Categories[0].Name+" sample_category", cat.Name)
 }
 
 type deleteCategoryTestCase struct {
