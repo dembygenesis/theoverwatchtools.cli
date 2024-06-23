@@ -59,7 +59,7 @@ func (m *Repository) UpdateClickTrackers(ctx context.Context, tx persistence.Tra
 	}
 
 	clicktracker, err := m.GetClickTrackerById(ctx, tx, entry.ID)
-	tx.Commit(ctx)
+	//tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("update click tracker by id: %v", err)
 	}
@@ -378,18 +378,18 @@ func (m *Repository) GetClickTrackerByName(ctx context.Context, tx persistence.T
 		NameIn: []string{name},
 	})
 
-	fmt.Println("the paginated ---- ", strutil.GetAsJson(paginated))
-
 	if err != nil {
 		return nil, fmt.Errorf("click tracker filtered by name: %v", err)
 	}
+
+	fmt.Println("the paginated ---- ", strutil.GetAsJson(paginated))
 
 	//if paginated.Pagination.RowCount == 0 {
 	//	return nil, nil
 	//}
 
 	if paginated.Pagination.RowCount != 1 {
-		return nil, errors.New("expected exactly one click tracker entry")
+		return nil, errors.New(sysconsts.ErrExpectedExactlyOneEntry)
 	}
 
 	return &paginated.ClickTrackers[0], nil

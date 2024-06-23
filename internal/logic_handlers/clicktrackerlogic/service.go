@@ -104,9 +104,15 @@ func (i *Service) UpdateClickTracker(ctx context.Context, params *model.UpdateCl
 	}
 
 	clicktracker, err := i.cfg.Persistor.UpdateClickTrackers(ctx, tx, params)
-	//tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("update click tracker: %w", err)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit: %v", err),
+		})
 	}
 
 	return clicktracker, nil

@@ -319,7 +319,7 @@ func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.Tran
 	}
 
 	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
-	tx.Commit(ctx)
+	//tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("update failed: %v", err)
 	}

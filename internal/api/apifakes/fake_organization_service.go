@@ -35,6 +35,20 @@ type FakeOrganizationService struct {
 	deleteOrganizationReturnsOnCall map[int]struct {
 		result1 error
 	}
+	GetOrganizationByIDStub        func(context.Context, int) (*model.Organization, error)
+	getOrganizationByIDMutex       sync.RWMutex
+	getOrganizationByIDArgsForCall []struct {
+		arg1 context.Context
+		arg2 int
+	}
+	getOrganizationByIDReturns struct {
+		result1 *model.Organization
+		result2 error
+	}
+	getOrganizationByIDReturnsOnCall map[int]struct {
+		result1 *model.Organization
+		result2 error
+	}
 	ListOrganizationsStub        func(context.Context, *model.OrganizationFilters) (*model.PaginatedOrganizations, error)
 	listOrganizationsMutex       sync.RWMutex
 	listOrganizationsArgsForCall []struct {
@@ -204,6 +218,71 @@ func (fake *FakeOrganizationService) DeleteOrganizationReturnsOnCall(i int, resu
 	fake.deleteOrganizationReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *FakeOrganizationService) GetOrganizationByID(arg1 context.Context, arg2 int) (*model.Organization, error) {
+	fake.getOrganizationByIDMutex.Lock()
+	ret, specificReturn := fake.getOrganizationByIDReturnsOnCall[len(fake.getOrganizationByIDArgsForCall)]
+	fake.getOrganizationByIDArgsForCall = append(fake.getOrganizationByIDArgsForCall, struct {
+		arg1 context.Context
+		arg2 int
+	}{arg1, arg2})
+	stub := fake.GetOrganizationByIDStub
+	fakeReturns := fake.getOrganizationByIDReturns
+	fake.recordInvocation("GetOrganizationByID", []interface{}{arg1, arg2})
+	fake.getOrganizationByIDMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeOrganizationService) GetOrganizationByIDCallCount() int {
+	fake.getOrganizationByIDMutex.RLock()
+	defer fake.getOrganizationByIDMutex.RUnlock()
+	return len(fake.getOrganizationByIDArgsForCall)
+}
+
+func (fake *FakeOrganizationService) GetOrganizationByIDCalls(stub func(context.Context, int) (*model.Organization, error)) {
+	fake.getOrganizationByIDMutex.Lock()
+	defer fake.getOrganizationByIDMutex.Unlock()
+	fake.GetOrganizationByIDStub = stub
+}
+
+func (fake *FakeOrganizationService) GetOrganizationByIDArgsForCall(i int) (context.Context, int) {
+	fake.getOrganizationByIDMutex.RLock()
+	defer fake.getOrganizationByIDMutex.RUnlock()
+	argsForCall := fake.getOrganizationByIDArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeOrganizationService) GetOrganizationByIDReturns(result1 *model.Organization, result2 error) {
+	fake.getOrganizationByIDMutex.Lock()
+	defer fake.getOrganizationByIDMutex.Unlock()
+	fake.GetOrganizationByIDStub = nil
+	fake.getOrganizationByIDReturns = struct {
+		result1 *model.Organization
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeOrganizationService) GetOrganizationByIDReturnsOnCall(i int, result1 *model.Organization, result2 error) {
+	fake.getOrganizationByIDMutex.Lock()
+	defer fake.getOrganizationByIDMutex.Unlock()
+	fake.GetOrganizationByIDStub = nil
+	if fake.getOrganizationByIDReturnsOnCall == nil {
+		fake.getOrganizationByIDReturnsOnCall = make(map[int]struct {
+			result1 *model.Organization
+			result2 error
+		})
+	}
+	fake.getOrganizationByIDReturnsOnCall[i] = struct {
+		result1 *model.Organization
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeOrganizationService) ListOrganizations(arg1 context.Context, arg2 *model.OrganizationFilters) (*model.PaginatedOrganizations, error) {
@@ -405,6 +484,8 @@ func (fake *FakeOrganizationService) Invocations() map[string][][]interface{} {
 	defer fake.createOrganizationMutex.RUnlock()
 	fake.deleteOrganizationMutex.RLock()
 	defer fake.deleteOrganizationMutex.RUnlock()
+	fake.getOrganizationByIDMutex.RLock()
+	defer fake.getOrganizationByIDMutex.RUnlock()
 	fake.listOrganizationsMutex.RLock()
 	defer fake.listOrganizationsMutex.RUnlock()
 	fake.restoreOrganizationMutex.RLock()

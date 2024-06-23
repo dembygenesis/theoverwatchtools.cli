@@ -65,7 +65,7 @@ func (m *Repository) UpdateCapturePages(ctx context.Context, tx persistence.Tran
 	}
 
 	capturepages, err := m.GetCapturePageById(ctx, tx, entry.ID)
-	tx.Commit(ctx)
+	//tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get capture page by id: %v", err)
 	}

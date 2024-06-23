@@ -138,6 +138,13 @@ func (i *Service) UpdateCapturePages(ctx context.Context, params *model.UpdateCa
 		return nil, fmt.Errorf("update capture pages: %w", err)
 	}
 
+	if err = tx.Commit(ctx); err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit: %v", err),
+		})
+	}
+
 	return capturepages, nil
 }
 

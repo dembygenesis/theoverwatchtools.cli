@@ -44,7 +44,7 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 			},
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService}, func() {
+				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService, ctService: container.ClickTrackerService}, func() {
 					cleanup()
 				}
 			},
@@ -66,7 +66,7 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 			body: map[string]interface{}{},
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService}, func() {
+				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService, ctService: container.ClickTrackerService}, func() {
 					cleanup()
 				}
 			},
@@ -84,7 +84,7 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 			},
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService}, func() {
+				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService, ctService: container.ClickTrackerService}, func() {
 					cleanup()
 				}
 			},
@@ -107,7 +107,9 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 				fakeOrganizationService.CreateOrganizationReturns(nil, errors.New("mock error"))
 				fakeCapturePagesService := apifakes.FakeCapturePagesService{}
 				fakeCapturePagesService.CreateCapturePagesReturns(nil, errors.New("mock error"))
-				return &testServices{catService: &fakeCategoryService, orgService: &fakeOrganizationService, capPagesService: &fakeCapturePagesService}, func() {}
+				fakeClickTrackerService := apifakes.FakeClickTrackerService{}
+				fakeClickTrackerService.CreateClickTrackerReturns(nil, errors.New("mock error"))
+				return &testServices{catService: &fakeCategoryService, orgService: &fakeOrganizationService, capPagesService: &fakeCapturePagesService, ctService: &fakeClickTrackerService}, func() {}
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				require.NotNil(t, resp, "unexpected nil response")
@@ -129,6 +131,7 @@ func Test_CreateCategory(t *testing.T) {
 				CategoryService:     handlers.catService,
 				OrganizationService: handlers.orgService,
 				CapturePagesService: handlers.capPagesService,
+				ClickTrackerService: handlers.ctService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -328,6 +331,7 @@ func Test_ListCategories(t *testing.T) {
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
 				CapturePagesService: handlers.CapturePagesService,
+				ClickTrackerService: handlers.ClickTrackerService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -371,9 +375,7 @@ func getTestCasesUpdateCategory() []testCaseUpdateCategory {
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
 				return &testServices{
-						orgService:      container.OrganizationService,
-						capPagesService: container.CapturePagesService,
-						catService:      container.CategoryService,
+						catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService, ctService: container.ClickTrackerService,
 					}, func() {
 						cleanup()
 					}
@@ -406,9 +408,10 @@ func Test_UpdateCategory(t *testing.T) {
 			cfg := &Config{
 				BaseUrl:             testassets.MockBaseUrl,
 				Port:                3000,
-				CapturePagesService: handlers.capPagesService,
 				CategoryService:     handlers.catService,
 				OrganizationService: handlers.orgService,
+				CapturePagesService: handlers.capPagesService,
+				ClickTrackerService: handlers.ctService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -453,6 +456,7 @@ func getTestCasesDeleteCategory() []testCaseDeleteCategory {
 						catService:      container.CategoryService,
 						orgService:      container.OrganizationService,
 						capPagesService: container.CapturePagesService,
+						ctService:       container.ClickTrackerService,
 					}, func() {
 						cleanup()
 					}
@@ -484,6 +488,7 @@ func Test_DeleteCategory(t *testing.T) {
 				CapturePagesService: handlers.capPagesService,
 				CategoryService:     handlers.catService,
 				OrganizationService: handlers.orgService,
+				ClickTrackerService: handlers.ctService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -522,6 +527,7 @@ func getTestCasesRestoreCategory() []testCaseRestoreCategory {
 						catService:      container.CategoryService,
 						orgService:      container.OrganizationService,
 						capPagesService: container.CapturePagesService,
+						ctService:       container.ClickTrackerService,
 					}, func() {
 						cleanup()
 					}
@@ -553,6 +559,7 @@ func Test_RestoreCategory(t *testing.T) {
 				CapturePagesService: handlers.capPagesService,
 				CategoryService:     handlers.catService,
 				OrganizationService: handlers.orgService,
+				ClickTrackerService: handlers.ctService,
 				Logger:              logger.New(context.TODO()),
 			}
 

@@ -41,6 +41,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 						orgService:      container.OrganizationService,
 						catService:      container.CategoryService,
 						capPagesService: container.CapturePagesService,
+						ctService:       container.ClickTrackerService,
 					}, func() {
 						cleanup()
 					}
@@ -67,6 +68,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 						catService:      container.CategoryService,
 						capPagesService: container.CapturePagesService,
 						orgService:      container.OrganizationService,
+						ctService:       container.ClickTrackerService,
 					}, func() {
 						cleanup()
 					}
@@ -89,6 +91,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 						catService:      container.CategoryService,
 						capPagesService: container.CapturePagesService,
 						orgService:      container.OrganizationService,
+						ctService:       container.ClickTrackerService,
 					}, func() {
 						cleanup()
 					}
@@ -114,10 +117,14 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 
 				fakeCapturePagesService := apifakes.FakeCapturePagesService{}
 				fakeCapturePagesService.CreateCapturePagesReturns(nil, errors.New("mock error"))
+
+				fakeClickTrackerService := apifakes.FakeClickTrackerService{}
+				fakeClickTrackerService.CreateClickTrackerReturns(nil, errors.New("mock error"))
 				return &testServices{
 					orgService:      &fakeOrganizationService,
 					catService:      &fakeCategoriesService,
 					capPagesService: &fakeCapturePagesService,
+					ctService:       &fakeClickTrackerService,
 				}, func() {}
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
@@ -140,6 +147,7 @@ func Test_CreateOrganization(t *testing.T) {
 				CategoryService:     handlers.catService,
 				OrganizationService: handlers.orgService,
 				CapturePagesService: handlers.capPagesService,
+				ClickTrackerService: handlers.ctService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -341,6 +349,7 @@ func Test_ListOrganizations(t *testing.T) {
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
 				CapturePagesService: handlers.CapturePagesService,
+				ClickTrackerService: handlers.ClickTrackerService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -385,6 +394,7 @@ func getTestCasesUpdateOrganization() []testCaseUpdateOrganization {
 						catService:      container.CategoryService,
 						orgService:      container.OrganizationService,
 						capPagesService: container.CapturePagesService,
+						ctService:       container.ClickTrackerService,
 					}, func() {
 						cleanup()
 					}
@@ -419,6 +429,7 @@ func Test_UpdateOrganization(t *testing.T) {
 				CapturePagesService: handlers.capPagesService,
 				CategoryService:     handlers.catService,
 				OrganizationService: handlers.orgService,
+				ClickTrackerService: handlers.ctService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -463,6 +474,7 @@ func getTestCasesDeleteOrganization() []testCaseDeleteOrganization {
 						catService:      container.CategoryService,
 						orgService:      container.OrganizationService,
 						capPagesService: container.CapturePagesService,
+						ctService:       container.ClickTrackerService,
 					}, func() {
 						cleanup()
 					}
@@ -494,6 +506,7 @@ func Test_DeleteOrganization(t *testing.T) {
 				CapturePagesService: handlers.capPagesService,
 				CategoryService:     handlers.catService,
 				OrganizationService: handlers.orgService,
+				ClickTrackerService: handlers.ctService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -532,6 +545,7 @@ func getTestCasesRestoreOrganization() []testCaseRestoreOrganization {
 						catService:      container.CategoryService,
 						orgService:      container.OrganizationService,
 						capPagesService: container.CapturePagesService,
+						ctService:       container.ClickTrackerService,
 					}, func() {
 						cleanup()
 					}
@@ -563,6 +577,7 @@ func Test_RestoreOrganization(t *testing.T) {
 				CapturePagesService: handlers.capPagesService,
 				CategoryService:     handlers.catService,
 				OrganizationService: handlers.orgService,
+				ClickTrackerService: handlers.ctService,
 				Logger:              logger.New(context.TODO()),
 			}
 

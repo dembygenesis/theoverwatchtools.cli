@@ -44,6 +44,7 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 	if params == nil {
 		return nil, ErrCatNil
 	}
+
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
@@ -67,7 +68,7 @@ func (m *Repository) UpdateCategory(ctx context.Context, tx persistence.Transact
 	}
 
 	category, err := m.GetCategoryById(ctx, tx, entry.ID)
-	tx.Commit(ctx)
+	//tx.Commit(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get category by id: %v", err)
 	}

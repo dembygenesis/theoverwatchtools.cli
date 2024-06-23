@@ -217,6 +217,13 @@ func (i *Service) UpdateOrganization(ctx context.Context, params *model.UpdateOr
 		return nil, fmt.Errorf("update organization: %w", err)
 	}
 
+	if err = tx.Commit(ctx); err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit: %v", err),
+		})
+	}
+
 	return category, nil
 }
 

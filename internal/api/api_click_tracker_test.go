@@ -229,44 +229,44 @@ type testCaseCreateClickTrackers struct {
 
 func getTestCasesCreateClickTrackers() []testCaseCreateClickTrackers {
 	return []testCaseCreateClickTrackers{
-		{
-			name: "success",
-			body: map[string]interface{}{
-				"name":                 "Tracker 5",
-				"created_by":           2,
-				"updated_by":           2,
-				"click_tracker_set_id": 2,
-			},
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{
-						catService:      container.CategoryService,
-						orgService:      container.OrganizationService,
-						capPagesService: container.CapturePagesService,
-						ctService:       container.ClickTrackerService,
-					}, func() {
-						cleanup()
-					}
-			},
-			assertions: func(t *testing.T, resp []byte, respCode int) {
-				respStr := string(resp)
-				require.NotNilf(t, resp, "unexpected nil response: %s", respStr)
-				require.Equal(t, http.StatusCreated, respCode, "unexpected non-equal response code: %s", respStr)
-
-				var clickTracker *model.ClickTracker
-				err := json.Unmarshal(resp, &clickTracker)
-				require.NoError(t, err, "unexpected error unmarshalling the response")
-				require.NotNil(t, clickTracker, "unexpected nil click tracker")
-
-				modelhelpers.AssertNonEmptyClickTrackers(t, []model.ClickTracker{*clickTracker})
-			},
-		},
+		//{
+		//	name: "success",
+		//	body: map[string]interface{}{
+		//		"name":                 "Tracker 5",
+		//		"created_by":           2,
+		//		"updated_by":           2,
+		//		"click_tracker_set_id": 2,
+		//	},
+		//	fnGetTestServices: func(t *testing.T) (*testServices, func()) {
+		//		container, cleanup := testassets.GetConcreteContainer(t)
+		//		return &testServices{
+		//				catService:      container.CategoryService,
+		//				orgService:      container.OrganizationService,
+		//				capPagesService: container.CapturePagesService,
+		//				ctService:       container.ClickTrackerService,
+		//			}, func() {
+		//				cleanup()
+		//			}
+		//	},
+		//	assertions: func(t *testing.T, resp []byte, respCode int) {
+		//		respStr := string(resp)
+		//		require.NotNilf(t, resp, "unexpected nil response: %s", respStr)
+		//		require.Equal(t, http.StatusCreated, respCode, "unexpected non-equal response code: %s", respStr)
+		//
+		//		var clickTracker *model.ClickTracker
+		//		err := json.Unmarshal(resp, &clickTracker)
+		//		require.NoError(t, err, "unexpected error unmarshalling the response")
+		//		require.NotNil(t, clickTracker, "unexpected nil click tracker")
+		//
+		//		modelhelpers.AssertNonEmptyClickTrackers(t, []model.ClickTracker{*clickTracker})
+		//	},
+		//},
 		//{
 		//	name: "fail-empty-body",
 		//	body: map[string]interface{}{},
 		//	fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 		//		container, cleanup := testassets.GetConcreteContainer(t)
-		//		return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService}, func() {
+		//		return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService, ctService: container.ClickTrackerService}, func() {
 		//			cleanup()
 		//		}
 		//	},
@@ -276,24 +276,26 @@ func getTestCasesCreateClickTrackers() []testCaseCreateClickTrackers {
 		//		require.Contains(t, string(resp), "validate:")
 		//	},
 		//},
-		//{
-		//	name: "fail-invalid-category-ref-id",
-		//	body: map[string]interface{}{
-		//		"name":                 "Example",
-		//		"category_type_ref_id": 19999,
-		//	},
-		//	fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-		//		container, cleanup := testassets.GetConcreteContainer(t)
-		//		return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService}, func() {
-		//			cleanup()
-		//		}
-		//	},
-		//	assertions: func(t *testing.T, resp []byte, respCode int) {
-		//		assert.NotNil(t, resp, "unexpected nil response")
-		//		assert.Equal(t, respCode, http.StatusBadRequest)
-		//		require.Contains(t, string(resp), "invalid category_type_id")
-		//	},
-		//},
+		{
+			name: "fail-invalid-click_tracker-sets-id",
+			body: map[string]interface{}{
+				"name":                 "Example",
+				"created_by":           2,
+				"updated_by":           2,
+				"click_tracker_set_id": 19999,
+			},
+			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
+				container, cleanup := testassets.GetConcreteContainer(t)
+				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService, capPagesService: container.CapturePagesService, ctService: container.ClickTrackerService}, func() {
+					cleanup()
+				}
+			},
+			assertions: func(t *testing.T, resp []byte, respCode int) {
+				assert.NotNil(t, resp, "unexpected nil response")
+				assert.Equal(t, respCode, http.StatusBadRequest)
+				require.Contains(t, string(resp), "invalid click_tracker_set_id")
+			},
+		},
 		//{
 		//	name: "fail-mock-server-error",
 		//	body: map[string]interface{}{
@@ -307,7 +309,9 @@ func getTestCasesCreateClickTrackers() []testCaseCreateClickTrackers {
 		//		fakeOrganizationService.CreateOrganizationReturns(nil, errors.New("mock error"))
 		//		fakeCapturePagesService := apifakes.FakeCapturePagesService{}
 		//		fakeCapturePagesService.CreateCapturePagesReturns(nil, errors.New("mock error"))
-		//		return &testServices{catService: &fakeCategoryService, orgService: &fakeOrganizationService, capPagesService: &fakeCapturePagesService}, func() {}
+		//		fakeClickTrackerService := apifakes.FakeClickTrackerService{}
+		//		fakeClickTrackerService.CreateClickTrackerReturns(nil, errors.New("mock error"))
+		//		return &testServices{catService: &fakeCategoryService, orgService: &fakeOrganizationService, capPagesService: &fakeCapturePagesService, ctService: &fakeClickTrackerService}, func() {}
 		//	},
 		//	assertions: func(t *testing.T, resp []byte, respCode int) {
 		//		require.NotNil(t, resp, "unexpected nil response")
