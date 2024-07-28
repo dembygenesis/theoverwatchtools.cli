@@ -105,11 +105,6 @@ func New() (*App, error) {
 	viper.SetDefault("DB_EXEC_TIMEOUT", "10s")
 	viper.SetDefault("DB_QUERY_TIMEOUT", "10s")
 
-	// Override top if production == false
-	if viper.Get("IS_PRODUCTION") != "1" {
-		// Override DB_PORT, and DB_DATABASE.
-	}
-
 	// Set API defaults
 	viper.SetDefault("API_PORT", 3000)
 	viper.SetDefault("API_LISTEN_TIMEOUT_SECS", "10s")

@@ -103,6 +103,7 @@ func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB,
 }
 
 func testExistingMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
+	fmt.Println("===== haha")
 	db, err := NewDbClient(context.TODO(), &ClientOptions{
 		ConnString: cp.GetConnectionString(true),
 		Close:      false,

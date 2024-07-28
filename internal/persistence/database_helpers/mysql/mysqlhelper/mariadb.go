@@ -51,10 +51,11 @@ func (m *MariaDBConfig) GetEnvVars() []string {
 func NewMariaDBTestContainer(t *testing.T, cfg *mysqlutil.ConnectionSettings) {
 	ctx := context.Background()
 	req := testcontainers.ContainerRequest{
-		Image:        "mysql:8.0",
-		Name:         "test_container_mysql",
-		ExposedPorts: []string{"3306/tcp"},
-		WaitingFor:   wait.ForLog("X Plugin ready for connections. Bind-address:"),
+		Image:           "mysql:8.0",
+		AlwaysPullImage: true,
+		Name:            "test_container_mysql",
+		ExposedPorts:    []string{"3306/tcp"},
+		WaitingFor:      wait.ForLog("X Plugin ready for connections. Bind-address:"),
 		Env: map[string]string{
 			"MYSQL_ROOT_HOST":     "%",
 			"MYSQL_ROOT_PASSWORD": cfg.Pass,

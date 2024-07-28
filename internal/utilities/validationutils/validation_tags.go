@@ -45,10 +45,7 @@ var customValidations = []customValidation{
 			Valid: true,
 			Func: func(i interface{}) bool {
 				_, ok := i.(bool)
-				if !ok {
-					return false
-				}
-				return true
+				return ok
 			},
 		},
 		Response: null.String{

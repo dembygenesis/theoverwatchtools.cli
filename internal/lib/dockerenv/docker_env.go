@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"log"
@@ -124,6 +126,28 @@ func checkNameCollision(ctn types.Container, name string) bool {
 }
 
 func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
+	// Check if the image is already present locally
+	imagePresent, err := dm.isImagePresent(ctx, dm.cfg.Image)
+	if err != nil {
+		return "", fmt.Errorf("failed to check if image is present: %w", err)
+	}
+
+	// Pull the image only if it is not present
+	if !imagePresent {
+		out, err := dm.client.ImagePull(ctx, dm.cfg.Image, image.PullOptions{})
+		if err != nil {
+			return "", fmt.Errorf("failed to pull image: %w", err)
+		}
+		defer out.Close()
+		scanner := bufio.NewScanner(out)
+		for scanner.Scan() {
+			log.Println(scanner.Text())
+		}
+		if err := scanner.Err(); err != nil {
+			return "", fmt.Errorf("error reading image pull response: %w", err)
+		}
+	}
+
 	contConfig := &container.Config{
 		Image: dm.cfg.Image,
 		Env:   dm.cfg.Env,
@@ -218,4 +242,17 @@ func (dm *DockerEnv) waitForPort(ctx context.Context, host string, port int, tim
 		}
 	}
 	return fmt.Errorf("timeout reached waiting for port %d to become active", port)
+}
+
+// isImagePresent checks if the specified image is present locally
+func (dm *DockerEnv) isImagePresent(ctx context.Context, imageName string) (bool, error) {
+	imageFilters := filters.NewArgs()
+	imageFilters.Add("reference", imageName)
+
+	images, err := dm.client.ImageList(ctx, image.ListOptions{Filters: imageFilters})
+	if err != nil {
+		return false, err
+	}
+
+	return len(images) > 0, nil
 }
