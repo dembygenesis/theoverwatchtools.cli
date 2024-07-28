@@ -7,3 +7,9 @@ const genericExclusions = `
     ".git"
   ]
 `
+const (
+	EnvAppDir = "THEOVERWATCHTOOLS_APP_DIR"
+
+	envFile   = ".env"
+	envPrefix = "THEOVERWATCHTOOLS_"
+)

@@ -2,12 +2,12 @@ package dockerenv
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/utilities/sliceutil"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"log"
@@ -19,7 +19,8 @@ import (
 )
 
 var (
-	m sync.Mutex
+	m              sync.Mutex
+	waitForTimeout = 30 * time.Second
 )
 
 type DockerEnv struct {
@@ -42,7 +43,7 @@ type ContainerConfig struct {
 func New(cfg *ContainerConfig) (*DockerEnv, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		return nil, fmt.Errorf("new client: %v", err)
+		return nil, err
 	}
 
 	return &DockerEnv{
@@ -71,49 +72,34 @@ func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string
 
 	allContainers, err := dm.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
-		return "", fmt.Errorf("container list: %v", err)
+		return "", err
 	}
 
 	targetHostPort := strconv.Itoa(dm.cfg.HostPort)
 
 	for _, ctn := range allContainers {
-		// Check if there is a port, and mysql image that is the same
-		hasPortBindingCollision := sliceutil.Compare(ctn.Ports, func(port types.Port) bool {
-			return strconv.Itoa(int(port.PublicPort)) == targetHostPort && port.Type == "tcp"
-		})
-		if hasPortBindingCollision {
-			if !recreate {
-				dm.ContainerID = ctn.ID
-				return ctn.ID, nil
-			}
+		hasPortBindingCollision := checkPortBindingCollision(ctn, targetHostPort)
+		hasContainerNameCollision := checkNameCollision(ctn, dm.cfg.Name)
+		isStopped := ctn.State == "exited" || ctn.State == "created"
 
-			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
-				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to port collision: %w", ctn.ID, err)
-			}
-		}
-
-		hasContainerNameCollision := sliceutil.Compare(ctn.Names, func(name string) bool {
-			return name == "/"+dm.cfg.Name
-		})
-
-		hasExistingStoppedContainer := ctn.State == "exited" || ctn.State == "created"
-		if hasExistingStoppedContainer && hasContainerNameCollision {
+		if isStopped && hasContainerNameCollision {
 			log.Printf("Existing stopped container found with name %s. Attempting to start it.", dm.cfg.Name)
 			if err := dm.client.ContainerStart(ctx, ctn.ID, container.StartOptions{}); err != nil {
 				return "", fmt.Errorf("failed to start existing container: %s, with error: %w", ctn.ID, err)
 			}
+
 			dm.ContainerID = ctn.ID
 			return ctn.ID, nil
 		}
 
-		if hasContainerNameCollision {
+		if hasContainerNameCollision || hasPortBindingCollision {
 			if !recreate {
 				dm.ContainerID = ctn.ID
 				return ctn.ID, nil
 			}
 
 			if err := dm.client.ContainerRemove(ctx, ctn.ID, container.RemoveOptions{Force: true}); err != nil {
-				return "", fmt.Errorf("failed to remove existing ctn (ID: %s) due to name collision: %w", ctn.ID, err)
+				return "", fmt.Errorf("failed to remove existing ctn (ID: %s): %w", ctn.ID, err)
 			}
 		}
 	}
@@ -121,7 +107,47 @@ func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string
 	return dm.createContainer(ctx)
 }
 
+func checkPortBindingCollision(ctn types.Container, targetHostPort string) bool {
+	for _, port := range ctn.Ports {
+		if strconv.Itoa(int(port.PublicPort)) == targetHostPort && port.Type == "tcp" {
+			return true
+		}
+	}
+	return false
+}
+
+func checkNameCollision(ctn types.Container, name string) bool {
+	for _, n := range ctn.Names {
+		if n == "/"+name {
+			return true
+		}
+	}
+	return false
+}
+
 func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
+	// Check if the image is already present locally
+	imagePresent, err := dm.isImagePresent(ctx, dm.cfg.Image)
+	if err != nil {
+		return "", fmt.Errorf("failed to check if image is present: %w", err)
+	}
+
+	// Pull the image only if it is not present
+	if !imagePresent {
+		out, err := dm.client.ImagePull(ctx, dm.cfg.Image, image.PullOptions{})
+		if err != nil {
+			return "", fmt.Errorf("failed to pull image: %w", err)
+		}
+		defer out.Close()
+		scanner := bufio.NewScanner(out)
+		for scanner.Scan() {
+			log.Println(scanner.Text())
+		}
+		if err := scanner.Err(); err != nil {
+			return "", fmt.Errorf("error reading image pull response: %w", err)
+		}
+	}
+
 	contConfig := &container.Config{
 		Image: dm.cfg.Image,
 		Env:   dm.cfg.Env,
@@ -142,30 +168,14 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 		},
 	}
 
-	_, _, err := dm.client.ImageInspectWithRaw(ctx, dm.cfg.Image)
-	if err != nil {
-		if client.IsErrNotFound(err) {
-			rc, err := dm.client.ImagePull(ctx, dm.cfg.Image, types.ImagePullOptions{})
-			if err != nil {
-				return "", fmt.Errorf("pulling image: %v", err)
-			}
-			defer rc.Close()
-
-			if _, err = new(bytes.Buffer).ReadFrom(rc); err != nil {
-				return "", fmt.Errorf("reading image pull response: %v", err)
-			}
-		} else {
-			return "", fmt.Errorf("error checking for image: %v", err)
-		}
-	}
-
 	resp, err := dm.client.ContainerCreate(ctx, contConfig, hostConfig, nil, nil, dm.cfg.Name)
 	if err != nil {
-		return "ok", fmt.Errorf("create container: %v", err)
+		return "", err
 	}
 
 	dm.ContainerID = resp.ID
 
+	// if err = dm.client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 	if err = dm.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return "", err
 	}
@@ -175,8 +185,7 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 	}
 
 	if dm.cfg.WaitFor != "" {
-		timeoutDuration := 60 * time.Second
-		if err = dm.waitForLogMessage(ctx, dm.ContainerID, dm.cfg.WaitFor, timeoutDuration); err != nil {
+		if err = dm.waitForLogMessage(ctx, dm.ContainerID, dm.cfg.WaitFor, waitForTimeout); err != nil {
 			return "", fmt.Errorf("err waiting for text: %s, with err: %v", dm.cfg.WaitFor, err)
 		}
 	}
@@ -188,7 +197,6 @@ func (dm *DockerEnv) createContainer(ctx context.Context) (string, error) {
 func (dm *DockerEnv) waitForLogMessage(ctx context.Context, containerID, message string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	options := container.LogsOptions{ShowStdout: true, ShowStderr: true, Follow: true}
-
 	logStream, err := dm.client.ContainerLogs(ctx, containerID, options)
 	if err != nil {
 		return fmt.Errorf("failed to get container logs: %w", err)
@@ -234,4 +242,17 @@ func (dm *DockerEnv) waitForPort(ctx context.Context, host string, port int, tim
 		}
 	}
 	return fmt.Errorf("timeout reached waiting for port %d to become active", port)
+}
+
+// isImagePresent checks if the specified image is present locally
+func (dm *DockerEnv) isImagePresent(ctx context.Context, imageName string) (bool, error) {
+	imageFilters := filters.NewArgs()
+	imageFilters.Add("reference", imageName)
+
+	images, err := dm.client.ImageList(ctx, image.ListOptions{Filters: imageFilters})
+	if err != nil {
+		return false, err
+	}
+
+	return len(images) > 0, nil
 }

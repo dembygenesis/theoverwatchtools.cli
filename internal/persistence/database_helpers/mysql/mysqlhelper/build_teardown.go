@@ -9,6 +9,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/utilities/sliceutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/jmoiron/sqlx"
+	"sync"
 )
 
 type CreateMode int
@@ -54,6 +55,8 @@ func (o *NewOpts) Validate() error {
 	return nil
 }
 
+var mBuildTeardown sync.Mutex
+
 // NewBuildTeardown creates a new database with modes:
 //
 //	"Recreate" - performs a complete teardown, and rebuild of the database
@@ -73,6 +76,8 @@ func NewBuildTeardown(ctx context.Context, c *mysqlutil.ConnectionSettings, opts
 	switch opts.Mode {
 	case Recreate:
 		errPrefix = "recreate:"
+		mBuildTeardown.Lock()
+		defer mBuildTeardown.Unlock()
 		db, err = recreateDatabase(ctx, c)
 	case CreateIfNotExists:
 		errPrefix = "create if not exists:"

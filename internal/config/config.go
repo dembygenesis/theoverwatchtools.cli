@@ -5,16 +5,22 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
 	"github.com/dembygenesis/local.tools/internal/utilities/sliceutil"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 	"os"
 	"strings"
 	"time"
 )
 
+var (
+	errEnvEmpty = "env '%s' is unset"
+)
+
 type Timeouts struct {
-	DbExec  time.Duration `json:"TIMEOUT_DB_EXEC" mapstructure:"TIMEOUT_DB_EXEC" validate:"required,is_positive_time_duration"`
-	DbQuery time.Duration `json:"TIMEOUT_DB_QUERY" mapstructure:"TIMEOUT_DB_QUERY" validate:"required,is_positive_time_duration"`
+	DbExec  time.Duration `json:"DB_QUERY_TIMEOUT" mapstructure:"DB_QUERY_TIMEOUT" validate:"required,is_positive_time_duration"`
+	DbQuery time.Duration `json:"DB_EXEC_TIMEOUT" mapstructure:"DB_EXEC_TIMEOUT" validate:"required,is_positive_time_duration"`
 }
 
 type MysqlDatabaseCredentials struct {
@@ -26,7 +32,7 @@ type MysqlDatabaseCredentials struct {
 }
 
 type CopyToClipboard struct {
-	Exclusions []string `json:"exclusions" mapstructure:"exclusions"`
+	Exclusions []string `json:"exclusions"`
 }
 
 func (c *CopyToClipboard) ParseExclusions(s string) error {
@@ -63,8 +69,8 @@ type API struct {
 }
 
 type Settings struct {
-	IsProduction bool   `json:"THEOVERWATCHTOOLS_PRODUCTION" mapstructure:"THEOVERWATCHTOOLS_PRODUCTION" validate:"required,is_positive_time_duration"`
-	AppDir       string `json:"THEOVERWATCHTOOLS_APP_DIR" mapstructure:"THEOVERWATCHTOOLS_APP_DIR" validate:"required,is_positive_time_duration"`
+	IsProduction bool   `json:"PRODUCTION" mapstructure:"PRODUCTION" validate:"boolean"`
+	AppDir       string `json:"APP_DIR" mapstructure:"APP_DIR" validate:"required"`
 }
 
 type App struct {
@@ -77,16 +83,141 @@ type App struct {
 }
 
 func New() (*App, error) {
+	viper.Reset()
+
+	fmt.Println("=== flip flip")
+
+	// Set env prefix
+	viper.SetEnvPrefix("THEOVERWATCHTOOLS")
+
+	// Set app details
+	viper.SetDefault("APP_DIR", "/app")
+	viper.SetDefault("PRODUCTION", false)
+
+	// THEOVERWATCHTOOLS
+
+	// Set database defaults
+	viper.SetDefault("DB_HOST", "localhost")
+	viper.SetDefault("DB_USER", "demby")
+	viper.SetDefault("DB_PASS", "secret")
+	viper.SetDefault("DB_PORT", 3306)
+	viper.SetDefault("DB_DATABASE", "example")
+	viper.SetDefault("DB_EXEC_TIMEOUT", "10s")
+	viper.SetDefault("DB_QUERY_TIMEOUT", "10s")
+
+	// Set API defaults
+	viper.SetDefault("API_PORT", 3000)
+	viper.SetDefault("API_LISTEN_TIMEOUT_SECS", "10s")
+	viper.SetDefault("API_REQUEST_TIMEOUT_SECS", "10s")
+	viper.SetDefault("API_BASE_URL", "localhost")
+
+	// Do some additional logic
+
+	viper.AutomaticEnv()
+
+	// Map configs to struct
+	config := App{}
+
+	if err := config.CopyToClipboard.ParseExclusions(genericExclusions); err != nil {
+		return &config, fmt.Errorf("unmarshal copy to clipboard: %v", err)
+	}
+
+	if err := config.FolderAToFolderB.ParseExclusions(genericExclusions); err != nil {
+		return &config, fmt.Errorf("unmarshal transfer files: %v", err)
+	}
+
+	err := viper.Unmarshal(&config.MysqlDatabaseCredentials)
+	if err != nil {
+		return &config, fmt.Errorf("error trying to unmarshal the database credentials: %w", err)
+	}
+
+	err = viper.Unmarshal(&config.Timeouts)
+	if err != nil {
+		return &config, fmt.Errorf("error trying to unmarshal the timeouts: %w", err)
+	}
+
+	err = viper.Unmarshal(&config.API)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal API cfg: %v", err)
+	}
+
+	err = viper.Unmarshal(&config.Settings)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal API cfg: %v", err)
+	}
+
+	cfgProperties := []interface{}{
+		config.API,
+		config.MysqlDatabaseCredentials,
+		config.Settings,
+		config.Timeouts,
+	}
+
+	var errs errs.List
+	for _, cfgProperty := range cfgProperties {
+		err = validationutils.Validate(cfgProperty)
+		if err != nil {
+			errs.AddErr(err)
+		}
+	}
+
+	if errs.HasErrors() {
+		return nil, fmt.Errorf("cfg errors: %v", errs.Single())
+	}
+
+	return &config, nil
+}
+
+func New3() (*App, error) {
+	if os.Getenv(EnvAppDir) == "" {
+		return nil, fmt.Errorf(errEnvEmpty, EnvAppDir)
+	}
+
+	envDir := fmt.Sprintf("%s/%s", os.Getenv(EnvAppDir), envFile)
+	if strings.TrimSpace(envDir) != "" {
+		if _, err := os.Stat(envDir); err != nil {
+			return nil, fmt.Errorf("env file stat: %v", err)
+		}
+
+		if err := godotenv.Load(envDir); err != nil {
+			return nil, fmt.Errorf("load env file: %v", err)
+		}
+
+		fmt.Println("==== passed this file stat:", envDir)
+	}
+
+	app := App{}
+	if err := viper.Unmarshal(&app.MysqlDatabaseCredentials); err != nil {
+		return nil, fmt.Errorf("unmarshal mysql db credentials: %v", err)
+	}
+
+	// THEOVERWATCHTOOLS_TIMEOUT_DB_USER
+	a := os.Getenv("THEOVERWATCHTOOLS_DB_HOST")
+	b := os.Getenv("DB_USER")
+
+	fmt.Println("======== a:", a)
+	fmt.Println("======== b:", b)
+	fmt.Println("======== app.MysqlDatabaseCredentials:", strutil.GetAsJson(app.MysqlDatabaseCredentials))
+	fmt.Println("======== app.MysqlDatabaseCredentials:", strutil.GetAsJson(app.MysqlDatabaseCredentials))
+
+	return nil, nil
+}
+
+func NewOld() (*App, error) {
+	fmt.Println("=== hehehe")
 	var err error
 
 	config := App{}
-	for _, envVar := range os.Environ() {
+
+	// We should ditch this step, cause we only have our defaults, OR .env file...
+	// How about the system env file? Well, too many layers, let's make it simple for now.
+	/*for _, envVar := range os.Environ() {
 		split := strings.SplitN(envVar, "=", 2)
 		key := split[0]
 		val := split[1]
 		viper.Set(key, val)
-		fmt.Println("===== key, val:", key, val)
-	}
+	}*/
+	viper.AutomaticEnv()
 
 	err = viper.Unmarshal(&config.Settings)
 	if err != nil {
@@ -126,6 +257,8 @@ func New() (*App, error) {
 	if err != nil {
 		return &config, fmt.Errorf("error trying to unmarshal the timeouts: %w", err)
 	}
+
+	fmt.Println("==== config.Timeouts:", strutil.GetAsJson(config.Timeouts))
 
 	err = viper.Unmarshal(&config.API)
 	if err != nil {

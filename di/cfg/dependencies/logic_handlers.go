@@ -6,7 +6,6 @@ import (
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/marketinglogic"
-	"github.com/dembygenesis/local.tools/internal/logic_handlers/organizationlogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/userlogic"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlconn"
 	"github.com/dembygenesis/local.tools/internal/persistence/persistors/mysqlstore"
@@ -15,34 +14,14 @@ import (
 )
 
 const (
-	logicCategory     = "logic_category"
-	logicUser         = "logic_user"
-	logicAuth         = "logic_auth"
-	logicMarketing    = "logic_marketing"
-	logicOrganization = "logic_organization"
+	logicCategory  = "logic_category"
+	logicUser      = "logic_user"
+	logicAuth      = "logic_auth"
+	logicMarketing = "logic_marketing"
 )
 
 func GetLogicHandlers() []dingo.Def {
 	return []dingo.Def{
-		{
-			Name: logicOrganization,
-			Build: func(
-				cfg *config.App,
-				logger *logrus.Entry,
-				txProvider *mysqlconn.Provider,
-				store *mysqlstore.Repository,
-			) (*organizationlogic.Service, error) {
-				logic, err := organizationlogic.New(&organizationlogic.Config{
-					TxProvider: txProvider,
-					Logger:     logger,
-					Persistor:  store,
-				})
-				if err != nil {
-					return nil, fmt.Errorf("logicorganization: %v", err)
-				}
-				return logic, nil
-			},
-		},
 		{
 			Name: logicCategory,
 			Build: func(

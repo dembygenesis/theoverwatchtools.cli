@@ -48,13 +48,6 @@ func (a *Api) Routes() error {
 	groupCategory.Name("Delete Category").Delete("/:id", a.DeleteCategory)
 	groupCategory.Name("Restore Category").Patch("/:id", a.RestoreCategory)
 
-	// Organization
-	groupOrganization := v1.Group("/organization")
-	groupOrganization.Name("List Organizations").Get("", a.ListOrganizations)
-	groupOrganization.Name("Create Organization").Post("", a.CreateOrganization)
-	groupOrganization.Name("Delete Organization").Delete("/:id", a.DeleteOrganization)
-	groupOrganization.Name("Restore Organization").Patch("/:id", a.RestoreOrganization)
-
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {
 		return fmt.Errorf("load static routes: %w", err)
