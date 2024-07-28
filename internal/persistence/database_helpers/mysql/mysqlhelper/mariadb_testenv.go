@@ -103,7 +103,6 @@ func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB,
 }
 
 func testExistingMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
-	fmt.Println("===== haha")
 	db, err := NewDbClient(context.TODO(), &ClientOptions{
 		ConnString: cp.GetConnectionString(true),
 		Close:      false,
@@ -215,14 +214,9 @@ func TestGetMockMariaDB(t *testing.T) (*sqlx.DB, *mysqlutil.ConnectionSettings, 
 		Port:     port,
 	}
 
-	// Use apply test
 	if os.Getenv("THEOVERWATCHTOOLS_DB_USE_EXISTING_MARIADB") == "1" {
 		return testExistingMariaDB(t, cp)
 	}
-
-	// Old, and no longer used
-	/*NewMariaDBTestContainer(t, cp)
-	return applyMigration(t, cp)*/
 
 	return testSpawnMariaDB(t, cp)
 }
