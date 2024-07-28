@@ -57,10 +57,14 @@ jobs:
           TIMEOUT_DB_EXEC: "10s"
           TIMEOUT_DB_QUERY: "10s"
 
-          DB_HOST: "localhost"
-          DB_USER: "root"
-          DB_PASS: "secret"
-          DB_PORT: "3341"
-          DB_DATABASE: "theoverwatchtools"
+          # Update database stuff
+          THEOVERWATCHTOOLS_DB_HOST: "localhost"
+          THEOVERWATCHTOOLS_DB_USER: "root"
+          THEOVERWATCHTOOLS_DB_PASS: "secret"
+          THEOVERWATCHTOOLS_DB_PORT: "3341"
+          THEOVERWATCHTOOLS_DB_DATABASE: "theoverwatchtools"
+          THEOVERWATCHTOOLS_DB_USE_EXISTING_MARIADB: "1"
+          THEOVERWATCHTOOLS_DB_QUERY_TIMEOUT: "10s"
+          THEOVERWATCHTOOLS_DB_EXEC_TIMEOUT: "10s"
         run: |
           go test ./... -v
