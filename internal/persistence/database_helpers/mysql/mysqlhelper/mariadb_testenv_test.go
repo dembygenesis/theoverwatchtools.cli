@@ -56,10 +56,11 @@ func Test_New_MariaDB_Success(t *testing.T) {
 	}
 
 	mariaDbCtn, err := NewMariaDB(&cfg)
+	defer func() {
+		err = mariaDbCtn.Cleanup(context.Background())
+		require.NoError(t, err, "error cleaning up database")
+	}()
 	require.NoError(t, err, "error starting new maria db container")
-
-	err = mariaDbCtn.Cleanup(context.Background())
-	require.NoError(t, err, "error cleaning up database")
 }
 
 func Test_New_MariaDB_Fail_Validate(t *testing.T) {
