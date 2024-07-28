@@ -131,6 +131,8 @@ type (
 	// CategoryTypeSlice is an alias for a slice of pointers to CategoryType.
 	// This should almost always be used instead of []CategoryType.
 	CategoryTypeSlice []*CategoryType
+	// CategoryTypeHook is the signature for custom CategoryType hook methods
+	CategoryTypeHook func(context.Context, boil.ContextExecutor, *CategoryType) error
 
 	categoryTypeQuery struct {
 		*queries.Query
@@ -158,6 +160,206 @@ var (
 	_ = qmhelper.Where
 )
 
+var categoryTypeAfterSelectMu sync.Mutex
+var categoryTypeAfterSelectHooks []CategoryTypeHook
+
+var categoryTypeBeforeInsertMu sync.Mutex
+var categoryTypeBeforeInsertHooks []CategoryTypeHook
+var categoryTypeAfterInsertMu sync.Mutex
+var categoryTypeAfterInsertHooks []CategoryTypeHook
+
+var categoryTypeBeforeUpdateMu sync.Mutex
+var categoryTypeBeforeUpdateHooks []CategoryTypeHook
+var categoryTypeAfterUpdateMu sync.Mutex
+var categoryTypeAfterUpdateHooks []CategoryTypeHook
+
+var categoryTypeBeforeDeleteMu sync.Mutex
+var categoryTypeBeforeDeleteHooks []CategoryTypeHook
+var categoryTypeAfterDeleteMu sync.Mutex
+var categoryTypeAfterDeleteHooks []CategoryTypeHook
+
+var categoryTypeBeforeUpsertMu sync.Mutex
+var categoryTypeBeforeUpsertHooks []CategoryTypeHook
+var categoryTypeAfterUpsertMu sync.Mutex
+var categoryTypeAfterUpsertHooks []CategoryTypeHook
+
+// doAfterSelectHooks executes all "after Select" hooks.
+func (o *CategoryType) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	for _, hook := range categoryTypeAfterSelectHooks {
+		if err := hook(ctx, exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doBeforeInsertHooks executes all "before insert" hooks.
+func (o *CategoryType) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	for _, hook := range categoryTypeBeforeInsertHooks {
+		if err := hook(ctx, exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doAfterInsertHooks executes all "after Insert" hooks.
+func (o *CategoryType) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	for _, hook := range categoryTypeAfterInsertHooks {
+		if err := hook(ctx, exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doBeforeUpdateHooks executes all "before Update" hooks.
+func (o *CategoryType) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	for _, hook := range categoryTypeBeforeUpdateHooks {
+		if err := hook(ctx, exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doAfterUpdateHooks executes all "after Update" hooks.
+func (o *CategoryType) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	for _, hook := range categoryTypeAfterUpdateHooks {
+		if err := hook(ctx, exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doBeforeDeleteHooks executes all "before Delete" hooks.
+func (o *CategoryType) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	for _, hook := range categoryTypeBeforeDeleteHooks {
+		if err := hook(ctx, exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doAfterDeleteHooks executes all "after Delete" hooks.
+func (o *CategoryType) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	for _, hook := range categoryTypeAfterDeleteHooks {
+		if err := hook(ctx, exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doBeforeUpsertHooks executes all "before Upsert" hooks.
+func (o *CategoryType) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	for _, hook := range categoryTypeBeforeUpsertHooks {
+		if err := hook(ctx, exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doAfterUpsertHooks executes all "after Upsert" hooks.
+func (o *CategoryType) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	for _, hook := range categoryTypeAfterUpsertHooks {
+		if err := hook(ctx, exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// AddCategoryTypeHook registers your hook function for all future operations.
+func AddCategoryTypeHook(hookPoint boil.HookPoint, categoryTypeHook CategoryTypeHook) {
+	switch hookPoint {
+	case boil.AfterSelectHook:
+		categoryTypeAfterSelectMu.Lock()
+		categoryTypeAfterSelectHooks = append(categoryTypeAfterSelectHooks, categoryTypeHook)
+		categoryTypeAfterSelectMu.Unlock()
+	case boil.BeforeInsertHook:
+		categoryTypeBeforeInsertMu.Lock()
+		categoryTypeBeforeInsertHooks = append(categoryTypeBeforeInsertHooks, categoryTypeHook)
+		categoryTypeBeforeInsertMu.Unlock()
+	case boil.AfterInsertHook:
+		categoryTypeAfterInsertMu.Lock()
+		categoryTypeAfterInsertHooks = append(categoryTypeAfterInsertHooks, categoryTypeHook)
+		categoryTypeAfterInsertMu.Unlock()
+	case boil.BeforeUpdateHook:
+		categoryTypeBeforeUpdateMu.Lock()
+		categoryTypeBeforeUpdateHooks = append(categoryTypeBeforeUpdateHooks, categoryTypeHook)
+		categoryTypeBeforeUpdateMu.Unlock()
+	case boil.AfterUpdateHook:
+		categoryTypeAfterUpdateMu.Lock()
+		categoryTypeAfterUpdateHooks = append(categoryTypeAfterUpdateHooks, categoryTypeHook)
+		categoryTypeAfterUpdateMu.Unlock()
+	case boil.BeforeDeleteHook:
+		categoryTypeBeforeDeleteMu.Lock()
+		categoryTypeBeforeDeleteHooks = append(categoryTypeBeforeDeleteHooks, categoryTypeHook)
+		categoryTypeBeforeDeleteMu.Unlock()
+	case boil.AfterDeleteHook:
+		categoryTypeAfterDeleteMu.Lock()
+		categoryTypeAfterDeleteHooks = append(categoryTypeAfterDeleteHooks, categoryTypeHook)
+		categoryTypeAfterDeleteMu.Unlock()
+	case boil.BeforeUpsertHook:
+		categoryTypeBeforeUpsertMu.Lock()
+		categoryTypeBeforeUpsertHooks = append(categoryTypeBeforeUpsertHooks, categoryTypeHook)
+		categoryTypeBeforeUpsertMu.Unlock()
+	case boil.AfterUpsertHook:
+		categoryTypeAfterUpsertMu.Lock()
+		categoryTypeAfterUpsertHooks = append(categoryTypeAfterUpsertHooks, categoryTypeHook)
+		categoryTypeAfterUpsertMu.Unlock()
+	}
+}
+
 // One returns a single categoryType record from the query.
 func (q categoryTypeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*CategoryType, error) {
 	o := &CategoryType{}
@@ -172,6 +374,10 @@ func (q categoryTypeQuery) One(ctx context.Context, exec boil.ContextExecutor) (
 		return nil, errors.Wrap(err, "mysqlmodel: failed to execute a one query for category_type")
 	}
 
+	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
+		return o, err
+	}
+
 	return o, nil
 }
 
@@ -182,6 +388,14 @@ func (q categoryTypeQuery) All(ctx context.Context, exec boil.ContextExecutor) (
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "mysqlmodel: failed to assign all query results to CategoryType slice")
+	}
+
+	if len(categoryTypeAfterSelectHooks) != 0 {
+		for _, obj := range o {
+			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
+				return o, err
+			}
+		}
 	}
 
 	return o, nil
@@ -311,6 +525,13 @@ func (categoryTypeL) LoadCategoryTypeRefCategories(ctx context.Context, e boil.C
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for category")
 	}
 
+	if len(categoryAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
 	if singular {
 		object.R.CategoryTypeRefCategories = resultSlice
 		for _, foreign := range resultSlice {
@@ -425,6 +646,10 @@ func FindCategoryType(ctx context.Context, exec boil.ContextExecutor, iD int, se
 		return nil, errors.Wrap(err, "mysqlmodel: unable to select from category_type")
 	}
 
+	if err = categoryTypeObj.doAfterSelectHooks(ctx, exec); err != nil {
+		return categoryTypeObj, err
+	}
+
 	return categoryTypeObj, nil
 }
 
@@ -436,6 +661,10 @@ func (o *CategoryType) Insert(ctx context.Context, exec boil.ContextExecutor, co
 	}
 
 	var err error
+
+	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
+		return err
+	}
 
 	nzDefaults := queries.NonZeroDefaultSet(categoryTypeColumnsWithDefault, o)
 
@@ -527,7 +756,7 @@ CacheNoHooks:
 		categoryTypeInsertCacheMut.Unlock()
 	}
 
-	return nil
+	return o.doAfterInsertHooks(ctx, exec)
 }
 
 // Update uses an executor to update the CategoryType.
@@ -535,6 +764,9 @@ CacheNoHooks:
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *CategoryType) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
+	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
+		return 0, err
+	}
 	key := makeCacheKey(columns, nil)
 	categoryTypeUpdateCacheMut.RLock()
 	cache, cached := categoryTypeUpdateCache[key]
@@ -587,7 +819,7 @@ func (o *CategoryType) Update(ctx context.Context, exec boil.ContextExecutor, co
 		categoryTypeUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, nil
+	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -665,6 +897,10 @@ var mySQLCategoryTypeUniqueColumns = []string{
 func (o *CategoryType) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("mysqlmodel: no category_type provided for upsert")
+	}
+
+	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
+		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(categoryTypeColumnsWithDefault, o)
@@ -799,7 +1035,7 @@ CacheNoHooks:
 		categoryTypeUpsertCacheMut.Unlock()
 	}
 
-	return nil
+	return o.doAfterUpsertHooks(ctx, exec)
 }
 
 // Delete deletes a single CategoryType record with an executor.
@@ -807,6 +1043,10 @@ CacheNoHooks:
 func (o *CategoryType) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("mysqlmodel: no CategoryType provided for delete")
+	}
+
+	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
+		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), categoryTypePrimaryKeyMapping)
@@ -825,6 +1065,10 @@ func (o *CategoryType) Delete(ctx context.Context, exec boil.ContextExecutor) (i
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "mysqlmodel: failed to get rows affected by delete for category_type")
+	}
+
+	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
+		return 0, err
 	}
 
 	return rowsAff, nil
@@ -857,6 +1101,14 @@ func (o CategoryTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 		return 0, nil
 	}
 
+	if len(categoryTypeBeforeDeleteHooks) != 0 {
+		for _, obj := range o {
+			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
+				return 0, err
+			}
+		}
+	}
+
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), categoryTypePrimaryKeyMapping)
@@ -879,6 +1131,14 @@ func (o CategoryTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "mysqlmodel: failed to get rows affected by deleteall for category_type")
+	}
+
+	if len(categoryTypeAfterDeleteHooks) != 0 {
+		for _, obj := range o {
+			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
+				return 0, err
+			}
+		}
 	}
 
 	return rowsAff, nil

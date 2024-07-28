@@ -10,6 +10,134 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
+//// GetUsers attempts to fetch the users
+//// entries using the given transaction layer.
+//func (m *Repository) GetUsers(ctx context.Context, tx persistence.TransactionHandler, filters *model.UserFilters) (*model.PaginatedUsers, error) {
+//	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+//	if err != nil {
+//		return nil, fmt.Errorf("extract context executor: %v", err)
+//	}
+//
+//	res, err := m.getUsers(ctx, ctxExec, filters)
+//	if err != nil {
+//		return nil, fmt.Errorf("read organizations: %v", err)
+//	}
+//
+//	return res, nil
+//}
+//
+//// getUsers performs the actual sql-queries
+//// that fetches organization entries.
+//func (m *Repository) getUsers(
+//	ctx context.Context,
+//	ctxExec boil.ContextExecutor,
+//	filters *model.UserFilters,
+//) (*model.PaginatedUsers, error) {
+//	var (
+//		paginated  model.PaginatedUsers
+//		pagination = model.NewPagination()
+//		res        = make([]model.User, 0)
+//		err        error
+//	)
+//
+//	ctx, cancel := context.WithTimeout(ctx, m.cfg.QueryTimeouts.Query)
+//	defer cancel()
+//
+//	queryMods := []qm.QueryMod{
+//		qm.InnerJoin(
+//			fmt.Sprintf(
+//				"%s ON %s.%s = %s.%s",
+//				mysqlmodel.TableNames.OrganizationType,
+//				mysqlmodel.TableNames.OrganizationType,
+//				mysqlmodel.OrganizationTypeColumns.ID,
+//				mysqlmodel.TableNames.Organization,
+//				mysqlmodel.OrganizationColumns.OrganizationTypeRefID,
+//			),
+//		),
+//		qm.Select(
+//			fmt.Sprintf("%s.%s AS %s",
+//				mysqlmodel.TableNames.Organization,
+//				mysqlmodel.OrganizationColumns.ID,
+//				mysqlmodel.OrganizationColumns.ID,
+//			),
+//			fmt.Sprintf("%s.%s AS %s",
+//				mysqlmodel.TableNames.Organization,
+//				mysqlmodel.OrganizationColumns.Name,
+//				mysqlmodel.OrganizationColumns.Name,
+//			),
+//			fmt.Sprintf("%s.%s AS %s",
+//				mysqlmodel.TableNames.Organization,
+//				mysqlmodel.OrganizationColumns.IsActive,
+//				mysqlmodel.OrganizationColumns.IsActive,
+//			),
+//			fmt.Sprintf("%s.%s AS %s",
+//				mysqlmodel.TableNames.OrganizationType,
+//				mysqlmodel.OrganizationTypeColumns.ID,
+//				mysqlmodel.OrganizationColumns.OrganizationTypeRefID,
+//			),
+//			fmt.Sprintf("%s.%s AS %s",
+//				mysqlmodel.TableNames.OrganizationType,
+//				mysqlmodel.OrganizationTypeColumns.Name,
+//				"organization_type",
+//			),
+//		),
+//	}
+//
+//	if filters != nil {
+//		if len(filters.IdsIn) > 0 {
+//			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.IdsIn))
+//		}
+//
+//		if len(filters.UserTypeIdIn) > 0 {
+//			queryMods = append(queryMods, mysqlmodel.OrganizationTypeWhere.ID.IN(filters.OrganizationTypeIdIn))
+//		}
+//
+//		if len(filters.UserTypeNameIn) > 0 {
+//			queryMods = append(queryMods, mysqlmodel.OrganizationTypeWhere.Name.IN(filters.OrganizationTypeNameIn))
+//		}
+//
+//		if len(filters.UserIsActive) > 0 {
+//			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.IsActive.IN(filters.OrganizationIsActive))
+//		}
+//
+//		if len(filters.UserNameIn) > 0 {
+//			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.Name.IN(filters.OrganizationNameIn))
+//		}
+//	}
+//
+//	q := mysqlmodel.Organizations(queryMods...)
+//	totalCount, err := q.Count(ctx, ctxExec)
+//	if err != nil {
+//		return nil, fmt.Errorf("get organizations count: %v", err)
+//	}
+//
+//	page := pagination.Page
+//	maxRows := pagination.MaxRows
+//	if filters != nil {
+//		if filters.Page.Valid {
+//			page = filters.Page.Int
+//		}
+//		if filters.MaxRows.Valid {
+//			maxRows = filters.MaxRows.Int
+//		}
+//	}
+//
+//	pagination.SetQueryBoundaries(page, maxRows, int(totalCount))
+//
+//	queryMods = append(queryMods, qm.Limit(pagination.MaxRows), qm.Offset(pagination.Offset))
+//	q = mysqlmodel.Organizations(queryMods...)
+//
+//	if err = q.Bind(ctx, ctxExec, &res); err != nil {
+//		return nil, fmt.Errorf("get organizations: %v", err)
+//	}
+//
+//	pagination.RowCount = len(res)
+//	paginated.Organizations = res
+//	paginated.Pagination = pagination
+//
+//	return &paginated, nil
+//}
+
 func (m *Repository) UpdateUser(
 	ctx context.Context,
 	tx persistence.TransactionHandler,

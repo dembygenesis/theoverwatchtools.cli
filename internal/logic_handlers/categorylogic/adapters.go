@@ -15,4 +15,6 @@ type persistor interface {
 	GetCategoryTypeById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.CategoryType, error)
 	GetCategoryByName(ctx context.Context, tx persistence.TransactionHandler, name string) (*model.Category, error)
 	UpdateCategory(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateCategory) (*model.Category, error)
+	DeleteCategory(ctx context.Context, tx persistence.TransactionHandler, id int) error
+	RestoreCategory(ctx context.Context, tx persistence.TransactionHandler, id int) error
 }

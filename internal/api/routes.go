@@ -45,6 +45,15 @@ func (a *Api) Routes() error {
 	groupCategory.Name("List Categories").Get("", a.ListCategories)
 	groupCategory.Name("Create Category").Post("", a.CreateCategory)
 	groupCategory.Name("Update Category").Patch("", a.UpdateCategory)
+	groupCategory.Name("Delete Category").Delete("/:id", a.DeleteCategory)
+	groupCategory.Name("Restore Category").Patch("/:id", a.RestoreCategory)
+
+	// Organization
+	groupOrganization := v1.Group("/organization")
+	groupOrganization.Name("List Organizations").Get("", a.ListOrganizations)
+	groupOrganization.Name("Create Organization").Post("", a.CreateOrganization)
+	groupOrganization.Name("Delete Organization").Delete("/:id", a.DeleteOrganization)
+	groupOrganization.Name("Restore Organization").Patch("/:id", a.RestoreOrganization)
 
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {

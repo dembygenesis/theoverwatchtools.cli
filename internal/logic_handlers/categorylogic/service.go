@@ -7,6 +7,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -117,6 +118,7 @@ func (i *Service) ListCategories(
 		})
 	}
 
+	fmt.Println("the filter at the service --- ", strutil.GetAsJson(filter))
 	paginated, err := i.cfg.Persistor.GetCategories(ctx, db, filter)
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
@@ -128,6 +130,7 @@ func (i *Service) ListCategories(
 	return paginated, nil
 }
 
+// UpdateCategory updates an existing category.
 func (i *Service) UpdateCategory(ctx context.Context, params *model.UpdateCategory) (*model.Category, error) {
 	tx, err := i.cfg.TxProvider.Tx(ctx)
 	if err != nil {
@@ -154,4 +157,63 @@ func (i *Service) UpdateCategory(ctx context.Context, params *model.UpdateCatego
 	}
 
 	return category, nil
+}
+
+// DeleteCategory deletes a category by ID.
+func (s *Service) DeleteCategory(ctx context.Context, params *model.DeleteCategory) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	fmt.Println("the params id ---- ", params.ID)
+	err = s.cfg.Persistor.DeleteCategory(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("delete category: %v", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %v", err),
+		})
+	}
+
+	return nil
+}
+
+// RestoreCategory restores a deleted category by ID.
+func (s *Service) RestoreCategory(ctx context.Context, params *model.RestoreCategory) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %v", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	err = s.cfg.Persistor.RestoreCategory(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("restore category: %v", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %v", err),
+		})
+	}
+
+	return nil
 }

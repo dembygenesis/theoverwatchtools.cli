@@ -2,6 +2,7 @@ package mysqlstore
 
 import (
 	"context"
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/model/modelhelpers"
@@ -10,6 +11,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/persistence/persistors/mysqlstore/testhelper"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -96,6 +98,9 @@ func getTestCasesGetCategories() []testCaseGetCategories {
 
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCategories, err error) {
+
+				fmt.Println("Number of categories retrieved ---- ", strutil.GetAsJson(paginated.Categories))
+
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.Categories, "unexpected nil categories")
@@ -197,6 +202,8 @@ func Test_GetCategories(t *testing.T) {
 			txHandlerDb, err := txHandler.Db(testCtx)
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+			fmt.Println("the cat filters --- ", strutil.GetAsJson(testCase.filter))
 
 			testCase.mutations(t, db)
 			paginated, err := m.GetCategories(testCtx, txHandlerDb, testCase.filter)
