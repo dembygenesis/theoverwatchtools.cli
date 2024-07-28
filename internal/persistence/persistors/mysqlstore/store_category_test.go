@@ -183,7 +183,6 @@ func Test_GetCategories(t *testing.T) {
 			require.NotNil(t, testCase.mutations, "unexpected nil mutations")
 			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
 
-			defer cleanup()
 			cfg := &Config{
 				Logger:        testLogger,
 				QueryTimeouts: testQueryTimeouts,
