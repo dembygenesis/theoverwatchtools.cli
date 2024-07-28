@@ -2,6 +2,7 @@ package mysqlhelper
 
 import (
 	"context"
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -56,10 +57,13 @@ func Test_New_MariaDB_Success(t *testing.T) {
 	}
 
 	mariaDbCtn, err := NewMariaDB(&cfg)
+	defer func() {
+		err = mariaDbCtn.Cleanup(context.Background())
+		if err != nil {
+			fmt.Println("error cleaning up database", err)
+		}
+	}()
 	require.NoError(t, err, "error starting new maria db container")
-
-	err = mariaDbCtn.Cleanup(context.Background())
-	require.NoError(t, err, "error cleaning up database")
 }
 
 func Test_New_MariaDB_Fail_Validate(t *testing.T) {
