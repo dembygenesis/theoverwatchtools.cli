@@ -4,13 +4,25 @@
 package mysqlmodel
 
 var TableNames = struct {
+	CapturePage      string
+	CapturePageSet   string
 	Category         string
 	CategoryType     string
+	ClickTracker     string
+	ClickTrackerLog  string
+	ClickTrackerSet  string
+	Organization     string
 	SchemaMigrations string
 	User             string
 }{
+	CapturePage:      "capture_page",
+	CapturePageSet:   "capture_page_set",
 	Category:         "category",
 	CategoryType:     "category_type",
+	ClickTracker:     "click_tracker",
+	ClickTrackerLog:  "click_tracker_log",
+	ClickTrackerSet:  "click_tracker_set",
+	Organization:     "organization",
 	SchemaMigrations: "schema_migrations",
 	User:             "user",
 }
