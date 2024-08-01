@@ -5,12 +5,8 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
 	"github.com/dembygenesis/local.tools/internal/utilities/sliceutil"
-	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
-	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
-	"os"
-	"strings"
 	"time"
 )
 
@@ -85,16 +81,12 @@ type App struct {
 func New() (*App, error) {
 	viper.Reset()
 
-	fmt.Println("=== flip flip")
-
 	// Set env prefix
 	viper.SetEnvPrefix("THEOVERWATCHTOOLS")
 
 	// Set app details
 	viper.SetDefault("APP_DIR", "/app")
 	viper.SetDefault("PRODUCTION", false)
-
-	// THEOVERWATCHTOOLS
 
 	// Set database defaults
 	viper.SetDefault("DB_HOST", "localhost")
@@ -151,122 +143,6 @@ func New() (*App, error) {
 		config.MysqlDatabaseCredentials,
 		config.Settings,
 		config.Timeouts,
-	}
-
-	var errs errs.List
-	for _, cfgProperty := range cfgProperties {
-		err = validationutils.Validate(cfgProperty)
-		if err != nil {
-			errs.AddErr(err)
-		}
-	}
-
-	if errs.HasErrors() {
-		return nil, fmt.Errorf("cfg errors: %v", errs.Single())
-	}
-
-	return &config, nil
-}
-
-func New3() (*App, error) {
-	if os.Getenv(EnvAppDir) == "" {
-		return nil, fmt.Errorf(errEnvEmpty, EnvAppDir)
-	}
-
-	envDir := fmt.Sprintf("%s/%s", os.Getenv(EnvAppDir), envFile)
-	if strings.TrimSpace(envDir) != "" {
-		if _, err := os.Stat(envDir); err != nil {
-			return nil, fmt.Errorf("env file stat: %v", err)
-		}
-
-		if err := godotenv.Load(envDir); err != nil {
-			return nil, fmt.Errorf("load env file: %v", err)
-		}
-
-		fmt.Println("==== passed this file stat:", envDir)
-	}
-
-	app := App{}
-	if err := viper.Unmarshal(&app.MysqlDatabaseCredentials); err != nil {
-		return nil, fmt.Errorf("unmarshal mysql db credentials: %v", err)
-	}
-
-	// THEOVERWATCHTOOLS_TIMEOUT_DB_USER
-	a := os.Getenv("THEOVERWATCHTOOLS_DB_HOST")
-	b := os.Getenv("DB_USER")
-
-	fmt.Println("======== a:", a)
-	fmt.Println("======== b:", b)
-	fmt.Println("======== app.MysqlDatabaseCredentials:", strutil.GetAsJson(app.MysqlDatabaseCredentials))
-	fmt.Println("======== app.MysqlDatabaseCredentials:", strutil.GetAsJson(app.MysqlDatabaseCredentials))
-
-	return nil, nil
-}
-
-func NewOld() (*App, error) {
-	fmt.Println("=== hehehe")
-	var err error
-
-	config := App{}
-
-	// We should ditch this step, cause we only have our defaults, OR .env file...
-	// How about the system env file? Well, too many layers, let's make it simple for now.
-	/*for _, envVar := range os.Environ() {
-		split := strings.SplitN(envVar, "=", 2)
-		key := split[0]
-		val := split[1]
-		viper.Set(key, val)
-	}*/
-	viper.AutomaticEnv()
-
-	err = viper.Unmarshal(&config.Settings)
-	if err != nil {
-		return &config, fmt.Errorf("error trying to unmarshal the database credentials: %w", err)
-	}
-
-	if !config.Settings.IsProduction {
-		envFile := fmt.Sprintf("%s/.env", config.Settings.AppDir)
-		_, err = os.Stat(envFile)
-		if err != nil {
-			return nil, fmt.Errorf("file stat: %v", err)
-		}
-
-		viper.SetConfigFile(envFile)
-
-		err = viper.ReadInConfig()
-		if err != nil {
-			return nil, fmt.Errorf("file state: %v", err)
-		}
-		viper.AutomaticEnv()
-	}
-
-	if err = config.CopyToClipboard.ParseExclusions(genericExclusions); err != nil {
-		return &config, fmt.Errorf("unmarshal copy to clipboard: %v", err)
-	}
-
-	if err = config.FolderAToFolderB.ParseExclusions(genericExclusions); err != nil {
-		return &config, fmt.Errorf("unmarshal transfer files: %v", err)
-	}
-
-	err = viper.Unmarshal(&config.MysqlDatabaseCredentials)
-	if err != nil {
-		return &config, fmt.Errorf("error trying to unmarshal the database credentials: %w", err)
-	}
-
-	err = viper.Unmarshal(&config.Timeouts)
-	if err != nil {
-		return &config, fmt.Errorf("error trying to unmarshal the timeouts: %w", err)
-	}
-
-	fmt.Println("==== config.Timeouts:", strutil.GetAsJson(config.Timeouts))
-
-	err = viper.Unmarshal(&config.API)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshal API cfg: %v", err)
-	}
-
-	cfgProperties := []interface{}{
-		config.API,
 	}
 
 	var errs errs.List

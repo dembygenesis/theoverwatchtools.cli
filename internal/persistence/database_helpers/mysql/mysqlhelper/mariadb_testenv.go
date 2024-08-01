@@ -65,7 +65,6 @@ type CleanFn func(ignoreErrors ...bool)
 // The main use-case for this function is to dynamically
 // create an integration testing sandbox for MariaDB.
 func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
-	fmt.Println("====== testSpawnMariaDB ======")
 	m.Lock()
 	defer m.Unlock()
 
