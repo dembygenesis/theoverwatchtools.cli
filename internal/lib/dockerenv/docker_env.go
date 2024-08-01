@@ -67,6 +67,7 @@ func (dm *DockerEnv) Cleanup(ctx context.Context) error {
 // UpsertContainer upserts a new container, be careful with this function
 // because it will remove other running instances with colliding port, OR names.
 func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string, error) {
+	fmt.Println("========= 1")
 	m.Lock()
 	defer m.Unlock()
 
@@ -75,9 +76,12 @@ func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string
 		return "", err
 	}
 
+	fmt.Println("========= 2")
+
 	targetHostPort := strconv.Itoa(dm.cfg.HostPort)
 
 	for _, ctn := range allContainers {
+		fmt.Println("========= 2.5")
 		hasPortBindingCollision := checkPortBindingCollision(ctn, targetHostPort)
 		hasContainerNameCollision := checkNameCollision(ctn, dm.cfg.Name)
 		isStopped := ctn.State == "exited" || ctn.State == "created"
@@ -104,6 +108,7 @@ func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string
 		}
 	}
 
+	fmt.Println("========= 4")
 	return dm.createContainer(ctx)
 }
 

@@ -29,6 +29,7 @@ type User struct {
 	Lastname          string      `boil:"lastname" json:"lastname" toml:"lastname" yaml:"lastname"`
 	Email             string      `boil:"email" json:"email" toml:"email" yaml:"email"`
 	Password          string      `boil:"password" json:"password" toml:"password" yaml:"password"`
+	OrganizationRefID null.Int    `boil:"organization_ref_id" json:"organization_ref_id,omitempty" toml:"organization_ref_id" yaml:"organization_ref_id,omitempty"`
 	CategoryTypeRefID int         `boil:"category_type_ref_id" json:"category_type_ref_id" toml:"category_type_ref_id" yaml:"category_type_ref_id"`
 	CreatedBy         null.Int    `boil:"created_by" json:"created_by,omitempty" toml:"created_by" yaml:"created_by,omitempty"`
 	LastUpdatedBy     null.Int    `boil:"last_updated_by" json:"last_updated_by,omitempty" toml:"last_updated_by" yaml:"last_updated_by,omitempty"`
@@ -50,6 +51,7 @@ var UserColumns = struct {
 	Lastname          string
 	Email             string
 	Password          string
+	OrganizationRefID string
 	CategoryTypeRefID string
 	CreatedBy         string
 	LastUpdatedBy     string
@@ -66,6 +68,7 @@ var UserColumns = struct {
 	Lastname:          "lastname",
 	Email:             "email",
 	Password:          "password",
+	OrganizationRefID: "organization_ref_id",
 	CategoryTypeRefID: "category_type_ref_id",
 	CreatedBy:         "created_by",
 	LastUpdatedBy:     "last_updated_by",
@@ -84,6 +87,7 @@ var UserTableColumns = struct {
 	Lastname          string
 	Email             string
 	Password          string
+	OrganizationRefID string
 	CategoryTypeRefID string
 	CreatedBy         string
 	LastUpdatedBy     string
@@ -100,6 +104,7 @@ var UserTableColumns = struct {
 	Lastname:          "user.lastname",
 	Email:             "user.email",
 	Password:          "user.password",
+	OrganizationRefID: "user.organization_ref_id",
 	CategoryTypeRefID: "user.category_type_ref_id",
 	CreatedBy:         "user.created_by",
 	LastUpdatedBy:     "user.last_updated_by",
@@ -114,77 +119,13 @@ var UserTableColumns = struct {
 
 // Generated where
 
-type whereHelpertime_Time struct{ field string }
-
-func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.EQ, x)
-}
-func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.NEQ, x)
-}
-func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-type whereHelpernull_String struct{ field string }
-
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" LIKE ?", x)
-}
-func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT LIKE ?", x)
-}
-func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 var UserWhere = struct {
 	ID                whereHelperint
 	Firstname         whereHelperstring
 	Lastname          whereHelperstring
 	Email             whereHelperstring
 	Password          whereHelperstring
+	OrganizationRefID whereHelpernull_Int
 	CategoryTypeRefID whereHelperint
 	CreatedBy         whereHelpernull_Int
 	LastUpdatedBy     whereHelpernull_Int
@@ -201,6 +142,7 @@ var UserWhere = struct {
 	Lastname:          whereHelperstring{field: "`user`.`lastname`"},
 	Email:             whereHelperstring{field: "`user`.`email`"},
 	Password:          whereHelperstring{field: "`user`.`password`"},
+	OrganizationRefID: whereHelpernull_Int{field: "`user`.`organization_ref_id`"},
 	CategoryTypeRefID: whereHelperint{field: "`user`.`category_type_ref_id`"},
 	CreatedBy:         whereHelpernull_Int{field: "`user`.`created_by`"},
 	LastUpdatedBy:     whereHelpernull_Int{field: "`user`.`last_updated_by`"},
@@ -215,26 +157,62 @@ var UserWhere = struct {
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
-	CategoryTypeRef    string
-	CreatedByUser      string
-	LastUpdatedByUser  string
-	CreatedByUsers     string
-	LastUpdatedByUsers string
+	CategoryTypeRef               string
+	CreatedByUser                 string
+	LastUpdatedByUser             string
+	OrganizationRef               string
+	CreatedByCapturePages         string
+	LastUpdatedByCapturePages     string
+	CreatedByCapturePageSets      string
+	LastUpdatedByCapturePageSets  string
+	CreatedByClickTrackers        string
+	LastUpdatedByClickTrackers    string
+	CreatedByClickTrackerLogs     string
+	LastUpdatedByClickTrackerLogs string
+	CreatedByClickTrackerSets     string
+	LastUpdatedByClickTrackerSets string
+	CreatedByOrganizations        string
+	CreatedByUsers                string
+	LastUpdatedByUsers            string
 }{
-	CategoryTypeRef:    "CategoryTypeRef",
-	CreatedByUser:      "CreatedByUser",
-	LastUpdatedByUser:  "LastUpdatedByUser",
-	CreatedByUsers:     "CreatedByUsers",
-	LastUpdatedByUsers: "LastUpdatedByUsers",
+	CategoryTypeRef:               "CategoryTypeRef",
+	CreatedByUser:                 "CreatedByUser",
+	LastUpdatedByUser:             "LastUpdatedByUser",
+	OrganizationRef:               "OrganizationRef",
+	CreatedByCapturePages:         "CreatedByCapturePages",
+	LastUpdatedByCapturePages:     "LastUpdatedByCapturePages",
+	CreatedByCapturePageSets:      "CreatedByCapturePageSets",
+	LastUpdatedByCapturePageSets:  "LastUpdatedByCapturePageSets",
+	CreatedByClickTrackers:        "CreatedByClickTrackers",
+	LastUpdatedByClickTrackers:    "LastUpdatedByClickTrackers",
+	CreatedByClickTrackerLogs:     "CreatedByClickTrackerLogs",
+	LastUpdatedByClickTrackerLogs: "LastUpdatedByClickTrackerLogs",
+	CreatedByClickTrackerSets:     "CreatedByClickTrackerSets",
+	LastUpdatedByClickTrackerSets: "LastUpdatedByClickTrackerSets",
+	CreatedByOrganizations:        "CreatedByOrganizations",
+	CreatedByUsers:                "CreatedByUsers",
+	LastUpdatedByUsers:            "LastUpdatedByUsers",
 }
 
 // userR is where relationships are stored.
 type userR struct {
-	CategoryTypeRef    *Category `boil:"CategoryTypeRef" json:"CategoryTypeRef" toml:"CategoryTypeRef" yaml:"CategoryTypeRef"`
-	CreatedByUser      *User     `boil:"CreatedByUser" json:"CreatedByUser" toml:"CreatedByUser" yaml:"CreatedByUser"`
-	LastUpdatedByUser  *User     `boil:"LastUpdatedByUser" json:"LastUpdatedByUser" toml:"LastUpdatedByUser" yaml:"LastUpdatedByUser"`
-	CreatedByUsers     UserSlice `boil:"CreatedByUsers" json:"CreatedByUsers" toml:"CreatedByUsers" yaml:"CreatedByUsers"`
-	LastUpdatedByUsers UserSlice `boil:"LastUpdatedByUsers" json:"LastUpdatedByUsers" toml:"LastUpdatedByUsers" yaml:"LastUpdatedByUsers"`
+	CategoryTypeRef               *Category            `boil:"CategoryTypeRef" json:"CategoryTypeRef" toml:"CategoryTypeRef" yaml:"CategoryTypeRef"`
+	CreatedByUser                 *User                `boil:"CreatedByUser" json:"CreatedByUser" toml:"CreatedByUser" yaml:"CreatedByUser"`
+	LastUpdatedByUser             *User                `boil:"LastUpdatedByUser" json:"LastUpdatedByUser" toml:"LastUpdatedByUser" yaml:"LastUpdatedByUser"`
+	OrganizationRef               *Organization        `boil:"OrganizationRef" json:"OrganizationRef" toml:"OrganizationRef" yaml:"OrganizationRef"`
+	CreatedByCapturePages         CapturePageSlice     `boil:"CreatedByCapturePages" json:"CreatedByCapturePages" toml:"CreatedByCapturePages" yaml:"CreatedByCapturePages"`
+	LastUpdatedByCapturePages     CapturePageSlice     `boil:"LastUpdatedByCapturePages" json:"LastUpdatedByCapturePages" toml:"LastUpdatedByCapturePages" yaml:"LastUpdatedByCapturePages"`
+	CreatedByCapturePageSets      CapturePageSetSlice  `boil:"CreatedByCapturePageSets" json:"CreatedByCapturePageSets" toml:"CreatedByCapturePageSets" yaml:"CreatedByCapturePageSets"`
+	LastUpdatedByCapturePageSets  CapturePageSetSlice  `boil:"LastUpdatedByCapturePageSets" json:"LastUpdatedByCapturePageSets" toml:"LastUpdatedByCapturePageSets" yaml:"LastUpdatedByCapturePageSets"`
+	CreatedByClickTrackers        ClickTrackerSlice    `boil:"CreatedByClickTrackers" json:"CreatedByClickTrackers" toml:"CreatedByClickTrackers" yaml:"CreatedByClickTrackers"`
+	LastUpdatedByClickTrackers    ClickTrackerSlice    `boil:"LastUpdatedByClickTrackers" json:"LastUpdatedByClickTrackers" toml:"LastUpdatedByClickTrackers" yaml:"LastUpdatedByClickTrackers"`
+	CreatedByClickTrackerLogs     ClickTrackerLogSlice `boil:"CreatedByClickTrackerLogs" json:"CreatedByClickTrackerLogs" toml:"CreatedByClickTrackerLogs" yaml:"CreatedByClickTrackerLogs"`
+	LastUpdatedByClickTrackerLogs ClickTrackerLogSlice `boil:"LastUpdatedByClickTrackerLogs" json:"LastUpdatedByClickTrackerLogs" toml:"LastUpdatedByClickTrackerLogs" yaml:"LastUpdatedByClickTrackerLogs"`
+	CreatedByClickTrackerSets     ClickTrackerSetSlice `boil:"CreatedByClickTrackerSets" json:"CreatedByClickTrackerSets" toml:"CreatedByClickTrackerSets" yaml:"CreatedByClickTrackerSets"`
+	LastUpdatedByClickTrackerSets ClickTrackerSetSlice `boil:"LastUpdatedByClickTrackerSets" json:"LastUpdatedByClickTrackerSets" toml:"LastUpdatedByClickTrackerSets" yaml:"LastUpdatedByClickTrackerSets"`
+	CreatedByOrganizations        OrganizationSlice    `boil:"CreatedByOrganizations" json:"CreatedByOrganizations" toml:"CreatedByOrganizations" yaml:"CreatedByOrganizations"`
+	CreatedByUsers                UserSlice            `boil:"CreatedByUsers" json:"CreatedByUsers" toml:"CreatedByUsers" yaml:"CreatedByUsers"`
+	LastUpdatedByUsers            UserSlice            `boil:"LastUpdatedByUsers" json:"LastUpdatedByUsers" toml:"LastUpdatedByUsers" yaml:"LastUpdatedByUsers"`
 }
 
 // NewStruct creates a new relationship struct
@@ -263,6 +241,90 @@ func (r *userR) GetLastUpdatedByUser() *User {
 	return r.LastUpdatedByUser
 }
 
+func (r *userR) GetOrganizationRef() *Organization {
+	if r == nil {
+		return nil
+	}
+	return r.OrganizationRef
+}
+
+func (r *userR) GetCreatedByCapturePages() CapturePageSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CreatedByCapturePages
+}
+
+func (r *userR) GetLastUpdatedByCapturePages() CapturePageSlice {
+	if r == nil {
+		return nil
+	}
+	return r.LastUpdatedByCapturePages
+}
+
+func (r *userR) GetCreatedByCapturePageSets() CapturePageSetSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CreatedByCapturePageSets
+}
+
+func (r *userR) GetLastUpdatedByCapturePageSets() CapturePageSetSlice {
+	if r == nil {
+		return nil
+	}
+	return r.LastUpdatedByCapturePageSets
+}
+
+func (r *userR) GetCreatedByClickTrackers() ClickTrackerSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CreatedByClickTrackers
+}
+
+func (r *userR) GetLastUpdatedByClickTrackers() ClickTrackerSlice {
+	if r == nil {
+		return nil
+	}
+	return r.LastUpdatedByClickTrackers
+}
+
+func (r *userR) GetCreatedByClickTrackerLogs() ClickTrackerLogSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CreatedByClickTrackerLogs
+}
+
+func (r *userR) GetLastUpdatedByClickTrackerLogs() ClickTrackerLogSlice {
+	if r == nil {
+		return nil
+	}
+	return r.LastUpdatedByClickTrackerLogs
+}
+
+func (r *userR) GetCreatedByClickTrackerSets() ClickTrackerSetSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CreatedByClickTrackerSets
+}
+
+func (r *userR) GetLastUpdatedByClickTrackerSets() ClickTrackerSetSlice {
+	if r == nil {
+		return nil
+	}
+	return r.LastUpdatedByClickTrackerSets
+}
+
+func (r *userR) GetCreatedByOrganizations() OrganizationSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CreatedByOrganizations
+}
+
 func (r *userR) GetCreatedByUsers() UserSlice {
 	if r == nil {
 		return nil
@@ -281,8 +343,8 @@ func (r *userR) GetLastUpdatedByUsers() UserSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "firstname", "lastname", "email", "password", "category_type_ref_id", "created_by", "last_updated_by", "created_at", "last_updated_at", "is_active", "reset_token", "address", "birthday", "gender"}
-	userColumnsWithoutDefault = []string{"firstname", "lastname", "email", "password", "category_type_ref_id", "created_by", "last_updated_by", "last_updated_at", "reset_token", "address", "birthday", "gender"}
+	userAllColumns            = []string{"id", "firstname", "lastname", "email", "password", "organization_ref_id", "category_type_ref_id", "created_by", "last_updated_by", "created_at", "last_updated_at", "is_active", "reset_token", "address", "birthday", "gender"}
+	userColumnsWithoutDefault = []string{"firstname", "lastname", "email", "password", "organization_ref_id", "category_type_ref_id", "created_by", "last_updated_by", "last_updated_at", "reset_token", "address", "birthday", "gender"}
 	userColumnsWithDefault    = []string{"id", "created_at", "is_active"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
@@ -410,6 +472,171 @@ func (o *User) LastUpdatedByUser(mods ...qm.QueryMod) userQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Users(queryMods...)
+}
+
+// OrganizationRef pointed to by the foreign key.
+func (o *User) OrganizationRef(mods ...qm.QueryMod) organizationQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`id` = ?", o.OrganizationRefID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Organizations(queryMods...)
+}
+
+// CreatedByCapturePages retrieves all the capture_page's CapturePages with an executor via created_by column.
+func (o *User) CreatedByCapturePages(mods ...qm.QueryMod) capturePageQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`capture_page`.`created_by`=?", o.ID),
+	)
+
+	return CapturePages(queryMods...)
+}
+
+// LastUpdatedByCapturePages retrieves all the capture_page's CapturePages with an executor via last_updated_by column.
+func (o *User) LastUpdatedByCapturePages(mods ...qm.QueryMod) capturePageQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`capture_page`.`last_updated_by`=?", o.ID),
+	)
+
+	return CapturePages(queryMods...)
+}
+
+// CreatedByCapturePageSets retrieves all the capture_page_set's CapturePageSets with an executor via created_by column.
+func (o *User) CreatedByCapturePageSets(mods ...qm.QueryMod) capturePageSetQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`capture_page_set`.`created_by`=?", o.ID),
+	)
+
+	return CapturePageSets(queryMods...)
+}
+
+// LastUpdatedByCapturePageSets retrieves all the capture_page_set's CapturePageSets with an executor via last_updated_by column.
+func (o *User) LastUpdatedByCapturePageSets(mods ...qm.QueryMod) capturePageSetQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`capture_page_set`.`last_updated_by`=?", o.ID),
+	)
+
+	return CapturePageSets(queryMods...)
+}
+
+// CreatedByClickTrackers retrieves all the click_tracker's ClickTrackers with an executor via created_by column.
+func (o *User) CreatedByClickTrackers(mods ...qm.QueryMod) clickTrackerQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`click_tracker`.`created_by`=?", o.ID),
+	)
+
+	return ClickTrackers(queryMods...)
+}
+
+// LastUpdatedByClickTrackers retrieves all the click_tracker's ClickTrackers with an executor via last_updated_by column.
+func (o *User) LastUpdatedByClickTrackers(mods ...qm.QueryMod) clickTrackerQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`click_tracker`.`last_updated_by`=?", o.ID),
+	)
+
+	return ClickTrackers(queryMods...)
+}
+
+// CreatedByClickTrackerLogs retrieves all the click_tracker_log's ClickTrackerLogs with an executor via created_by column.
+func (o *User) CreatedByClickTrackerLogs(mods ...qm.QueryMod) clickTrackerLogQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`click_tracker_log`.`created_by`=?", o.ID),
+	)
+
+	return ClickTrackerLogs(queryMods...)
+}
+
+// LastUpdatedByClickTrackerLogs retrieves all the click_tracker_log's ClickTrackerLogs with an executor via last_updated_by column.
+func (o *User) LastUpdatedByClickTrackerLogs(mods ...qm.QueryMod) clickTrackerLogQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`click_tracker_log`.`last_updated_by`=?", o.ID),
+	)
+
+	return ClickTrackerLogs(queryMods...)
+}
+
+// CreatedByClickTrackerSets retrieves all the click_tracker_set's ClickTrackerSets with an executor via created_by column.
+func (o *User) CreatedByClickTrackerSets(mods ...qm.QueryMod) clickTrackerSetQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`click_tracker_set`.`created_by`=?", o.ID),
+	)
+
+	return ClickTrackerSets(queryMods...)
+}
+
+// LastUpdatedByClickTrackerSets retrieves all the click_tracker_set's ClickTrackerSets with an executor via last_updated_by column.
+func (o *User) LastUpdatedByClickTrackerSets(mods ...qm.QueryMod) clickTrackerSetQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`click_tracker_set`.`last_updated_by`=?", o.ID),
+	)
+
+	return ClickTrackerSets(queryMods...)
+}
+
+// CreatedByOrganizations retrieves all the organization's Organizations with an executor via created_by column.
+func (o *User) CreatedByOrganizations(mods ...qm.QueryMod) organizationQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`organization`.`created_by`=?", o.ID),
+	)
+
+	return Organizations(queryMods...)
 }
 
 // CreatedByUsers retrieves all the user's Users with an executor via created_by column.
@@ -776,6 +1003,1288 @@ func (userL) LoadLastUpdatedByUser(ctx context.Context, e boil.ContextExecutor, 
 					foreign.R = &userR{}
 				}
 				foreign.R.LastUpdatedByUsers = append(foreign.R.LastUpdatedByUsers, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadOrganizationRef allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (userL) LoadOrganizationRef(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		if !queries.IsNil(object.OrganizationRefID) {
+			args[object.OrganizationRefID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+
+			if !queries.IsNil(obj.OrganizationRefID) {
+				args[obj.OrganizationRefID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`organization`),
+		qm.WhereIn(`organization.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Organization")
+	}
+
+	var resultSlice []*Organization
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Organization")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for organization")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for organization")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.OrganizationRef = foreign
+		if foreign.R == nil {
+			foreign.R = &organizationR{}
+		}
+		foreign.R.OrganizationRefUsers = append(foreign.R.OrganizationRefUsers, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.OrganizationRefID, foreign.ID) {
+				local.R.OrganizationRef = foreign
+				if foreign.R == nil {
+					foreign.R = &organizationR{}
+				}
+				foreign.R.OrganizationRefUsers = append(foreign.R.OrganizationRefUsers, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCreatedByCapturePages allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadCreatedByCapturePages(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`capture_page`),
+		qm.WhereIn(`capture_page.created_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load capture_page")
+	}
+
+	var resultSlice []*CapturePage
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice capture_page")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on capture_page")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for capture_page")
+	}
+
+	if singular {
+		object.R.CreatedByCapturePages = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &capturePageR{}
+			}
+			foreign.R.CreatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.CreatedBy) {
+				local.R.CreatedByCapturePages = append(local.R.CreatedByCapturePages, foreign)
+				if foreign.R == nil {
+					foreign.R = &capturePageR{}
+				}
+				foreign.R.CreatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadLastUpdatedByCapturePages allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadLastUpdatedByCapturePages(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`capture_page`),
+		qm.WhereIn(`capture_page.last_updated_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load capture_page")
+	}
+
+	var resultSlice []*CapturePage
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice capture_page")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on capture_page")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for capture_page")
+	}
+
+	if singular {
+		object.R.LastUpdatedByCapturePages = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &capturePageR{}
+			}
+			foreign.R.LastUpdatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.LastUpdatedBy) {
+				local.R.LastUpdatedByCapturePages = append(local.R.LastUpdatedByCapturePages, foreign)
+				if foreign.R == nil {
+					foreign.R = &capturePageR{}
+				}
+				foreign.R.LastUpdatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCreatedByCapturePageSets allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadCreatedByCapturePageSets(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`capture_page_set`),
+		qm.WhereIn(`capture_page_set.created_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load capture_page_set")
+	}
+
+	var resultSlice []*CapturePageSet
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice capture_page_set")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on capture_page_set")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for capture_page_set")
+	}
+
+	if singular {
+		object.R.CreatedByCapturePageSets = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &capturePageSetR{}
+			}
+			foreign.R.CreatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.CreatedBy) {
+				local.R.CreatedByCapturePageSets = append(local.R.CreatedByCapturePageSets, foreign)
+				if foreign.R == nil {
+					foreign.R = &capturePageSetR{}
+				}
+				foreign.R.CreatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadLastUpdatedByCapturePageSets allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadLastUpdatedByCapturePageSets(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`capture_page_set`),
+		qm.WhereIn(`capture_page_set.last_updated_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load capture_page_set")
+	}
+
+	var resultSlice []*CapturePageSet
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice capture_page_set")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on capture_page_set")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for capture_page_set")
+	}
+
+	if singular {
+		object.R.LastUpdatedByCapturePageSets = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &capturePageSetR{}
+			}
+			foreign.R.LastUpdatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.LastUpdatedBy) {
+				local.R.LastUpdatedByCapturePageSets = append(local.R.LastUpdatedByCapturePageSets, foreign)
+				if foreign.R == nil {
+					foreign.R = &capturePageSetR{}
+				}
+				foreign.R.LastUpdatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCreatedByClickTrackers allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadCreatedByClickTrackers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`click_tracker`),
+		qm.WhereIn(`click_tracker.created_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load click_tracker")
+	}
+
+	var resultSlice []*ClickTracker
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice click_tracker")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on click_tracker")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for click_tracker")
+	}
+
+	if singular {
+		object.R.CreatedByClickTrackers = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &clickTrackerR{}
+			}
+			foreign.R.CreatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.CreatedBy) {
+				local.R.CreatedByClickTrackers = append(local.R.CreatedByClickTrackers, foreign)
+				if foreign.R == nil {
+					foreign.R = &clickTrackerR{}
+				}
+				foreign.R.CreatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadLastUpdatedByClickTrackers allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadLastUpdatedByClickTrackers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`click_tracker`),
+		qm.WhereIn(`click_tracker.last_updated_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load click_tracker")
+	}
+
+	var resultSlice []*ClickTracker
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice click_tracker")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on click_tracker")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for click_tracker")
+	}
+
+	if singular {
+		object.R.LastUpdatedByClickTrackers = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &clickTrackerR{}
+			}
+			foreign.R.LastUpdatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.LastUpdatedBy) {
+				local.R.LastUpdatedByClickTrackers = append(local.R.LastUpdatedByClickTrackers, foreign)
+				if foreign.R == nil {
+					foreign.R = &clickTrackerR{}
+				}
+				foreign.R.LastUpdatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCreatedByClickTrackerLogs allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadCreatedByClickTrackerLogs(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`click_tracker_log`),
+		qm.WhereIn(`click_tracker_log.created_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load click_tracker_log")
+	}
+
+	var resultSlice []*ClickTrackerLog
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice click_tracker_log")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on click_tracker_log")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for click_tracker_log")
+	}
+
+	if singular {
+		object.R.CreatedByClickTrackerLogs = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &clickTrackerLogR{}
+			}
+			foreign.R.CreatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.CreatedBy) {
+				local.R.CreatedByClickTrackerLogs = append(local.R.CreatedByClickTrackerLogs, foreign)
+				if foreign.R == nil {
+					foreign.R = &clickTrackerLogR{}
+				}
+				foreign.R.CreatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadLastUpdatedByClickTrackerLogs allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadLastUpdatedByClickTrackerLogs(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`click_tracker_log`),
+		qm.WhereIn(`click_tracker_log.last_updated_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load click_tracker_log")
+	}
+
+	var resultSlice []*ClickTrackerLog
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice click_tracker_log")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on click_tracker_log")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for click_tracker_log")
+	}
+
+	if singular {
+		object.R.LastUpdatedByClickTrackerLogs = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &clickTrackerLogR{}
+			}
+			foreign.R.LastUpdatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.LastUpdatedBy) {
+				local.R.LastUpdatedByClickTrackerLogs = append(local.R.LastUpdatedByClickTrackerLogs, foreign)
+				if foreign.R == nil {
+					foreign.R = &clickTrackerLogR{}
+				}
+				foreign.R.LastUpdatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCreatedByClickTrackerSets allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadCreatedByClickTrackerSets(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`click_tracker_set`),
+		qm.WhereIn(`click_tracker_set.created_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load click_tracker_set")
+	}
+
+	var resultSlice []*ClickTrackerSet
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice click_tracker_set")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on click_tracker_set")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for click_tracker_set")
+	}
+
+	if singular {
+		object.R.CreatedByClickTrackerSets = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &clickTrackerSetR{}
+			}
+			foreign.R.CreatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.CreatedBy) {
+				local.R.CreatedByClickTrackerSets = append(local.R.CreatedByClickTrackerSets, foreign)
+				if foreign.R == nil {
+					foreign.R = &clickTrackerSetR{}
+				}
+				foreign.R.CreatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadLastUpdatedByClickTrackerSets allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadLastUpdatedByClickTrackerSets(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`click_tracker_set`),
+		qm.WhereIn(`click_tracker_set.last_updated_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load click_tracker_set")
+	}
+
+	var resultSlice []*ClickTrackerSet
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice click_tracker_set")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on click_tracker_set")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for click_tracker_set")
+	}
+
+	if singular {
+		object.R.LastUpdatedByClickTrackerSets = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &clickTrackerSetR{}
+			}
+			foreign.R.LastUpdatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.LastUpdatedBy) {
+				local.R.LastUpdatedByClickTrackerSets = append(local.R.LastUpdatedByClickTrackerSets, foreign)
+				if foreign.R == nil {
+					foreign.R = &clickTrackerSetR{}
+				}
+				foreign.R.LastUpdatedByUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCreatedByOrganizations allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadCreatedByOrganizations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`organization`),
+		qm.WhereIn(`organization.created_by in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load organization")
+	}
+
+	var resultSlice []*Organization
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice organization")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on organization")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for organization")
+	}
+
+	if singular {
+		object.R.CreatedByOrganizations = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &organizationR{}
+			}
+			foreign.R.CreatedByUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.CreatedBy) {
+				local.R.CreatedByOrganizations = append(local.R.CreatedByOrganizations, foreign)
+				if foreign.R == nil {
+					foreign.R = &organizationR{}
+				}
+				foreign.R.CreatedByUser = local
 				break
 			}
 		}
@@ -1200,6 +2709,1483 @@ func (o *User) RemoveLastUpdatedByUser(ctx context.Context, exec boil.ContextExe
 		related.R.LastUpdatedByUsers = related.R.LastUpdatedByUsers[:ln-1]
 		break
 	}
+	return nil
+}
+
+// SetOrganizationRef of the user to the related item.
+// Sets o.R.OrganizationRef to related.
+// Adds o to related.R.OrganizationRefUsers.
+func (o *User) SetOrganizationRef(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Organization) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `user` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"organization_ref_id"}),
+		strmangle.WhereClause("`", "`", 0, userPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.OrganizationRefID, related.ID)
+	if o.R == nil {
+		o.R = &userR{
+			OrganizationRef: related,
+		}
+	} else {
+		o.R.OrganizationRef = related
+	}
+
+	if related.R == nil {
+		related.R = &organizationR{
+			OrganizationRefUsers: UserSlice{o},
+		}
+	} else {
+		related.R.OrganizationRefUsers = append(related.R.OrganizationRefUsers, o)
+	}
+
+	return nil
+}
+
+// RemoveOrganizationRef relationship.
+// Sets o.R.OrganizationRef to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *User) RemoveOrganizationRef(ctx context.Context, exec boil.ContextExecutor, related *Organization) error {
+	var err error
+
+	queries.SetScanner(&o.OrganizationRefID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("organization_ref_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.OrganizationRef = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.OrganizationRefUsers {
+		if queries.Equal(o.OrganizationRefID, ri.OrganizationRefID) {
+			continue
+		}
+
+		ln := len(related.R.OrganizationRefUsers)
+		if ln > 1 && i < ln-1 {
+			related.R.OrganizationRefUsers[i] = related.R.OrganizationRefUsers[ln-1]
+		}
+		related.R.OrganizationRefUsers = related.R.OrganizationRefUsers[:ln-1]
+		break
+	}
+	return nil
+}
+
+// AddCreatedByCapturePages adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.CreatedByCapturePages.
+// Sets related.R.CreatedByUser appropriately.
+func (o *User) AddCreatedByCapturePages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePage) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.CreatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `capture_page` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"created_by"}),
+				strmangle.WhereClause("`", "`", 0, capturePagePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.CreatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			CreatedByCapturePages: related,
+		}
+	} else {
+		o.R.CreatedByCapturePages = append(o.R.CreatedByCapturePages, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &capturePageR{
+				CreatedByUser: o,
+			}
+		} else {
+			rel.R.CreatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetCreatedByCapturePages removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.CreatedByUser's CreatedByCapturePages accordingly.
+// Replaces o.R.CreatedByCapturePages with related.
+// Sets related.R.CreatedByUser's CreatedByCapturePages accordingly.
+func (o *User) SetCreatedByCapturePages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePage) error {
+	query := "update `capture_page` set `created_by` = null where `created_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.CreatedByCapturePages {
+			queries.SetScanner(&rel.CreatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.CreatedByUser = nil
+		}
+		o.R.CreatedByCapturePages = nil
+	}
+
+	return o.AddCreatedByCapturePages(ctx, exec, insert, related...)
+}
+
+// RemoveCreatedByCapturePages relationships from objects passed in.
+// Removes related items from R.CreatedByCapturePages (uses pointer comparison, removal does not keep order)
+// Sets related.R.CreatedByUser.
+func (o *User) RemoveCreatedByCapturePages(ctx context.Context, exec boil.ContextExecutor, related ...*CapturePage) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.CreatedBy, nil)
+		if rel.R != nil {
+			rel.R.CreatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("created_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.CreatedByCapturePages {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.CreatedByCapturePages)
+			if ln > 1 && i < ln-1 {
+				o.R.CreatedByCapturePages[i] = o.R.CreatedByCapturePages[ln-1]
+			}
+			o.R.CreatedByCapturePages = o.R.CreatedByCapturePages[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddLastUpdatedByCapturePages adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.LastUpdatedByCapturePages.
+// Sets related.R.LastUpdatedByUser appropriately.
+func (o *User) AddLastUpdatedByCapturePages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePage) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `capture_page` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"last_updated_by"}),
+				strmangle.WhereClause("`", "`", 0, capturePagePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			LastUpdatedByCapturePages: related,
+		}
+	} else {
+		o.R.LastUpdatedByCapturePages = append(o.R.LastUpdatedByCapturePages, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &capturePageR{
+				LastUpdatedByUser: o,
+			}
+		} else {
+			rel.R.LastUpdatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetLastUpdatedByCapturePages removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.LastUpdatedByUser's LastUpdatedByCapturePages accordingly.
+// Replaces o.R.LastUpdatedByCapturePages with related.
+// Sets related.R.LastUpdatedByUser's LastUpdatedByCapturePages accordingly.
+func (o *User) SetLastUpdatedByCapturePages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePage) error {
+	query := "update `capture_page` set `last_updated_by` = null where `last_updated_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.LastUpdatedByCapturePages {
+			queries.SetScanner(&rel.LastUpdatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.LastUpdatedByUser = nil
+		}
+		o.R.LastUpdatedByCapturePages = nil
+	}
+
+	return o.AddLastUpdatedByCapturePages(ctx, exec, insert, related...)
+}
+
+// RemoveLastUpdatedByCapturePages relationships from objects passed in.
+// Removes related items from R.LastUpdatedByCapturePages (uses pointer comparison, removal does not keep order)
+// Sets related.R.LastUpdatedByUser.
+func (o *User) RemoveLastUpdatedByCapturePages(ctx context.Context, exec boil.ContextExecutor, related ...*CapturePage) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.LastUpdatedBy, nil)
+		if rel.R != nil {
+			rel.R.LastUpdatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("last_updated_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.LastUpdatedByCapturePages {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.LastUpdatedByCapturePages)
+			if ln > 1 && i < ln-1 {
+				o.R.LastUpdatedByCapturePages[i] = o.R.LastUpdatedByCapturePages[ln-1]
+			}
+			o.R.LastUpdatedByCapturePages = o.R.LastUpdatedByCapturePages[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddCreatedByCapturePageSets adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.CreatedByCapturePageSets.
+// Sets related.R.CreatedByUser appropriately.
+func (o *User) AddCreatedByCapturePageSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePageSet) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.CreatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `capture_page_set` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"created_by"}),
+				strmangle.WhereClause("`", "`", 0, capturePageSetPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.CreatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			CreatedByCapturePageSets: related,
+		}
+	} else {
+		o.R.CreatedByCapturePageSets = append(o.R.CreatedByCapturePageSets, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &capturePageSetR{
+				CreatedByUser: o,
+			}
+		} else {
+			rel.R.CreatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetCreatedByCapturePageSets removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.CreatedByUser's CreatedByCapturePageSets accordingly.
+// Replaces o.R.CreatedByCapturePageSets with related.
+// Sets related.R.CreatedByUser's CreatedByCapturePageSets accordingly.
+func (o *User) SetCreatedByCapturePageSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePageSet) error {
+	query := "update `capture_page_set` set `created_by` = null where `created_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.CreatedByCapturePageSets {
+			queries.SetScanner(&rel.CreatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.CreatedByUser = nil
+		}
+		o.R.CreatedByCapturePageSets = nil
+	}
+
+	return o.AddCreatedByCapturePageSets(ctx, exec, insert, related...)
+}
+
+// RemoveCreatedByCapturePageSets relationships from objects passed in.
+// Removes related items from R.CreatedByCapturePageSets (uses pointer comparison, removal does not keep order)
+// Sets related.R.CreatedByUser.
+func (o *User) RemoveCreatedByCapturePageSets(ctx context.Context, exec boil.ContextExecutor, related ...*CapturePageSet) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.CreatedBy, nil)
+		if rel.R != nil {
+			rel.R.CreatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("created_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.CreatedByCapturePageSets {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.CreatedByCapturePageSets)
+			if ln > 1 && i < ln-1 {
+				o.R.CreatedByCapturePageSets[i] = o.R.CreatedByCapturePageSets[ln-1]
+			}
+			o.R.CreatedByCapturePageSets = o.R.CreatedByCapturePageSets[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddLastUpdatedByCapturePageSets adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.LastUpdatedByCapturePageSets.
+// Sets related.R.LastUpdatedByUser appropriately.
+func (o *User) AddLastUpdatedByCapturePageSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePageSet) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `capture_page_set` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"last_updated_by"}),
+				strmangle.WhereClause("`", "`", 0, capturePageSetPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			LastUpdatedByCapturePageSets: related,
+		}
+	} else {
+		o.R.LastUpdatedByCapturePageSets = append(o.R.LastUpdatedByCapturePageSets, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &capturePageSetR{
+				LastUpdatedByUser: o,
+			}
+		} else {
+			rel.R.LastUpdatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetLastUpdatedByCapturePageSets removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.LastUpdatedByUser's LastUpdatedByCapturePageSets accordingly.
+// Replaces o.R.LastUpdatedByCapturePageSets with related.
+// Sets related.R.LastUpdatedByUser's LastUpdatedByCapturePageSets accordingly.
+func (o *User) SetLastUpdatedByCapturePageSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CapturePageSet) error {
+	query := "update `capture_page_set` set `last_updated_by` = null where `last_updated_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.LastUpdatedByCapturePageSets {
+			queries.SetScanner(&rel.LastUpdatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.LastUpdatedByUser = nil
+		}
+		o.R.LastUpdatedByCapturePageSets = nil
+	}
+
+	return o.AddLastUpdatedByCapturePageSets(ctx, exec, insert, related...)
+}
+
+// RemoveLastUpdatedByCapturePageSets relationships from objects passed in.
+// Removes related items from R.LastUpdatedByCapturePageSets (uses pointer comparison, removal does not keep order)
+// Sets related.R.LastUpdatedByUser.
+func (o *User) RemoveLastUpdatedByCapturePageSets(ctx context.Context, exec boil.ContextExecutor, related ...*CapturePageSet) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.LastUpdatedBy, nil)
+		if rel.R != nil {
+			rel.R.LastUpdatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("last_updated_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.LastUpdatedByCapturePageSets {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.LastUpdatedByCapturePageSets)
+			if ln > 1 && i < ln-1 {
+				o.R.LastUpdatedByCapturePageSets[i] = o.R.LastUpdatedByCapturePageSets[ln-1]
+			}
+			o.R.LastUpdatedByCapturePageSets = o.R.LastUpdatedByCapturePageSets[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddCreatedByClickTrackers adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.CreatedByClickTrackers.
+// Sets related.R.CreatedByUser appropriately.
+func (o *User) AddCreatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTracker) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.CreatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `click_tracker` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"created_by"}),
+				strmangle.WhereClause("`", "`", 0, clickTrackerPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.CreatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			CreatedByClickTrackers: related,
+		}
+	} else {
+		o.R.CreatedByClickTrackers = append(o.R.CreatedByClickTrackers, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &clickTrackerR{
+				CreatedByUser: o,
+			}
+		} else {
+			rel.R.CreatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetCreatedByClickTrackers removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.CreatedByUser's CreatedByClickTrackers accordingly.
+// Replaces o.R.CreatedByClickTrackers with related.
+// Sets related.R.CreatedByUser's CreatedByClickTrackers accordingly.
+func (o *User) SetCreatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTracker) error {
+	query := "update `click_tracker` set `created_by` = null where `created_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.CreatedByClickTrackers {
+			queries.SetScanner(&rel.CreatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.CreatedByUser = nil
+		}
+		o.R.CreatedByClickTrackers = nil
+	}
+
+	return o.AddCreatedByClickTrackers(ctx, exec, insert, related...)
+}
+
+// RemoveCreatedByClickTrackers relationships from objects passed in.
+// Removes related items from R.CreatedByClickTrackers (uses pointer comparison, removal does not keep order)
+// Sets related.R.CreatedByUser.
+func (o *User) RemoveCreatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTracker) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.CreatedBy, nil)
+		if rel.R != nil {
+			rel.R.CreatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("created_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.CreatedByClickTrackers {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.CreatedByClickTrackers)
+			if ln > 1 && i < ln-1 {
+				o.R.CreatedByClickTrackers[i] = o.R.CreatedByClickTrackers[ln-1]
+			}
+			o.R.CreatedByClickTrackers = o.R.CreatedByClickTrackers[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddLastUpdatedByClickTrackers adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.LastUpdatedByClickTrackers.
+// Sets related.R.LastUpdatedByUser appropriately.
+func (o *User) AddLastUpdatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTracker) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `click_tracker` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"last_updated_by"}),
+				strmangle.WhereClause("`", "`", 0, clickTrackerPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			LastUpdatedByClickTrackers: related,
+		}
+	} else {
+		o.R.LastUpdatedByClickTrackers = append(o.R.LastUpdatedByClickTrackers, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &clickTrackerR{
+				LastUpdatedByUser: o,
+			}
+		} else {
+			rel.R.LastUpdatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetLastUpdatedByClickTrackers removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.LastUpdatedByUser's LastUpdatedByClickTrackers accordingly.
+// Replaces o.R.LastUpdatedByClickTrackers with related.
+// Sets related.R.LastUpdatedByUser's LastUpdatedByClickTrackers accordingly.
+func (o *User) SetLastUpdatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTracker) error {
+	query := "update `click_tracker` set `last_updated_by` = null where `last_updated_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.LastUpdatedByClickTrackers {
+			queries.SetScanner(&rel.LastUpdatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.LastUpdatedByUser = nil
+		}
+		o.R.LastUpdatedByClickTrackers = nil
+	}
+
+	return o.AddLastUpdatedByClickTrackers(ctx, exec, insert, related...)
+}
+
+// RemoveLastUpdatedByClickTrackers relationships from objects passed in.
+// Removes related items from R.LastUpdatedByClickTrackers (uses pointer comparison, removal does not keep order)
+// Sets related.R.LastUpdatedByUser.
+func (o *User) RemoveLastUpdatedByClickTrackers(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTracker) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.LastUpdatedBy, nil)
+		if rel.R != nil {
+			rel.R.LastUpdatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("last_updated_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.LastUpdatedByClickTrackers {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.LastUpdatedByClickTrackers)
+			if ln > 1 && i < ln-1 {
+				o.R.LastUpdatedByClickTrackers[i] = o.R.LastUpdatedByClickTrackers[ln-1]
+			}
+			o.R.LastUpdatedByClickTrackers = o.R.LastUpdatedByClickTrackers[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddCreatedByClickTrackerLogs adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.CreatedByClickTrackerLogs.
+// Sets related.R.CreatedByUser appropriately.
+func (o *User) AddCreatedByClickTrackerLogs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerLog) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.CreatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `click_tracker_log` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"created_by"}),
+				strmangle.WhereClause("`", "`", 0, clickTrackerLogPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.CreatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			CreatedByClickTrackerLogs: related,
+		}
+	} else {
+		o.R.CreatedByClickTrackerLogs = append(o.R.CreatedByClickTrackerLogs, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &clickTrackerLogR{
+				CreatedByUser: o,
+			}
+		} else {
+			rel.R.CreatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetCreatedByClickTrackerLogs removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.CreatedByUser's CreatedByClickTrackerLogs accordingly.
+// Replaces o.R.CreatedByClickTrackerLogs with related.
+// Sets related.R.CreatedByUser's CreatedByClickTrackerLogs accordingly.
+func (o *User) SetCreatedByClickTrackerLogs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerLog) error {
+	query := "update `click_tracker_log` set `created_by` = null where `created_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.CreatedByClickTrackerLogs {
+			queries.SetScanner(&rel.CreatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.CreatedByUser = nil
+		}
+		o.R.CreatedByClickTrackerLogs = nil
+	}
+
+	return o.AddCreatedByClickTrackerLogs(ctx, exec, insert, related...)
+}
+
+// RemoveCreatedByClickTrackerLogs relationships from objects passed in.
+// Removes related items from R.CreatedByClickTrackerLogs (uses pointer comparison, removal does not keep order)
+// Sets related.R.CreatedByUser.
+func (o *User) RemoveCreatedByClickTrackerLogs(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTrackerLog) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.CreatedBy, nil)
+		if rel.R != nil {
+			rel.R.CreatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("created_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.CreatedByClickTrackerLogs {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.CreatedByClickTrackerLogs)
+			if ln > 1 && i < ln-1 {
+				o.R.CreatedByClickTrackerLogs[i] = o.R.CreatedByClickTrackerLogs[ln-1]
+			}
+			o.R.CreatedByClickTrackerLogs = o.R.CreatedByClickTrackerLogs[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddLastUpdatedByClickTrackerLogs adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.LastUpdatedByClickTrackerLogs.
+// Sets related.R.LastUpdatedByUser appropriately.
+func (o *User) AddLastUpdatedByClickTrackerLogs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerLog) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `click_tracker_log` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"last_updated_by"}),
+				strmangle.WhereClause("`", "`", 0, clickTrackerLogPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			LastUpdatedByClickTrackerLogs: related,
+		}
+	} else {
+		o.R.LastUpdatedByClickTrackerLogs = append(o.R.LastUpdatedByClickTrackerLogs, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &clickTrackerLogR{
+				LastUpdatedByUser: o,
+			}
+		} else {
+			rel.R.LastUpdatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetLastUpdatedByClickTrackerLogs removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.LastUpdatedByUser's LastUpdatedByClickTrackerLogs accordingly.
+// Replaces o.R.LastUpdatedByClickTrackerLogs with related.
+// Sets related.R.LastUpdatedByUser's LastUpdatedByClickTrackerLogs accordingly.
+func (o *User) SetLastUpdatedByClickTrackerLogs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerLog) error {
+	query := "update `click_tracker_log` set `last_updated_by` = null where `last_updated_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.LastUpdatedByClickTrackerLogs {
+			queries.SetScanner(&rel.LastUpdatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.LastUpdatedByUser = nil
+		}
+		o.R.LastUpdatedByClickTrackerLogs = nil
+	}
+
+	return o.AddLastUpdatedByClickTrackerLogs(ctx, exec, insert, related...)
+}
+
+// RemoveLastUpdatedByClickTrackerLogs relationships from objects passed in.
+// Removes related items from R.LastUpdatedByClickTrackerLogs (uses pointer comparison, removal does not keep order)
+// Sets related.R.LastUpdatedByUser.
+func (o *User) RemoveLastUpdatedByClickTrackerLogs(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTrackerLog) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.LastUpdatedBy, nil)
+		if rel.R != nil {
+			rel.R.LastUpdatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("last_updated_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.LastUpdatedByClickTrackerLogs {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.LastUpdatedByClickTrackerLogs)
+			if ln > 1 && i < ln-1 {
+				o.R.LastUpdatedByClickTrackerLogs[i] = o.R.LastUpdatedByClickTrackerLogs[ln-1]
+			}
+			o.R.LastUpdatedByClickTrackerLogs = o.R.LastUpdatedByClickTrackerLogs[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddCreatedByClickTrackerSets adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.CreatedByClickTrackerSets.
+// Sets related.R.CreatedByUser appropriately.
+func (o *User) AddCreatedByClickTrackerSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerSet) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.CreatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `click_tracker_set` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"created_by"}),
+				strmangle.WhereClause("`", "`", 0, clickTrackerSetPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.CreatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			CreatedByClickTrackerSets: related,
+		}
+	} else {
+		o.R.CreatedByClickTrackerSets = append(o.R.CreatedByClickTrackerSets, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &clickTrackerSetR{
+				CreatedByUser: o,
+			}
+		} else {
+			rel.R.CreatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetCreatedByClickTrackerSets removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.CreatedByUser's CreatedByClickTrackerSets accordingly.
+// Replaces o.R.CreatedByClickTrackerSets with related.
+// Sets related.R.CreatedByUser's CreatedByClickTrackerSets accordingly.
+func (o *User) SetCreatedByClickTrackerSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerSet) error {
+	query := "update `click_tracker_set` set `created_by` = null where `created_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.CreatedByClickTrackerSets {
+			queries.SetScanner(&rel.CreatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.CreatedByUser = nil
+		}
+		o.R.CreatedByClickTrackerSets = nil
+	}
+
+	return o.AddCreatedByClickTrackerSets(ctx, exec, insert, related...)
+}
+
+// RemoveCreatedByClickTrackerSets relationships from objects passed in.
+// Removes related items from R.CreatedByClickTrackerSets (uses pointer comparison, removal does not keep order)
+// Sets related.R.CreatedByUser.
+func (o *User) RemoveCreatedByClickTrackerSets(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTrackerSet) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.CreatedBy, nil)
+		if rel.R != nil {
+			rel.R.CreatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("created_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.CreatedByClickTrackerSets {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.CreatedByClickTrackerSets)
+			if ln > 1 && i < ln-1 {
+				o.R.CreatedByClickTrackerSets[i] = o.R.CreatedByClickTrackerSets[ln-1]
+			}
+			o.R.CreatedByClickTrackerSets = o.R.CreatedByClickTrackerSets[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddLastUpdatedByClickTrackerSets adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.LastUpdatedByClickTrackerSets.
+// Sets related.R.LastUpdatedByUser appropriately.
+func (o *User) AddLastUpdatedByClickTrackerSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerSet) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `click_tracker_set` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"last_updated_by"}),
+				strmangle.WhereClause("`", "`", 0, clickTrackerSetPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.LastUpdatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			LastUpdatedByClickTrackerSets: related,
+		}
+	} else {
+		o.R.LastUpdatedByClickTrackerSets = append(o.R.LastUpdatedByClickTrackerSets, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &clickTrackerSetR{
+				LastUpdatedByUser: o,
+			}
+		} else {
+			rel.R.LastUpdatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetLastUpdatedByClickTrackerSets removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.LastUpdatedByUser's LastUpdatedByClickTrackerSets accordingly.
+// Replaces o.R.LastUpdatedByClickTrackerSets with related.
+// Sets related.R.LastUpdatedByUser's LastUpdatedByClickTrackerSets accordingly.
+func (o *User) SetLastUpdatedByClickTrackerSets(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClickTrackerSet) error {
+	query := "update `click_tracker_set` set `last_updated_by` = null where `last_updated_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.LastUpdatedByClickTrackerSets {
+			queries.SetScanner(&rel.LastUpdatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.LastUpdatedByUser = nil
+		}
+		o.R.LastUpdatedByClickTrackerSets = nil
+	}
+
+	return o.AddLastUpdatedByClickTrackerSets(ctx, exec, insert, related...)
+}
+
+// RemoveLastUpdatedByClickTrackerSets relationships from objects passed in.
+// Removes related items from R.LastUpdatedByClickTrackerSets (uses pointer comparison, removal does not keep order)
+// Sets related.R.LastUpdatedByUser.
+func (o *User) RemoveLastUpdatedByClickTrackerSets(ctx context.Context, exec boil.ContextExecutor, related ...*ClickTrackerSet) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.LastUpdatedBy, nil)
+		if rel.R != nil {
+			rel.R.LastUpdatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("last_updated_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.LastUpdatedByClickTrackerSets {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.LastUpdatedByClickTrackerSets)
+			if ln > 1 && i < ln-1 {
+				o.R.LastUpdatedByClickTrackerSets[i] = o.R.LastUpdatedByClickTrackerSets[ln-1]
+			}
+			o.R.LastUpdatedByClickTrackerSets = o.R.LastUpdatedByClickTrackerSets[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+// AddCreatedByOrganizations adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.CreatedByOrganizations.
+// Sets related.R.CreatedByUser appropriately.
+func (o *User) AddCreatedByOrganizations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Organization) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.CreatedBy, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `organization` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"created_by"}),
+				strmangle.WhereClause("`", "`", 0, organizationPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.CreatedBy, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			CreatedByOrganizations: related,
+		}
+	} else {
+		o.R.CreatedByOrganizations = append(o.R.CreatedByOrganizations, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &organizationR{
+				CreatedByUser: o,
+			}
+		} else {
+			rel.R.CreatedByUser = o
+		}
+	}
+	return nil
+}
+
+// SetCreatedByOrganizations removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.CreatedByUser's CreatedByOrganizations accordingly.
+// Replaces o.R.CreatedByOrganizations with related.
+// Sets related.R.CreatedByUser's CreatedByOrganizations accordingly.
+func (o *User) SetCreatedByOrganizations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Organization) error {
+	query := "update `organization` set `created_by` = null where `created_by` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.CreatedByOrganizations {
+			queries.SetScanner(&rel.CreatedBy, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.CreatedByUser = nil
+		}
+		o.R.CreatedByOrganizations = nil
+	}
+
+	return o.AddCreatedByOrganizations(ctx, exec, insert, related...)
+}
+
+// RemoveCreatedByOrganizations relationships from objects passed in.
+// Removes related items from R.CreatedByOrganizations (uses pointer comparison, removal does not keep order)
+// Sets related.R.CreatedByUser.
+func (o *User) RemoveCreatedByOrganizations(ctx context.Context, exec boil.ContextExecutor, related ...*Organization) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.CreatedBy, nil)
+		if rel.R != nil {
+			rel.R.CreatedByUser = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("created_by")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.CreatedByOrganizations {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.CreatedByOrganizations)
+			if ln > 1 && i < ln-1 {
+				o.R.CreatedByOrganizations[i] = o.R.CreatedByOrganizations[ln-1]
+			}
+			o.R.CreatedByOrganizations = o.R.CreatedByOrganizations[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

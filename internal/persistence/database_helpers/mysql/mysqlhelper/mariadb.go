@@ -40,9 +40,9 @@ func (m *MariaDBConfig) Validate() error {
 func (m *MariaDBConfig) GetEnvVars() []string {
 	return []string{
 		"MYSQL_ROOT_HOST=%",
-		fmt.Sprintf("MARIADB_ROOT_PASSWORD=%v", m.Pass),
+		fmt.Sprintf("MYSQL_ROOT_PASSWORD=%v", m.Pass),
 		fmt.Sprintf("MYSQL_TCP_PORT=%v", m.ExposedInternalPort),
-		fmt.Sprintf("MARIADB_DATABASE=%v", m.Database),
+		fmt.Sprintf("MYSQL_DATABASE=%v", m.Database),
 	}
 }
 
@@ -93,8 +93,11 @@ func NewMariaDB(cfg *MariaDBConfig) (*dockerenv.DockerEnv, error) {
 		return nil, fmt.Errorf("validate: %v", err)
 	}
 
+	fmt.Println("===== NewMariaDB: start")
+
 	const (
-		image = "mariadb:latest"
+		// image = "mariadb:latest"
+		image = "mysql:8.0"
 	)
 
 	dm, err := dockerenv.New(&dockerenv.ContainerConfig{
