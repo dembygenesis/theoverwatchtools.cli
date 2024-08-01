@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
+	"github.com/volatiletech/null/v8"
 )
 
 type DeleteCapturePages struct {
@@ -15,11 +16,11 @@ type RestoreCapturePages struct {
 
 // CapturePagesFilters contains the capture pages filters.
 type CapturePagesFilters struct {
-	CapturePagesNameIn     []string `query:"capture_pages_name_in" json:"capture_pages"`
-	CapturePagesTypeNameIn []string `query:"capture_pages_type_name_in" json:"capture_pages_type_name_in"`
-	CapturePagesTypeIdIn   []int    `query:"capture_page_type_id_in" json:"capture_page_type_id_in"`
-	CapturePagesIsControl  []int    `query:"is_control" json:"is_control"`
-	IdsIn                  []int    `query:"ids_in" json:"ids_in"`
+	CapturePagesNameIn     []string  `query:"capture_pages_name_in" json:"capture_pages"`
+	CapturePagesTypeNameIn []string  `query:"capture_pages_type_name_in" json:"capture_pages_type_name_in"`
+	CapturePagesTypeIdIn   []int     `query:"capture_page_type_id_in" json:"capture_page_type_id_in"`
+	CapturePagesIsControl  null.Bool `query:"is_control" json:"is_control"`
+	IdsIn                  []int     `query:"ids_in" json:"ids_in"`
 	PaginationQueryFilters `swaggerignore:"true"`
 }
 

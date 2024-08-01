@@ -10,6 +10,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
 	"testing"
 )
 
@@ -25,7 +26,10 @@ func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 		{
 			name: "success-filter-ids-in",
 			filter: &model.CapturePagesFilters{
-				CapturePagesIsControl: []int{1},
+				CapturePagesIsControl: null.Bool{
+					Bool:  false,
+					Valid: false,
+				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
 

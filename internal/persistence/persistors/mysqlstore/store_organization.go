@@ -67,6 +67,8 @@ func (m *Repository) getOrganizations(
 		err        error
 	)
 
+	fmt.Println("testing----")
+
 	ctx, cancel := context.WithTimeout(ctx, m.cfg.QueryTimeouts.Query)
 	defer cancel()
 
