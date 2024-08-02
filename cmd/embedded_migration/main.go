@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"github.com/dembygenesis/local.tools/di/ctn/dic"
+	"github.com/dembygenesis/local.tools/internal/database/migration"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlutil"
 	"log"
 )
 
-func main() {
+func migrate() {
 	builder, err := dic.NewBuilder()
 	if err != nil {
 		log.Fatalf("builder: %v", err)
@@ -31,12 +32,16 @@ func main() {
 		Database: cfg.MysqlDatabaseCredentials.Database,
 	}
 
-	_log.Info("Migrating...")
+	_log.Info("Migrating")
 	ctx := context.Background()
-	tables, err := mysqlhelper.Migrate(ctx, c, mysqlhelper.CreateIfNotExists)
+	tables, err := mysqlhelper.MigrateEmbedded(ctx, c, migration.Migrations, mysqlhelper.CreateIfNotExists)
 	if err != nil {
 		_log.Fatalf("migrate: %v", err)
 	}
 
 	_log.Infof("Created tables: %v", tables)
+}
+
+func main() {
+	migrate()
 }

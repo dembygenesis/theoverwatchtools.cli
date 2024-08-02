@@ -1,0 +1,1 @@
+docker-compose -p theoverwatchtools -f ./docker/docker-compose.yaml up

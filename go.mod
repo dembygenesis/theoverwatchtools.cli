@@ -13,11 +13,10 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/gofiber/template/html/v2 v2.1.1
-	github.com/golang-migrate/migrate/v4 v4.17.0
+	github.com/golang-migrate/migrate/v4 v4.17.1
 	github.com/golang-module/carbon/v2 v2.3.8
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-runewidth v0.0.15
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.8.1
 	github.com/sarulabs/di/v2 v2.4.2
