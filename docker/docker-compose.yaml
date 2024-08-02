@@ -1,0 +1,33 @@
+version: "3.7"
+
+services:
+  controller:
+
+    build:
+      dockerfile: api.dockerfile
+      context: ./docker
+      args:
+        ENTRYPOINT: "entrypoint.sh"
+    networks:
+      - default
+
+#    env_file:
+#      - uplb/controller.dev.env
+#    environment:
+#      CGO_ENABLED: 0
+    #hostname: controller.localhost
+    working_dir: /src
+    # command: /bin/bash -c 'go build -tags localdev -o /tmp/uplb/controller ./cmd/controller && /tmp/uplb/controller controller'
+#    depends_on:
+#      - db
+#      - egress-backend
+#    networks:
+#      10_default:
+    volumes:
+      - controller:/var/lib/controller
+
+networks:
+  default:
+
+volumes:
+  controller:
