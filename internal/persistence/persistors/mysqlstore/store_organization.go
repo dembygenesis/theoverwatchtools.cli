@@ -7,6 +7,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -60,33 +61,54 @@ func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.Tran
 		return nil, fmt.Errorf("update failed: %v", err)
 	}
 
-	//organization, err :=
+	organization, err := m.GetOrganizationById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get organitzation by id: %v", err)
+	}
 
-	//return oraganization, err
+	return organization, nil
 }
 
-//func (m *Repository) GetOrganizationById(ctx context.Context, tx persistence.TransactionHandler) error {
-//    paginated, err := m.Get
-//}
+func (m *Repository) GetOrganizationById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.Organization, error) {
+	paginated, err := m.GetOrganizations(ctx, tx, &model.OrganizationFilters{
+		IdsIn: []int{id},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("organization filtered by id: %v", err)
+	}
 
-func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.TransactionHandler, filters *model.OrganizationFilters) (*model.PaginatedOrganization ,error) {
+	if paginated.Pagination.RowCount != 1 {
+
+		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, id)
+	}
+
+	return &paginated.Organizations[0], nil
+}
+
+func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.TransactionHandler, filters *model.OrganizationFilters) (*model.PaginatedOrganization, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
-	res, err := m.
+	res, err := m.getOrganizations(ctx, ctxExec, filters)
+
+	if err != nil {
+		return nil, fmt.Errorf("read organizations: %v", err)
+	}
+
+	return res, nil
 }
 
 func (m *Repository) getOrganizations(ctx context.Context,
 	ctxExec boil.ContextExecutor,
-	filters *model.OrganizationFilters,) (*model.PaginatedOrganization, error) {
+	filters *model.OrganizationFilters) (*model.PaginatedOrganization, error) {
 
 	var (
-		paginated model.PaginatedOrganization
+		paginated  model.PaginatedOrganization
 		pagination = model.NewPagination()
-		res = make([]model.Organization, 0)
-		err error()
+		res        = make([]model.Organization, 0)
+		err        error
 	)
 
 	ctx, cancel := context.WithTimeout(ctx, m.cfg.QueryTimeouts.Query)
@@ -95,40 +117,83 @@ func (m *Repository) getOrganizations(ctx context.Context,
 	queryMods := []qm.QueryMod{
 		qm.InnerJoin(
 			fmt.Sprintf(
-				"%s ON %s.%s = %s.%s",
+				"%s",
 				mysqlmodel.TableNames.Organization,
-				mysqlmodel.CategoryTypeColumns.ID,
-				mysqlmodel.Organization.ID,
-				mysqlmodel.TableNames.Category,
-				mysqlmodel.CategoryColumns.CategoryTypeRefID,
 			),
 		),
 		qm.Select(
 			fmt.Sprintf("%s.%s AS %s",
-				mysqlmodel.TableNames.Category,
-				mysqlmodel.CategoryColumns.ID,
-				mysqlmodel.CategoryColumns.ID,
+				mysqlmodel.TableNames.Organization,
+				mysqlmodel.OrganizationColumns.ID,
+				mysqlmodel.OrganizationColumns.ID,
 			),
 			fmt.Sprintf("%s.%s AS %s",
-				mysqlmodel.TableNames.Category,
-				mysqlmodel.CategoryColumns.Name,
-				mysqlmodel.CategoryColumns.Name,
+				mysqlmodel.TableNames.Organization,
+				mysqlmodel.OrganizationColumns.Name,
+				mysqlmodel.OrganizationColumns.Name,
 			),
 			fmt.Sprintf("%s.%s AS %s",
-				mysqlmodel.TableNames.Category,
-				mysqlmodel.CategoryColumns.IsActive,
-				mysqlmodel.CategoryColumns.IsActive,
-			),
-			fmt.Sprintf("%s.%s AS %s",
-				mysqlmodel.TableNames.CategoryType,
-				mysqlmodel.CategoryTypeColumns.ID,
-				mysqlmodel.CategoryColumns.CategoryTypeRefID,
-			),
-			fmt.Sprintf("%s.%s AS %s",
-				mysqlmodel.TableNames.CategoryType,
-				mysqlmodel.CategoryTypeColumns.Name,
-				"category_type",
+				mysqlmodel.TableNames.Organization,
+				mysqlmodel.OrganizationColumns.IsActive,
+				mysqlmodel.OrganizationColumns.IsActive,
 			),
 		),
 	}
+
+	if filters != nil {
+		if len(filters.IdsIn) > 0 {
+			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.IdsIn))
+		}
+
+		if len(filters.OrganizationTypeIdIn) > 0 {
+			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.OrganizationTypeIdIn))
+			fmt.Println("the org query mods dude --- ", queryMods)
+		}
+
+		if len(filters.OrganizationTypeNameIn) > 0 {
+			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.Name.IN(filters.OrganizationTypeNameIn))
+		}
+
+		if len(filters.OrganizationIsActive) > 0 {
+			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.IsActive.EQ(true))
+		}
+
+		if len(filters.OrganizationNameIn) > 0 {
+			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.Name.IN(filters.OrganizationNameIn))
+		}
+	}
+
+	fmt.Println("the queryMods ----- ", queryMods)
+
+	q := mysqlmodel.Organizations(queryMods...)
+	totalCount, err := q.Count(ctx, ctxExec)
+	if err != nil {
+		return nil, fmt.Errorf("get organizations count: %v", err)
+	}
+
+	page := pagination.Page
+	maxRows := pagination.MaxRows
+	if filters != nil {
+		if filters.Page.Valid {
+			page = filters.Page.Int
+		}
+		if filters.MaxRows.Valid {
+			maxRows = filters.MaxRows.Int
+		}
+	}
+
+	pagination.SetQueryBoundaries(page, maxRows, int(totalCount))
+
+	queryMods = append(queryMods, qm.Limit(pagination.MaxRows), qm.Offset(pagination.Offset))
+	q = mysqlmodel.Organizations(queryMods...)
+
+	if err = q.Bind(ctx, ctxExec, &res); err != nil {
+		return nil, fmt.Errorf("get organizations: %v", err)
+	}
+
+	pagination.RowCount = len(res)
+	paginated.Organizations = res
+	paginated.Pagination = pagination
+
+	return &paginated, nil
 }
