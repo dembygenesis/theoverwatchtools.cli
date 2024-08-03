@@ -39,6 +39,7 @@ services:
       - default
     env_file:
       - api.env
+      - db.env
     working_dir: /
     volumes:
       - ../:/src
