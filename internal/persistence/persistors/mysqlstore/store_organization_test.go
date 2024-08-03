@@ -56,7 +56,6 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganization, err error) {
-				fmt.Println("the length --- ", len(paginated.Organizations))
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.Organizations, "unexpected nil organization")
@@ -239,7 +238,7 @@ func Test_UpdateOrganizations_Success(t *testing.T) {
 
 	paginatedOrganizations, err := m.GetOrganizations(testCtx, txHandlerDb, nil)
 	require.NoError(t, err, "unexpected error fetching the organizations from the database")
-	require.NotNil(t, txHandlerDb, "unexpected nil categories")
+	require.NotNil(t, txHandlerDb, "unexpected nil organizations")
 	require.True(t, len(paginatedOrganizations.Organizations) > 0, "unexpected empty organizations")
 
 	updateOrganization := model.UpdateOrganization{
@@ -250,9 +249,9 @@ func Test_UpdateOrganizations_Success(t *testing.T) {
 		},
 	}
 
-	cat, err := m.UpdateOrganization(testCtx, txHandlerDb, &updateOrganization)
-	require.NoError(t, err, "unexpected error updating a conflicting category from the database")
-	assert.Equal(t, paginatedOrganizations.Organizations[0].Name+" new", cat.Name)
+	org, err := m.UpdateOrganization(testCtx, txHandlerDb, &updateOrganization)
+	require.NoError(t, err, "unexpected error updating a conflicting organizations from the database")
+	assert.Equal(t, paginatedOrganizations.Organizations[0].Name+" new", org.Name)
 }
 
 func Test_UpdateOrganization_Fail(t *testing.T) {
@@ -281,7 +280,7 @@ func Test_UpdateOrganization_Fail(t *testing.T) {
 
 	paginatedOrganizations, err := m.GetOrganizations(testCtx, txHandlerDb, nil)
 	require.NoError(t, err, "unexpected error fetching the organizations from the database")
-	require.NotNil(t, txHandlerDb, "unexpected nil categories")
+	require.NotNil(t, txHandlerDb, "unexpected nil organizations")
 	require.True(t, len(paginatedOrganizations.Organizations) > 0, "unexpected empty organizations")
 
 	updateOrganization := model.UpdateOrganization{
@@ -292,10 +291,10 @@ func Test_UpdateOrganization_Fail(t *testing.T) {
 		},
 	}
 
-	cat, err := m.UpdateOrganization(testCtx, txHandlerDb, &updateOrganization)
+	org, err := m.UpdateOrganization(testCtx, txHandlerDb, &updateOrganization)
 	require.Error(t, err, "unexpected nil error fetching a conflicting organization from the database")
 	assert.Contains(t, err.Error(), "Duplicate entry")
-	assert.Nil(t, cat, "unexpected non nil entry")
+	assert.Nil(t, org, "unexpected non nil entry")
 }
 
 type createOrganizationTestCase struct {
@@ -310,7 +309,7 @@ func getAddOrganizationTestCases() []createOrganizationTestCase {
 			name:             "success",
 			organizationName: "Example Organization",
 			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
-				assert.NotNil(t, organization, "unexpected nil category")
+				assert.NotNil(t, organization, "unexpected nil organizations")
 				assert.NoError(t, err, "unexpected non-nil error")
 
 				modelhelpers.AssertNonEmptyOrganizations(t, []model.Organization{*organization})

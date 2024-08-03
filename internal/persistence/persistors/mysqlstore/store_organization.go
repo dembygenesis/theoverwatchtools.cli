@@ -195,7 +195,7 @@ func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.Tran
 
 	organization, err = m.GetOrganizationById(ctx, tx, entry.ID)
 	if err != nil {
-		return nil, fmt.Errorf("get category by id: %v", err)
+		return nil, fmt.Errorf("get organization by id: %v", err)
 	}
 
 	return organization, nil
