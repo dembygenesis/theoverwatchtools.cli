@@ -61,47 +61,6 @@ func TestCreateDatabase(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.D
 
 type CleanFn func(ignoreErrors ...bool)
 
-// testSpawnMariaDB spawns a MariaDB instance from Docker.
-// The main use-case for this function is to dynamically
-// create an integration testing sandbox for MariaDB.
-func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
-	m.Lock()
-	defer m.Unlock()
-
-	boil.DebugMode = true
-	mariaDBContainerName := "test_mariadb"
-
-	cfg := MariaDBConfig{
-		RecreateContainer:   false,
-		ContainerName:       mariaDBContainerName,
-		Host:                cp.Host,
-		Pass:                cp.Pass,
-		Database:            cp.Database,
-		ExposedInternalPort: cp.Port,
-		ExposedExternalPort: cp.Port,
-	}
-
-	// This will create the mariadb container, and the database specified in the env
-	_, err := NewMariaDB(&cfg)
-	require.NoError(t, err, "unexpected error spawning mariaDB")
-
-	cp.Database = strutil.GetUuidUnderscore()
-
-	// This will create the new database inside it
-	db, cleanup := TestCreateDatabase(t, cp)
-	require.NoError(t, err, "unexpected error creating database")
-
-	db.SetMaxIdleConns(100)
-	db.SetMaxIdleConns(10)
-	db.SetConnMaxLifetime(time.Minute * 30)
-
-	tables, err := Migrate(context.TODO(), cp, CreateIfNotExists)
-	require.NoError(t, err, "unexpected error during migration")
-	require.NotEmpty(t, tables, "unexpected empty tables after migration")
-
-	return db, cp, cleanup
-}
-
 func testExistingMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
 	db, err := NewDbClient(context.TODO(), &ClientOptions{
 		ConnString: cp.GetConnectionString(true),
@@ -140,6 +99,47 @@ func testExistingMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.
 	}
 
 	require.NoError(t, err, "unexpected error connecting to existing maria db")
+	return db, cp, cleanup
+}
+
+// testSpawnMariaDB spawns a MariaDB instance from Docker.
+// The main use-case for this function is to dynamically
+// create an integration testing sandbox for MariaDB.
+func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
+	m.Lock()
+	defer m.Unlock()
+
+	boil.DebugMode = true
+	mariaDBContainerName := "test_mariadb"
+
+	cfg := MariaDBConfig{
+		RecreateContainer:   false,
+		ContainerName:       mariaDBContainerName,
+		Host:                cp.Host,
+		Pass:                cp.Pass,
+		Database:            cp.Database,
+		ExposedInternalPort: cp.Port,
+		ExposedExternalPort: cp.Port,
+	}
+
+	// This will create the mariadb container, and the database specified in the env
+	_, err := NewMariaDB(&cfg)
+	require.NoError(t, err, "unexpected error spawning mariaDB")
+
+	cp.Database = strutil.GetUuidUnderscore()
+
+	// This will create the new database inside it
+	db, cleanup := TestCreateDatabase(t, cp)
+	require.NoError(t, err, "unexpected error creating database")
+
+	db.SetMaxIdleConns(100)
+	db.SetMaxIdleConns(10)
+	db.SetConnMaxLifetime(time.Minute * 30)
+
+	tables, err := Migrate(context.TODO(), cp, CreateIfNotExists)
+	require.NoError(t, err, "unexpected error during migration")
+	require.NotEmpty(t, tables, "unexpected empty tables after migration")
+
 	return db, cp, cleanup
 }
 

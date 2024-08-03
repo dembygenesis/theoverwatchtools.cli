@@ -1,1 +1,1 @@
-docker-compose -f ./docker/docker-compose.yaml up --force-recreate --build
+docker-compose -p theoverwatchtools -f ./docker/docker-compose.yaml up --force-recreate --build
