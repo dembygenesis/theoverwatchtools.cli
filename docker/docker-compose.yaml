@@ -2,12 +2,25 @@ version: "3.7"
 
 services:
   controller:
-
+    # command: /bin/bash -c "CompileDaemon -build='go build -o=/tmp/uplb/controller ./cmd/controller' -command='/tmp/uplb/controller controller' -graceful-kill=true"
+    # command: /bin/bash -c "CompileDaemon -build='go build -o=/tmp/uplb/controller ./cmd/controller' -command='/tmp/uplb/controller controller' -graceful-kill=true"
+    # command: /bin/bash sh /entrypoint.s
+    command: sh /entrypoint.sh
     build:
       dockerfile: api.dockerfile
       context: ./docker
       args:
         ENTRYPOINT: "entrypoint.sh"
+    environment:
+      THEOVERWATCHTOOLS_APP_DIR: /Users/dembygenesisabella/apps/utils
+      THEOVERWATCHTOOLS_DB_HOST: "localhost"
+      THEOVERWATCHTOOLS_DB_PORT: "3308"
+      THEOVERWATCHTOOLS_DB_USER: "root"
+      THEOVERWATCHTOOLS_DB_PASS: "secret"
+      THEOVERWATCHTOOLS_DB_DATABASE: "example"
+      THEOVERWATCHTOOLS_DB_USE_EXISTING_MARIADB: "0"
+      THEOVERWATCHTOOLS_DB_QUERY_TIMEOUT: "10s"
+      THEOVERWATCHTOOLS_DB_EXEC_TIMEOUT: "10s"
     networks:
       - default
 
@@ -16,7 +29,7 @@ services:
 #    environment:
 #      CGO_ENABLED: 0
     #hostname: controller.localhost
-    working_dir: /src
+    working_dir: /
     # command: /bin/bash -c 'go build -tags localdev -o /tmp/uplb/controller ./cmd/controller && /tmp/uplb/controller controller'
 #    depends_on:
 #      - db
@@ -24,7 +37,7 @@ services:
 #    networks:
 #      10_default:
     volumes:
-      - controller:/var/lib/controller
+      - ../:/src
 
 networks:
   default:
