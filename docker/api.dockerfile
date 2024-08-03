@@ -27,6 +27,9 @@ RUN go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 # Not sure if I can expose my fucking port ahaha
 # EXPOSE 40000 40000
 
+ADD https://raw.githubusercontent.com/eficode/wait-for/v2.1.0/wait-for /usr/local/bin/wait-for
 COPY $ENTRYPOINT /entrypoint.sh
+
+RUN chmod +rx /usr/local/bin/wait-for /entrypoint.sh
 # ENTRYPOINT ["/entrypoint.sh"]
 # WORKDIR /work
