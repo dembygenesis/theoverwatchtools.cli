@@ -9,26 +9,25 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-func (m *Repository) DropOrganizationTable(ctx context.Context, tx persistence.TransactionHandler) error {
+func (m *Repository) DeleteOrganization(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+	id int,
+) error {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
-		return fmt.Errorf("extract context executor: %w", err)
+		return fmt.Errorf("get ctx exec: %v", err)
 	}
 
-	dropStmts := []string{
-		"SET FOREIGN_KEY_CHECKS = 0;",
-		"DROP TABLE organization;",
-		"SET FOREIGN_KEY_CHECKS = 1;",
+	entry := &mysqlmodel.Organization{
+		ID:       id,
+		IsActive: false,
 	}
-
-	for _, stmt := range dropStmts {
-		if _, err := queries.Raw(stmt).Exec(ctxExec); err != nil {
-			return fmt.Errorf("dropping organization table sql stmt: %v", err)
-		}
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("is_active")); err != nil {
+		return fmt.Errorf("delete: %v", err)
 	}
 
 	return nil
@@ -115,12 +114,6 @@ func (m *Repository) getOrganizations(ctx context.Context,
 	defer cancel()
 
 	queryMods := []qm.QueryMod{
-		qm.InnerJoin(
-			fmt.Sprintf(
-				"%s",
-				mysqlmodel.TableNames.Organization,
-			),
-		),
 		qm.Select(
 			fmt.Sprintf("%s.%s AS %s",
 				mysqlmodel.TableNames.Organization,
@@ -145,15 +138,6 @@ func (m *Repository) getOrganizations(ctx context.Context,
 			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.IdsIn))
 		}
 
-		if len(filters.OrganizationTypeIdIn) > 0 {
-			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.OrganizationTypeIdIn))
-			fmt.Println("the org query mods dude --- ", queryMods)
-		}
-
-		if len(filters.OrganizationTypeNameIn) > 0 {
-			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.Name.IN(filters.OrganizationTypeNameIn))
-		}
-
 		if len(filters.OrganizationIsActive) > 0 {
 			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.IsActive.EQ(true))
 		}
@@ -162,8 +146,6 @@ func (m *Repository) getOrganizations(ctx context.Context,
 			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.Name.IN(filters.OrganizationNameIn))
 		}
 	}
-
-	fmt.Println("the queryMods ----- ", queryMods)
 
 	q := mysqlmodel.Organizations(queryMods...)
 	totalCount, err := q.Count(ctx, ctxExec)
@@ -196,4 +178,64 @@ func (m *Repository) getOrganizations(ctx context.Context,
 	paginated.Pagination = pagination
 
 	return &paginated, nil
+}
+
+func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.Organization) (*model.Organization, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %v", err)
+	}
+
+	entry := mysqlmodel.Organization{
+		Name: organization.Name,
+	}
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("insert organization: %v", err)
+	}
+
+	organization, err = m.GetOrganizationById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get category by id: %v", err)
+	}
+
+	return organization, nil
+}
+
+func (m *Repository) AddOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.Organization) (*model.Organization, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %v", err)
+	}
+
+	entry := &mysqlmodel.Organization{
+		Name: organization.Name,
+	}
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("insert organization: %v", err)
+	}
+
+	organization, err = m.GetOrganizationById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get organization by id: %v", err)
+	}
+
+	return organization, nil
+}
+
+func (m *Repository) RestoreOrganization(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+	id int,
+) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("get ctx exec: %v", err)
+	}
+
+	entry := &mysqlmodel.Organization{ID: id, IsActive: true}
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("is_active")); err != nil {
+		return fmt.Errorf("restore: %w", err)
+	}
+
+	return nil
 }

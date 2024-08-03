@@ -200,8 +200,8 @@ type capturePageSetL struct{}
 
 var (
 	capturePageSetAllColumns            = []string{"id", "name", "url_name", "switch_duration", "organization_ref_id", "analytics_number_of_forms", "analytics_impressions", "analytics_submissions", "analytics_last_updated_at", "created_by", "last_updated_by", "created_at", "last_updated_at", "is_active"}
-	capturePageSetColumnsWithoutDefault = []string{"name", "switch_duration", "organization_ref_id", "created_by", "last_updated_by", "last_updated_at"}
-	capturePageSetColumnsWithDefault    = []string{"id", "url_name", "analytics_number_of_forms", "analytics_impressions", "analytics_submissions", "analytics_last_updated_at", "created_at", "is_active"}
+	capturePageSetColumnsWithoutDefault = []string{"name", "url_name", "switch_duration", "organization_ref_id", "created_by", "last_updated_by", "last_updated_at"}
+	capturePageSetColumnsWithDefault    = []string{"id", "analytics_number_of_forms", "analytics_impressions", "analytics_submissions", "analytics_last_updated_at", "created_at", "is_active"}
 	capturePageSetPrimaryKeyColumns     = []string{"id"}
 	capturePageSetGeneratedColumns      = []string{}
 )

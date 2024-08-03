@@ -169,8 +169,8 @@ type clickTrackerLogL struct{}
 
 var (
 	clickTrackerLogAllColumns            = []string{"id", "name", "ip_address", "redirect_url", "details", "click_tracker_id", "created_by", "last_updated_by", "created_at", "last_updated_at", "is_active"}
-	clickTrackerLogColumnsWithoutDefault = []string{"name", "click_tracker_id", "created_by", "last_updated_by", "last_updated_at"}
-	clickTrackerLogColumnsWithDefault    = []string{"id", "ip_address", "redirect_url", "details", "created_at", "is_active"}
+	clickTrackerLogColumnsWithoutDefault = []string{"name", "ip_address", "click_tracker_id", "created_by", "last_updated_by", "last_updated_at"}
+	clickTrackerLogColumnsWithDefault    = []string{"id", "redirect_url", "details", "created_at", "is_active"}
 	clickTrackerLogPrimaryKeyColumns     = []string{"id"}
 	clickTrackerLogGeneratedColumns      = []string{}
 )

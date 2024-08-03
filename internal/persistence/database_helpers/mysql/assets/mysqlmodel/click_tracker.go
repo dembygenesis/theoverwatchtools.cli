@@ -193,8 +193,8 @@ type clickTrackerL struct{}
 
 var (
 	clickTrackerAllColumns            = []string{"id", "name", "url_name", "redirect_url", "clicks", "unique_clicks", "last_impression_at", "click_tracker_set_id", "created_by", "last_updated_by", "created_at", "last_updated_at", "is_active"}
-	clickTrackerColumnsWithoutDefault = []string{"name", "last_impression_at", "click_tracker_set_id", "created_by", "last_updated_by", "last_updated_at"}
-	clickTrackerColumnsWithDefault    = []string{"id", "url_name", "redirect_url", "clicks", "unique_clicks", "created_at", "is_active"}
+	clickTrackerColumnsWithoutDefault = []string{"name", "url_name", "last_impression_at", "click_tracker_set_id", "created_by", "last_updated_by", "last_updated_at"}
+	clickTrackerColumnsWithDefault    = []string{"id", "redirect_url", "clicks", "unique_clicks", "created_at", "is_active"}
 	clickTrackerPrimaryKeyColumns     = []string{"id"}
 	clickTrackerGeneratedColumns      = []string{}
 )
