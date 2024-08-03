@@ -15,7 +15,7 @@ services:
 #      # - 3341:3341
 #      - "3337:3306"
 #    environment:
-#      MYSQL_ROOT_HOST: "%"
+#      MYSQL_ROOT_HOST: "%"≠
 #      MYSQL_ROOT_PASSWORD: "secret"
 #      MYSQL_TCP_PORT: "3341"
 #      MYSQL_DATABASE: "theoverwatchtools"
