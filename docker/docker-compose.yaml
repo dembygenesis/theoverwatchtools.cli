@@ -1,27 +1,30 @@
 version: "3.7"
 
 services:
-#  db:
-#    build:
-#      context: ./docker
-#    env_file:
-#      - db.env
-#    container_name: "mysql_container"
-#    networks:
-#      - default
-#    restart: always
-#    image: mysql:8.0
-#    ports:
-#      # - 3341:3341
-#      - "3337:3306"
+  db:
+    container_name: "mysql_container"
+    networks:
+      - default
+    restart: always
+    image: mysql:8.0
+    env_file:
+      - db.env
+    ports:
+      # - 3341:3341
+      - "3337:3306"
+      # - "${MYSQL_TCP_PORT}:${MYSQL_TCP_PORT}"
+    environment:
+      MYSQL_TCP_PORT: "3341"
+      DEMBY: "english_language"
+      TRUMPED: "${ANGEL}"
 #    environment:
-#      MYSQL_ROOT_HOST: "%"≠
+#      MYSQL_ROOT_HOST: "%"
 #      MYSQL_ROOT_PASSWORD: "secret"
 #      MYSQL_TCP_PORT: "3341"
 #      MYSQL_DATABASE: "theoverwatchtools"
-#    volumes:
-#      - mysql_data:/var/lib/mysql
-#    command: --default-authentication-plugin=mysql_native_password --sql_mode=""
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --sql_mode=""
 
   # Fuck
   controller:
@@ -51,3 +54,4 @@ networks:
 
 volumes:
   controller:
+  mysql_data:
