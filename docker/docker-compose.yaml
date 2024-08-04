@@ -17,15 +17,10 @@ services:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
 
-  # Fuck
   controller:
     # command: /bin/bash -c "CompileDaemon -build='go build -o=/tmp/uplb/controller ./cmd/controller' -command='/tmp/uplb/controller controller' -graceful-kill=true"
-    # command: sh /entrypoint.sh
-    # command: /bin/bash -c "CompileDaemon -build='go build -o=/tmp/uplb/controller ./cmd/controller' -command='/tmp/uplb/controller controller' -graceful-kill=true"
-    # command: wait-for ${MYSQL_ROOT_PASSWORD} && /bin/bash -c "CompileDaemon -build='go build -o=/tmp/uplb/controller ./cmd/controller' -command='/tmp/uplb/controller controller' -graceful-kill=true"
-    # command: /bin/bash -c "CompileDaemon -build='go build -o=/tmp/uplb/controller ./cmd/controller' -command='/tmp/uplb/controller controller' -graceful-kill=true"
-    # command: /bin/bash -c "CompileDaemon -build='go build -o=/tmp/uplb/controller ./cmd/controller' -command='/tmp/uplb/controller controller' -graceful-kill=true"
-    command: sh /entrypoint.sh
+    command: sh -c "wait-for db:${DB_INTERNAL_PORT} -- echo 'Hello world' && sh /entrypoint.sh"
+    # command: sh -c "sh /entrypoint.sh"
     build:
       dockerfile: api.dockerfile
       context: ./docker

@@ -15,3 +15,6 @@ internal/persistence/helpers/mock/local_credentials.go
 
 # sqlboiler
 sqlboiler.toml
+
+# Vendor
+vendor/*

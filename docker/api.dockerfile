@@ -1,8 +1,8 @@
 FROM golang:1.21.6-bullseye
 ARG ENTRYPOINT
 
-# dont need this
-# RUN apt-get update && apt-get install -y rsync iproute2 haproxy
+# Install necessary packages including netcat
+RUN apt-get update && apt-get install -y netcat
 
 # TODO: explore the debugging tool in the future
 # RUN go install github.com/go-delve/delve/cmd/dlv@latest
