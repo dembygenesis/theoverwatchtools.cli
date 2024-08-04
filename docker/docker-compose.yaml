@@ -11,12 +11,10 @@ services:
       - db.env
     ports:
       # - 3341:3341
-      - "3337:3306"
-      # - "${MYSQL_TCP_PORT}:${MYSQL_TCP_PORT}"
+      # - "3337:3306"
+      - "${DB_EXPOSED_PORT}:${DB_INTERNAL_PORT}"
     environment:
-      MYSQL_TCP_PORT: "3341"
-      DEMBY: "english_language"
-      TRUMPED: "${ANGEL}"
+      MYSQL_TCP_PORT: "${DB_EXPOSED_PORT}"
 #    environment:
 #      MYSQL_ROOT_HOST: "%"
 #      MYSQL_ROOT_PASSWORD: "secret"
