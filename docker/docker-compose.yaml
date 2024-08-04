@@ -10,16 +10,9 @@ services:
     env_file:
       - db.env
     ports:
-      # - 3341:3341
-      # - "3337:3306"
       - "${DB_EXPOSED_PORT}:${DB_INTERNAL_PORT}"
     environment:
       MYSQL_TCP_PORT: "${DB_EXPOSED_PORT}"
-#    environment:
-#      MYSQL_ROOT_HOST: "%"
-#      MYSQL_ROOT_PASSWORD: "secret"
-#      MYSQL_TCP_PORT: "3341"
-#      MYSQL_DATABASE: "theoverwatchtools"
     volumes:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
