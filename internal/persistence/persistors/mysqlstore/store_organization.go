@@ -69,9 +69,6 @@ func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.Tran
 }
 
 func (m *Repository) GetOrganizationById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.Organization, error) {
-
-	fmt.Println("the id we get from the add func --- ", id)
-
 	paginated, err := m.GetOrganizations(ctx, tx, &model.OrganizationFilters{
 		IdsIn: []int{id},
 	})
@@ -86,14 +83,13 @@ func (m *Repository) GetOrganizationById(ctx context.Context, tx persistence.Tra
 	return &paginated.Organizations[0], nil
 }
 
-func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.TransactionHandler, filters *model.OrganizationFilters) (*model.PaginatedOrganization, error) {
+func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.TransactionHandler, filters *model.OrganizationFilters) (*model.PaginatedOrganizations, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
 	res, err := m.getOrganizations(ctx, ctxExec, filters)
-
 	if err != nil {
 		return nil, fmt.Errorf("read organizations: %v", err)
 	}
@@ -103,10 +99,10 @@ func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.Transa
 
 func (m *Repository) getOrganizations(ctx context.Context,
 	ctxExec boil.ContextExecutor,
-	filters *model.OrganizationFilters) (*model.PaginatedOrganization, error) {
+	filters *model.OrganizationFilters) (*model.PaginatedOrganizations, error) {
 
 	var (
-		paginated  model.PaginatedOrganization
+		paginated  model.PaginatedOrganizations
 		pagination = model.NewPagination()
 		res        = make([]model.Organization, 0)
 		err        error
@@ -115,27 +111,17 @@ func (m *Repository) getOrganizations(ctx context.Context,
 	ctx, cancel := context.WithTimeout(ctx, m.cfg.QueryTimeouts.Query)
 	defer cancel()
 
-	//queryMods := []qm.QueryMod{
-	//	qm.Select(
-	//		fmt.Sprintf("%s.%s AS %s",
-	//			mysqlmodel.TableNames.Organization,
-	//			mysqlmodel.OrganizationColumns.ID,
-	//			mysqlmodel.OrganizationColumns.ID,
-	//		),
-	//		fmt.Sprintf("%s.%s AS %s",
-	//			mysqlmodel.TableNames.Organization,
-	//			mysqlmodel.OrganizationColumns.Name,
-	//			mysqlmodel.OrganizationColumns.Name,
-	//		),
-	//		fmt.Sprintf("%s.%s AS %s",
-	//			mysqlmodel.TableNames.Organization,
-	//			mysqlmodel.OrganizationColumns.IsActive,
-	//			mysqlmodel.OrganizationColumns.IsActive,
-	//		),
-	//	),
-	//}
-
 	queryMods := []qm.QueryMod{
+		qm.InnerJoin(
+			fmt.Sprintf(
+				"%s ON %s.%s = %s.%s",
+				mysqlmodel.TableNames.User,
+				mysqlmodel.TableNames.User,
+				mysqlmodel.UserColumns.ID,
+				mysqlmodel.TableNames.Organization,
+				mysqlmodel.OrganizationColumns.CreatedBy,
+			),
+		),
 		qm.Select(
 			fmt.Sprintf("%s.%s AS %s",
 				mysqlmodel.TableNames.Organization,
@@ -173,44 +159,28 @@ func (m *Repository) getOrganizations(ctx context.Context,
 				mysqlmodel.OrganizationColumns.IsActive,
 			),
 		),
-		qm.InnerJoin("user as created_by_user ON organization.created_by = created_by_user.id"),
-		qm.InnerJoin("user as updated_by_user ON organization.last_updated_by = updated_by_user.id"),
 	}
-
-	//if filters != nil {
-	//	if len(filters.IdsIn) > 0 {
-	//		queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.IdsIn))
-	//	}
-	//
-	//	if len(filters.OrganizationIsActive) > 0 {
-	//		queryMods = append(queryMods, mysqlmodel.OrganizationWhere.IsActive.EQ(true))
-	//	}
-	//
-	//	if len(filters.OrganizationNameIn) > 0 {
-	//		queryMods = append(queryMods, mysqlmodel.OrganizationWhere.Name.IN(filters.OrganizationNameIn))
-	//	}
-	//}
 
 	if filters != nil {
 		if len(filters.IdsIn) > 0 {
 			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.IdsIn))
 		}
 
-		//if filters.OrganizationIsActive.Valid {
-		//	queryMods = append(queryMods, mysqlmodel.OrganizationWhere.IsActive.EQ(filters.OrganizationIsActive.Bool))
-		//}
-		//
-		//if len(filters.OrganizationNameIn) > 0 {
-		//	queryMods = append(queryMods, mysqlmodel.OrganizationWhere.Name.IN(filters.OrganizationNameIn))
-		//}
-		//
-		//if filters.CreatedBy.Valid {
-		//	queryMods = append(queryMods, mysqlmodel.OrganizationWhere.CreatedBy.EQ(filters.CreatedBy))
-		//}
-		//
-		//if filters.LastUpdatedBy.Valid {
-		//	queryMods = append(queryMods, mysqlmodel.OrganizationWhere.LastUpdatedBy.EQ(filters.LastUpdatedBy))
-		//}
+		if filters.OrganizationIsActive.Valid {
+			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.IsActive.EQ(filters.OrganizationIsActive.Bool))
+		}
+
+		if len(filters.OrganizationNameIn) > 0 {
+			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.Name.IN(filters.OrganizationNameIn))
+		}
+
+		if filters.CreatedBy.Valid {
+			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.CreatedBy.EQ(filters.CreatedBy))
+		}
+
+		if filters.LastUpdatedBy.Valid {
+			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.LastUpdatedBy.EQ(filters.LastUpdatedBy))
+		}
 	}
 
 	q := mysqlmodel.Organizations(queryMods...)
@@ -243,8 +213,6 @@ func (m *Repository) getOrganizations(ctx context.Context,
 	paginated.Organizations = res
 	paginated.Pagination = pagination
 
-	fmt.Println("the res --- ", len(res))
-
 	return &paginated, nil
 }
 
@@ -276,17 +244,16 @@ func (m *Repository) AddOrganization(ctx context.Context, tx persistence.Transac
 	}
 
 	entry := &mysqlmodel.Organization{
-		Name: organization.Name,
+		Name:      organization.Name,
+		CreatedBy: organization.CreatedBy,
 	}
+
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert organization: %v", err)
 	}
 
-	fmt.Println("the entry id --- ", entry.ID)
-
 	organization, err = m.GetOrganizationById(ctx, tx, entry.ID)
 	if err != nil {
-		fmt.Println("found you!")
 		return nil, fmt.Errorf("get organization by id: %v", err)
 	}
 

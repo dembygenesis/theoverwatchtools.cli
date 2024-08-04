@@ -20,7 +20,7 @@ type Organization struct {
 	IsActive      bool      `json:"is_active" boil:"is_active"`
 }
 
-type PaginatedOrganization struct {
+type PaginatedOrganizations struct {
 	Organizations []Organization `json:"organizations"`
 	Pagination    *Pagination    `json:"pagination"`
 }
