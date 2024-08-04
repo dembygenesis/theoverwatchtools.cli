@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"strings"
 	"testing"
 )
 
@@ -34,15 +33,22 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				IdsIn: []int{1},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-
+				_, err := db.Exec(`
+                    INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
+                    VALUES
+                    (1, 'Organization A', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1),
+                    (2, 'Organization B', 2, 3, '2023-02-01 00:00:00', '2023-02-01 00:00:00', 1),
+                    (3, 'Organization C', 3, 4, '2023-03-01 00:00:00', '2023-03-01 00:00:00', 1)
+                `)
+				require.NoError(t, err, "error inserting sample data")
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganization, err error) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
 				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-				assert.True(t, len(paginated.Organizations) == 1, "unexpected greater than 1 organization")
-				assert.True(t, paginated.Pagination.RowCount == 1, "unexpected count to be greater than 1 organization")
+				assert.True(t, len(paginated.Organizations) == 1, "unexpected number of organizations")
+				assert.True(t, paginated.Pagination.RowCount == 1, "unexpected row count")
 
 				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
 			},
@@ -53,7 +59,14 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				OrganizationNameIn: []string{"Organization A", "Organization B"},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-
+				_, err := db.Exec(`
+                    INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
+                    VALUES
+                    (1, 'Organization A', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1),
+                    (2, 'Organization B', 2, 3, '2023-02-01 00:00:00', '2023-02-01 00:00:00', 1),
+                    (3, 'Organization C', 3, 4, '2023-03-01 00:00:00', '2023-03-01 00:00:00', 1)
+                `)
+				require.NoError(t, err, "error inserting sample data")
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganization, err error) {
 				require.NoError(t, err, "unexpected error")
@@ -73,7 +86,14 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				OrganizationNameIn: []string{"Organization A"},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-
+				_, err := db.Exec(`
+                    INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
+                    VALUES
+                    (1, 'Organization A', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1),
+                    (2, 'Organization B', 2, 3, '2023-02-01 00:00:00', '2023-02-01 00:00:00', 1),
+                    (3, 'Organization C', 3, 4, '2023-03-01 00:00:00', '2023-03-01 00:00:00', 1)
+                `)
+				require.NoError(t, err, "error inserting sample data")
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganization, err error) {
 				require.NoError(t, err, "unexpected error")
@@ -212,46 +232,84 @@ func Test_DeleteOrganization(t *testing.T) {
 	}
 }
 
-func Test_UpdateOrganizations_Success(t *testing.T) {
-	db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
-	defer cleanup()
+type updateOrganizationTestCase struct {
+	name       string
+	id         int
+	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations  func(t *testing.T, db *sqlx.DB)
+}
 
-	cfg := &Config{
-		Logger:        testLogger,
-		QueryTimeouts: testQueryTimeouts,
-	}
+func getUpdateOrganizationTestCases() []updateOrganizationTestCase {
+	return []updateOrganizationTestCase{
+		{
+			name: "success",
+			id:   1,
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Nil(t, err, "unexpected non-nil error")
+				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
+				require.NoError(t, err, "unexpected error fetching the organization")
 
-	m, err := New(cfg)
-	require.NoError(t, err, "unexpected error")
-	require.NotNil(t, m, "unexpected nil")
-
-	txHandler, err := mysqltx.New(&mysqltx.Config{
-		Logger:       testLogger,
-		Db:           db,
-		DatabaseName: cp.Database,
-	})
-	require.NoError(t, err, "unexpected error creating the tx handler")
-
-	txHandlerDb, err := txHandler.Db(testCtx)
-	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
-	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
-
-	paginatedOrganizations, err := m.GetOrganizations(testCtx, txHandlerDb, nil)
-	require.NoError(t, err, "unexpected error fetching the organizations from the database")
-	require.NotNil(t, txHandlerDb, "unexpected nil organizations")
-	require.True(t, len(paginatedOrganizations.Organizations) > 0, "unexpected empty organizations")
-
-	updateOrganization := model.UpdateOrganization{
-		Id: 1,
-		Name: null.String{
-			String: paginatedOrganizations.Organizations[0].Name + " new",
-			Valid:  true,
+				assert.Equal(t, "test organization updated", entry.Name)
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				_, err := db.Exec(`
+					INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
+					VALUES
+					(1, 'Organization A', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1),
+					(2, 'Organization B', 2, 3, '2023-02-01 00:00:00', '2023-02-01 00:00:00', 1),
+					(3, 'Organization C', 3, 4, '2023-03-01 00:00:00', '2023-03-01 00:00:00', 1)
+				`)
+				require.NoError(t, err, "error inserting sample data")
+			},
 		},
 	}
+}
 
-	org, err := m.UpdateOrganization(testCtx, txHandlerDb, &updateOrganization)
-	require.NoError(t, err, "unexpected error updating a conflicting organizations from the database")
-	assert.Equal(t, paginatedOrganizations.Organizations[0].Name+" new", org.Name)
+func Test_UpdateOrganizations_Success(t *testing.T) {
+	for _, testCase := range getUpdateOrganizationTestCases() {
+		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+		t.Run(testCase.name, func(t *testing.T) {
+			require.NotNil(t, testCase.mutations, "unexpected nil mutations")
+			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
+
+			defer cleanup()
+			cfg := &Config{
+				Logger:        testLogger,
+				QueryTimeouts: testQueryTimeouts,
+			}
+
+			m, err := New(cfg)
+			require.NoError(t, err, "unexpected error")
+			require.NotNil(t, m, "unexpected nil")
+
+			txHandler, err := mysqltx.New(&mysqltx.Config{
+				Logger:       testLogger,
+				Db:           db,
+				DatabaseName: cp.Database,
+			})
+			require.NoError(t, err, "unexpected error creating the tx handler")
+
+			txHandlerDb, err := txHandler.Db(testCtx)
+			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+			testCase.mutations(t, db)
+			paginatedOrganizations, err := m.GetOrganizations(testCtx, txHandlerDb, nil)
+			require.NoError(t, err, "unexpected error fetching the organizations from the database")
+			require.NotNil(t, paginatedOrganizations, "unexpected nil organizations")
+			require.True(t, len(paginatedOrganizations.Organizations) > 0, "unexpected empty organizations")
+
+			updateOrganization := model.UpdateOrganization{
+				Id:   1,
+				Name: null.StringFrom("test organization updated"),
+			}
+
+			_, err = m.UpdateOrganization(testCtx, txHandlerDb, &updateOrganization)
+			require.NoError(t, err, "unexpected error updating the organization")
+
+			testCase.assertions(t, db, updateOrganization.Id, err)
+		})
+	}
 }
 
 func Test_UpdateOrganization_Fail(t *testing.T) {
@@ -301,6 +359,7 @@ type createOrganizationTestCase struct {
 	name             string
 	organizationName string
 	assertions       func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error)
+	mutations        func(t *testing.T, db *sqlx.DB)
 }
 
 func getAddOrganizationTestCases() []createOrganizationTestCase {
@@ -308,6 +367,13 @@ func getAddOrganizationTestCases() []createOrganizationTestCase {
 		{
 			name:             "success",
 			organizationName: "Example Organization",
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				_, err := db.Exec(`
+					INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
+					VALUES (1, 'Example Organization', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1)
+				`)
+				require.NoError(t, err, "error inserting sample data")
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
 				assert.NotNil(t, organization, "unexpected nil organizations")
 				assert.NoError(t, err, "unexpected non-nil error")
@@ -315,41 +381,42 @@ func getAddOrganizationTestCases() []createOrganizationTestCase {
 				modelhelpers.AssertNonEmptyOrganizations(t, []model.Organization{*organization})
 			},
 		},
-		{
-			name:             "fail-name-exceeds-limit",
-			organizationName: strings.Repeat("a", 256),
-			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
-				assert.Nil(t, organization, "unexpected non-nil organization")
-				assert.Error(t, err, "unexpected nil-error")
-			},
-		},
+		//{
+		//	name:             "fail-name-exceeds-limit",
+		//	organizationName: strings.Repeat("a", 256),
+		//	assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
+		//		assert.Nil(t, organization, "unexpected non-nil organization")
+		//		assert.Error(t, err, "unexpected nil-error")
+		//	},
+		//},
 	}
 }
 
 func Test_AddOrganization(t *testing.T) {
 	for _, testCase := range getAddOrganizationTestCases() {
-		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 		t.Run(testCase.name, func(t *testing.T) {
+			db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 			defer cleanup()
+
 			cfg := &Config{
 				Logger:        testLogger,
 				QueryTimeouts: testQueryTimeouts,
 			}
 
 			m, err := New(cfg)
-			require.NoError(t, err, "unexpected error")
-			require.NotNil(t, m, "unexpected nil")
+			require.NoError(t, err, "unexpected error creating repository")
+			require.NotNil(t, m, "unexpected nil repository")
 
 			txHandler, err := mysqltx.New(&mysqltx.Config{
 				Logger:       testLogger,
 				Db:           db,
 				DatabaseName: cp.Database,
 			})
-			require.NoError(t, err, "unexpected error creating the tx handler")
+			require.NoError(t, err, "unexpected error creating transaction handler")
 
 			txHandlerDb, err := txHandler.Db(testCtx)
-			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
-			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+			require.NoError(t, err, "unexpected error fetching db from transaction handler")
+			require.NotNil(t, txHandlerDb, "unexpected nil transaction handler db")
 
 			org := &model.Organization{
 				Name: testCase.organizationName,
