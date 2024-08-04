@@ -16,6 +16,7 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"testing"
+	"time"
 )
 
 type testCaseGetOrganizations struct {
@@ -33,13 +34,16 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				IdsIn: []int{1},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				_, err := db.Exec(`
-                    INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
-                    VALUES
-                    (1, 'Organization A', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1),
-                    (2, 'Organization B', 2, 3, '2023-02-01 00:00:00', '2023-02-01 00:00:00', 1),
-                    (3, 'Organization C', 3, 4, '2023-03-01 00:00:00', '2023-03-01 00:00:00', 1)
-                `)
+				entry := mysqlmodel.Organization{
+					ID:            1,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(2),
+					LastUpdatedBy: null.IntFrom(3),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				}
+				err := entry.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganization, err error) {
@@ -59,14 +63,26 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				OrganizationNameIn: []string{"Organization A", "Organization B"},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				_, err := db.Exec(`
-                    INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
-                    VALUES
-                    (1, 'Organization A', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1),
-                    (2, 'Organization B', 2, 3, '2023-02-01 00:00:00', '2023-02-01 00:00:00', 1),
-                    (3, 'Organization C', 3, 4, '2023-03-01 00:00:00', '2023-03-01 00:00:00', 1)
-                `)
-				require.NoError(t, err, "error inserting sample data")
+				entry := []mysqlmodel.Organization{
+					{ID: 1,
+						Name:          "Organization A",
+						CreatedBy:     null.IntFrom(2),
+						LastUpdatedBy: null.IntFrom(3),
+						CreatedAt:     time.Now(),
+						LastUpdatedAt: null.TimeFrom(time.Now()),
+						IsActive:      true}, {ID: 2,
+						Name:          "Organization B",
+						CreatedBy:     null.IntFrom(2),
+						LastUpdatedBy: null.IntFrom(3),
+						CreatedAt:     time.Now(),
+						LastUpdatedAt: null.TimeFrom(time.Now()),
+						IsActive:      true},
+				}
+
+				for _, org := range entry {
+					err := org.Insert(context.Background(), db, boil.Infer())
+					require.NoError(t, err, "error inserting sample data")
+				}
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganization, err error) {
 				require.NoError(t, err, "unexpected error")
@@ -86,13 +102,16 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				OrganizationNameIn: []string{"Organization A"},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				_, err := db.Exec(`
-                    INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
-                    VALUES
-                    (1, 'Organization A', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1),
-                    (2, 'Organization B', 2, 3, '2023-02-01 00:00:00', '2023-02-01 00:00:00', 1),
-                    (3, 'Organization C', 3, 4, '2023-03-01 00:00:00', '2023-03-01 00:00:00', 1)
-                `)
+				entry := mysqlmodel.Organization{
+					ID:            1,
+					Name:          "Organization A",
+					CreatedBy:     null.IntFrom(2),
+					LastUpdatedBy: null.IntFrom(3),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				}
+				err := entry.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganization, err error) {
@@ -113,7 +132,6 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				OrganizationNameIn: []string{"Super Admin"},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganization, err error) {
 				require.NoError(t, err, "unexpected error")
@@ -368,11 +386,18 @@ func getAddOrganizationTestCases() []createOrganizationTestCase {
 			name:             "success",
 			organizationName: "Example Organization",
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				_, err := db.Exec(`
-					INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
-					VALUES (1, 'Example Organization', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1)
-				`)
-				require.NoError(t, err, "error inserting sample data")
+
+				entry := mysqlmodel.Organization{
+					Name:          "Organization A",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(2),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				}
+
+				entry.Insert(context.Background(), db, boil.Infer())
+
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
 				assert.NotNil(t, organization, "unexpected nil organizations")
