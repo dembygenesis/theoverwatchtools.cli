@@ -2,7 +2,6 @@ package mysqlstore
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/persistence"
@@ -27,7 +26,7 @@ func (m *Repository) DeleteOrganization(
 		ID:       id,
 		IsActive: false,
 	}
-	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.OrganizationColumns.IsActive)); err != nil {
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("is_active")); err != nil {
 		return fmt.Errorf("delete: %v", err)
 	}
 
@@ -76,22 +75,9 @@ func (m *Repository) GetOrganizationById(ctx context.Context, tx persistence.Tra
 	if err != nil {
 		return nil, fmt.Errorf("organization filtered by id: %v", err)
 	}
+
 	if paginated.Pagination.RowCount != 1 {
 		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, id)
-	}
-
-	return &paginated.Organizations[0], nil
-}
-
-func (m *Repository) GetOrganizationByName(ctx context.Context, tx persistence.TransactionHandler, name string) (*model.Organization, error) {
-	paginated, err := m.GetOrganizations(ctx, tx, &model.OrganizationFilters{
-		OrganizationNameIn: []string{name},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("category filtered by name: %v", err)
-	}
-	if paginated.Pagination.RowCount != 1 {
-		return nil, errors.New(sysconsts.ErrExpectedExactlyOneEntry)
 	}
 
 	return &paginated.Organizations[0], nil
@@ -285,7 +271,7 @@ func (m *Repository) RestoreOrganization(
 	}
 
 	entry := &mysqlmodel.Organization{ID: id, IsActive: true}
-	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.OrganizationColumns.IsActive)); err != nil {
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("is_active")); err != nil {
 		return fmt.Errorf("restore: %w", err)
 	}
 

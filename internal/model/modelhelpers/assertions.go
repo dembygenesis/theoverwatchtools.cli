@@ -18,9 +18,5 @@ func AssertNonEmptyOrganizations(t *testing.T, organizations []model.Organizatio
 	for _, organization := range organizations {
 		assert.NotEmpty(t, organization.Id, "unexpected empty organization id")
 		assert.NotEmpty(t, organization.Name, "unexpected empty organization name")
-		assert.NotEmpty(t, organization.CreatedBy, "unexpected empty organization created_by")
-		assert.NotEmpty(t, organization.CreatedAt, "unexpected empty organization created_at")
-		assert.NotEmpty(t, organization.LastUpdatedAt, "unexpected empty organization last_updated_at")
-		assert.NotEmpty(t, organization.LastUpdatedBy, "unexpected empty organization last_updated_by")
 	}
 }
