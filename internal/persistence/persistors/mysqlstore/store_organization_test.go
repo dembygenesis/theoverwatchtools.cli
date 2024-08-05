@@ -267,13 +267,16 @@ func getUpdateOrganizationTestCases() []updateOrganizationTestCase {
 				assert.Equal(t, "test organization updated", entry.Name)
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				_, err := db.Exec(`
-					INSERT INTO organization (id, name, created_by, last_updated_by, created_at, last_updated_at, is_active)
-					VALUES
-					(1, 'Organization A', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', 1),
-					(2, 'Organization B', 2, 3, '2023-02-01 00:00:00', '2023-02-01 00:00:00', 1),
-					(3, 'Organization C', 3, 4, '2023-03-01 00:00:00', '2023-03-01 00:00:00', 1)
-				`)
+				entry := mysqlmodel.Organization{
+					ID:            1,
+					Name:          "Organization A",
+					CreatedBy:     null.IntFrom(2),
+					LastUpdatedBy: null.IntFrom(3),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				}
+				err := entry.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 			},
 		},
@@ -458,18 +461,23 @@ func getRestoreOrganizationTestCases() []restoreOrganizationTestCase {
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
 				entry := mysqlmodel.Organization{
-					Name: "test",
+					ID:            1,
+					Name:          "test",
+					CreatedBy:     null.IntFrom(2),
+					LastUpdatedBy: null.IntFrom(3),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      false,
 				}
 				err := entry.Insert(context.TODO(), db, boil.Infer())
-				assert.NoError(t, err, "unexpected insert error")
+				require.NoError(t, err, "error inserting sample data")
 
 				entry.IsActive = false
 				_, err = entry.Update(context.TODO(), db, boil.Infer())
-				assert.NoError(t, err, "unexpected update error")
+				require.NoError(t, err, "unexpected update error")
 
 				err = entry.Reload(context.TODO(), db)
-				assert.NoError(t, err, "unexpected reload error")
-
+				require.NoError(t, err, "unexpected reload error")
 				assert.Equal(t, false, entry.IsActive)
 			},
 		},
