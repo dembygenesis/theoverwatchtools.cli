@@ -7,8 +7,6 @@ services:
       - default
     restart: always
     image: mysql:8.0
-    env_file:
-      - db.env
     ports:
       - "${DB_EXPOSED_PORT}:${DB_INTERNAL_PORT}"
     environment:
@@ -19,6 +17,7 @@ services:
 
   controller:
     # command: /bin/bash -c "CompileDaemon -build='go build -o=/tmp/uplb/controller ./cmd/controller' -command='/tmp/uplb/controller controller' -graceful-kill=true"
+    # command: sh -c "wait-for db:${DB_INTERNAL_PORT} -- echo 'Hello world' && sh /entrypoint.sh"
     command: sh -c "wait-for db:${DB_INTERNAL_PORT} -- echo 'Hello world' && sh /entrypoint.sh"
     # command: sh -c "sh /entrypoint.sh"
     build:
@@ -28,10 +27,10 @@ services:
         ENTRYPOINT: "entrypoint.sh"
     networks:
       - default
-    env_file:
-      - api.env
-      - db.env
-    working_dir: /
+    environment:
+      THEOVERWATCHTOOLS_DB_PORT: "${DB_INTERNAL_PORT}"
+      # - db.env
+    working_dir: /src
     volumes:
       - ../:/src
 
