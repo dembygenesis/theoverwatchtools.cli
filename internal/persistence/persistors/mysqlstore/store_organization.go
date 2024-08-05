@@ -8,6 +8,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -73,6 +74,21 @@ func (m *Repository) GetOrganizationById(ctx context.Context, tx persistence.Tra
 
 	if paginated.Pagination.RowCount != 1 {
 		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, id)
+	}
+
+	return &paginated.Organizations[0], nil
+}
+
+func (m *Repository) GetOrganizationByName(ctx context.Context, tx persistence.TransactionHandler, name string) (*model.Organization, error) {
+	paginated, err := m.GetOrganizations(ctx, tx, &model.OrganizationFilters{
+		OrganizationNameIn: []string{name},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("organization filtered by name: %v", err)
+	}
+
+	if paginated.Pagination.RowCount != 1 {
+		return nil, errors.New(sysconsts.ErrExpectedExactlyOneEntry)
 	}
 
 	return &paginated.Organizations[0], nil
