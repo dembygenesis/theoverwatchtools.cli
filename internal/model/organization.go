@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/volatiletech/null/v8"
 	"time"
 )
@@ -8,6 +10,11 @@ import (
 type UpdateOrganization struct {
 	Id   int         `json:"id" validate:"required,greater_than_zero"`
 	Name null.String `json:"name"`
+}
+
+type CreateOrganization struct {
+	Name      string   `json:"name" validate:"required"`
+	CreatedBy null.Int `json:"created_by"`
 }
 
 type Organization struct {
@@ -32,4 +39,19 @@ type OrganizationFilters struct {
 	CreatedBy              null.Int  `query:"created_by" json:"created_by"`           // New field
 	LastUpdatedBy          null.Int  `query:"last_updated_by" json:"last_updated_by"` // New field
 	PaginationQueryFilters `swaggerignore:"true"`
+}
+
+func (c *CreateOrganization) Validate() error {
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %v", err)
+	}
+	return nil
+}
+
+func (c *CreateOrganization) ToOrganization() *Organization {
+	organization := &Organization{
+		Name:      c.Name,
+		CreatedBy: c.CreatedBy,
+	}
+	return organization
 }

@@ -19,10 +19,3 @@ CREATE TABLE `organization`
 );
 
 SET FOREIGN_KEY_CHECKS = 1;
-
--- the only way to make Test_UpdateOrganization_Fail work is to run this lines below with the go run ./cmd/migrate
--- INSERT INTO `organization` (`name`, `created_by`, `last_updated_by`, `created_at`, `last_updated_at`, `is_active`)
--- VALUES
---     ('Organization A', 1, 2, '2023-01-01 00:00:00', '2023-01-01 00:00:00', TRUE),
---     ('Organization B', 2, 3, '2023-02-01 00:00:00', '2023-02-01 00:00:00', TRUE),
---     ('Organization C', 3, 4, '2023-03-01 00:00:00', '2023-03-01 00:00:00', TRUE);
