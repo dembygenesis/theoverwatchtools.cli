@@ -46,9 +46,9 @@ func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.Tran
 	entry := &mysqlmodel.Organization{ID: params.Id}
 	cols := []string{mysqlmodel.OrganizationColumns.ID}
 
-	//if params.OrganizationTypeRefId.Valid {
-	//    entry.OrganizationRefUsers() = params.OrganizationTypeRefId.Int
-	//    cols = append(cols, mysqlmodel.OrganizationColumns.IsActive)
+	//if params.Id {
+	//   entry.OrganizationRefUsers() = params.OrganizationTypeRefId.Int
+	//   cols = append(cols, mysqlmodel.OrganizationColumns.IsActive)
 	//}
 
 	if params.Name.Valid {
