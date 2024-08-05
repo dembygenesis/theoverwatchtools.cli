@@ -355,7 +355,7 @@ func getAddOrganizationTestCases() []createOrganizationTestCase {
 		{
 			name:             "success",
 			organizationName: "Example Organization",
-			createdBy:        null.IntFrom(1),
+			createdBy:        null.IntFrom(3),
 			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
 				assert.NotNil(t, organization, "unexpected nil organization")
 				assert.NoError(t, err, "unexpected non-nil error")
