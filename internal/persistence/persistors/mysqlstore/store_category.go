@@ -231,7 +231,6 @@ func (m *Repository) getCategories(
 
 		if len(filters.CategoryTypeIdIn) > 0 {
 			queryMods = append(queryMods, mysqlmodel.CategoryTypeWhere.ID.IN(filters.CategoryTypeIdIn))
-			fmt.Println("the cat query mods dude --- ", queryMods)
 		}
 
 		if len(filters.CategoryTypeNameIn) > 0 {
@@ -246,8 +245,6 @@ func (m *Repository) getCategories(
 			queryMods = append(queryMods, mysqlmodel.CategoryWhere.Name.IN(filters.CategoryNameIn))
 		}
 	}
-
-	fmt.Println("the queryMods ----- ", queryMods)
 
 	q := mysqlmodel.Categories(queryMods...)
 	totalCount, err := q.Count(ctx, ctxExec)

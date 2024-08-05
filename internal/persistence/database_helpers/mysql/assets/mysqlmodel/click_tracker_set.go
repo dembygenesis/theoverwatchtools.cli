@@ -176,8 +176,8 @@ type clickTrackerSetL struct{}
 
 var (
 	clickTrackerSetAllColumns            = []string{"id", "name", "url_name", "analytics_number_of_links", "analytics_last_updated_at", "last_impression_at", "organization_id", "created_by", "last_updated_by", "created_at", "last_updated_at", "is_active"}
-	clickTrackerSetColumnsWithoutDefault = []string{"name", "last_impression_at", "organization_id", "created_by", "last_updated_by", "last_updated_at"}
-	clickTrackerSetColumnsWithDefault    = []string{"id", "url_name", "analytics_number_of_links", "analytics_last_updated_at", "created_at", "is_active"}
+	clickTrackerSetColumnsWithoutDefault = []string{"name", "url_name", "last_impression_at", "organization_id", "created_by", "last_updated_by", "last_updated_at"}
+	clickTrackerSetColumnsWithDefault    = []string{"id", "analytics_number_of_links", "analytics_last_updated_at", "created_at", "is_active"}
 	clickTrackerSetPrimaryKeyColumns     = []string{"id"}
 	clickTrackerSetGeneratedColumns      = []string{}
 )
