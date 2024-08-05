@@ -27,7 +27,7 @@ func (m *Repository) DeleteOrganization(
 		ID:       id,
 		IsActive: false,
 	}
-	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("is_active")); err != nil {
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.OrganizationColumns.IsActive)); err != nil {
 		return fmt.Errorf("delete: %v", err)
 	}
 
@@ -84,7 +84,7 @@ func (m *Repository) GetOrganizationByName(ctx context.Context, tx persistence.T
 		OrganizationNameIn: []string{name},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("organization filtered by name: %v", err)
+		return nil, fmt.Errorf("organization filtered by name: %w", err)
 	}
 
 	if paginated.Pagination.RowCount != 1 {
@@ -237,7 +237,7 @@ func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.Tran
 		Name: organization.Name,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
-		return nil, fmt.Errorf("insert organization: %v", err)
+		return nil, fmt.Errorf("insert organization: %w", err)
 	}
 
 	organization, err = m.GetOrganizationById(ctx, tx, entry.ID)
@@ -282,7 +282,7 @@ func (m *Repository) RestoreOrganization(
 	}
 
 	entry := &mysqlmodel.Organization{ID: id, IsActive: true}
-	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist("is_active")); err != nil {
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.OrganizationColumns.IsActive)); err != nil {
 		return fmt.Errorf("restore: %w", err)
 	}
 

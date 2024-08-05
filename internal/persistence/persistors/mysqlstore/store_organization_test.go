@@ -63,7 +63,8 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
 				entry := []mysqlmodel.Organization{
-					{ID: 1,
+					{
+						ID:            1,
 						Name:          "Organization A",
 						CreatedBy:     null.IntFrom(2),
 						LastUpdatedBy: null.IntFrom(3),
