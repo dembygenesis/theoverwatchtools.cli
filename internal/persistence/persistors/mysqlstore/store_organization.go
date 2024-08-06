@@ -20,7 +20,7 @@ func (m *Repository) DeleteOrganization(
 ) error {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
-		return fmt.Errorf("get ctx exec: %v", err)
+		return fmt.Errorf("get ctx exec: %w", err)
 	}
 
 	entry := &mysqlmodel.Organization{
@@ -28,7 +28,7 @@ func (m *Repository) DeleteOrganization(
 		IsActive: false,
 	}
 	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.OrganizationColumns.IsActive)); err != nil {
-		return fmt.Errorf("delete: %v", err)
+		return fmt.Errorf("delete: %w", err)
 	}
 
 	return nil
@@ -53,12 +53,12 @@ func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.Tran
 
 	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
 	if err != nil {
-		return nil, fmt.Errorf("update failed: %v", err)
+		return nil, fmt.Errorf("update failed: %w", err)
 	}
 
 	organization, err := m.GetOrganizationById(ctx, tx, entry.ID)
 	if err != nil {
-		return nil, fmt.Errorf("get organitzation by id: %v", err)
+		return nil, fmt.Errorf("get organitzation by id: %w", err)
 	}
 
 	return organization, nil
@@ -69,7 +69,7 @@ func (m *Repository) GetOrganizationById(ctx context.Context, tx persistence.Tra
 		IdsIn: []int{id},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("organization filtered by id: %v", err)
+		return nil, fmt.Errorf("organization filtered by id: %w", err)
 	}
 
 	if paginated.Pagination.RowCount != 1 {
@@ -97,12 +97,12 @@ func (m *Repository) GetOrganizationByName(ctx context.Context, tx persistence.T
 func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.TransactionHandler, filters *model.OrganizationFilters) (*model.PaginatedOrganizations, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
-		return nil, fmt.Errorf("extract context executor: %v", err)
+		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
 	res, err := m.getOrganizations(ctx, ctxExec, filters)
 	if err != nil {
-		return nil, fmt.Errorf("read organizations: %v", err)
+		return nil, fmt.Errorf("read organizations: %w", err)
 	}
 
 	return res, nil
@@ -197,7 +197,7 @@ func (m *Repository) getOrganizations(ctx context.Context,
 	q := mysqlmodel.Organizations(queryMods...)
 	totalCount, err := q.Count(ctx, ctxExec)
 	if err != nil {
-		return nil, fmt.Errorf("get organizations count: %v", err)
+		return nil, fmt.Errorf("get organizations count: %w", err)
 	}
 
 	page := pagination.Page
@@ -217,7 +217,7 @@ func (m *Repository) getOrganizations(ctx context.Context,
 	q = mysqlmodel.Organizations(queryMods...)
 
 	if err = q.Bind(ctx, ctxExec, &res); err != nil {
-		return nil, fmt.Errorf("get organizations: %v", err)
+		return nil, fmt.Errorf("get organizations: %w", err)
 	}
 
 	pagination.RowCount = len(res)
@@ -230,7 +230,7 @@ func (m *Repository) getOrganizations(ctx context.Context,
 func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.Organization) (*model.Organization, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
-		return nil, fmt.Errorf("extract context executor: %v", err)
+		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
 	entry := mysqlmodel.Organization{
@@ -242,7 +242,7 @@ func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.Tran
 
 	organization, err = m.GetOrganizationById(ctx, tx, entry.ID)
 	if err != nil {
-		return nil, fmt.Errorf("get organization by id: %v", err)
+		return nil, fmt.Errorf("get organization by id: %w", err)
 	}
 
 	return organization, nil
@@ -251,7 +251,7 @@ func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.Tran
 func (m *Repository) AddOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.Organization) (*model.Organization, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
-		return nil, fmt.Errorf("extract context executor: %v", err)
+		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
 	entry := &mysqlmodel.Organization{
@@ -260,12 +260,12 @@ func (m *Repository) AddOrganization(ctx context.Context, tx persistence.Transac
 	}
 
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
-		return nil, fmt.Errorf("insert organization: %v", err)
+		return nil, fmt.Errorf("insert organization: %w", err)
 	}
 
 	organization, err = m.GetOrganizationById(ctx, tx, entry.ID)
 	if err != nil {
-		return nil, fmt.Errorf("get organization by id: %v", err)
+		return nil, fmt.Errorf("get organization by id: %w", err)
 	}
 
 	return organization, nil
@@ -278,7 +278,7 @@ func (m *Repository) RestoreOrganization(
 ) error {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
-		return fmt.Errorf("get ctx exec: %v", err)
+		return fmt.Errorf("get ctx exec: %w", err)
 	}
 
 	entry := &mysqlmodel.Organization{ID: id, IsActive: true}
