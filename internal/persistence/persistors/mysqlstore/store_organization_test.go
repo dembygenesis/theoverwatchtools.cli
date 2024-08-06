@@ -304,8 +304,8 @@ func getUpdateOrganizationTestCases() []testCaseUpdateOrganization {
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization) {
 				updateData = model.UpdateOrganization{
-					Id:   32123,
-					Name: null.StringFrom("wrong name"),
+					Id:   organization.Id,
+					Name: organization.Name,
 				}
 				return updateData
 			},
@@ -350,9 +350,18 @@ func Test_UpdateOrganization(t *testing.T) {
 		err = initialOrganization.Insert(context.Background(), db, boil.Infer())
 		require.NoError(t, err, "unexpected error inserting initial organization")
 
-		organization := &model.UpdateOrganization{
-			Id:   1,
-			Name: null.StringFrom("Organization A new"),
+		organization := &model.UpdateOrganization{}
+
+		if testCase.name == "success" {
+			organization = &model.UpdateOrganization{
+				Id:   1,
+				Name: null.StringFrom("Organization A new"),
+			}
+		} else if testCase.name == "fail" {
+			organization = &model.UpdateOrganization{
+				Id:   32123,
+				Name: null.StringFrom("Wrong Name"),
+			}
 		}
 
 		updateData := testCase.mutations(t, db, organization)
