@@ -13,15 +13,15 @@ type UpdateOrganization struct {
 }
 
 type CreateOrganization struct {
-	Name      string   `json:"name" validate:"required"`
-	CreatedBy null.Int `json:"created_by"`
+	Name      string `json:"name" validate:"required"`
+	CreatedBy string `json:"created_by"`
 }
 
 type Organization struct {
 	Id            int       `json:"id" boil:"id"`
 	Name          string    `json:"name" boil:"name"`
-	CreatedBy     null.Int  `json:"created_by" boil:"created_by"`
-	LastUpdatedBy null.Int  `json:"last_updated_by" boil:"last_updated_by"`
+	CreatedBy     string    `json:"created_by" boil:"created_by"`
+	LastUpdatedBy string    `json:"last_updated_by" boil:"last_updated_by"`
 	CreatedAt     time.Time `json:"created_at" boil:"created_at"`
 	LastUpdatedAt null.Time `json:"last_updated_at" boil:"last_updated_at"`
 	IsActive      bool      `json:"is_active" boil:"is_active"`

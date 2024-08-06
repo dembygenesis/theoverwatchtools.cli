@@ -9,6 +9,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -58,7 +59,7 @@ func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.Tran
 
 	organization, err := m.GetOrganizationById(ctx, tx, entry.ID)
 	if err != nil {
-		return nil, fmt.Errorf("get organitzation by id: %w", err)
+		return nil, fmt.Errorf("get organization by id: %w", err)
 	}
 
 	return organization, nil
@@ -220,6 +221,8 @@ func (m *Repository) getOrganizations(ctx context.Context,
 		return nil, fmt.Errorf("get organizations: %w", err)
 	}
 
+	fmt.Println("the querymods --- ", queryMods)
+
 	pagination.RowCount = len(res)
 	paginated.Organizations = res
 	paginated.Pagination = pagination
@@ -248,15 +251,34 @@ func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.Tran
 	return organization, nil
 }
 
+func (m *Repository) ConvertNameToID(ctx context.Context, tx persistence.TransactionHandler, userName string) (int, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return 0, fmt.Errorf("extract context executor: %w", err)
+	}
+
+	var userID int
+	err = ctxExec.QueryRowContext(ctx, "SELECT id FROM users WHERE name = ?", userName).Scan(&userID)
+	if err != nil {
+		return 0, fmt.Errorf("query user id: %w", err)
+	}
+	return userID, nil
+}
+
 func (m *Repository) AddOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.Organization) (*model.Organization, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
+	createdByID, err := m.ConvertNameToID(ctx, tx, organization.CreatedBy)
+	if err != nil {
+		return nil, fmt.Errorf("convert createdBy to ID: %w", err)
+	}
+
 	entry := &mysqlmodel.Organization{
 		Name:      organization.Name,
-		CreatedBy: organization.CreatedBy,
+		CreatedBy: null.IntFrom(createdByID),
 	}
 
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
