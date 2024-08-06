@@ -299,8 +299,8 @@ func getUpdateOrganizationTestCases() []testCaseUpdateOrganization {
 		{
 			name: "fail",
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-				_, err = mysqlmodel.FindOrganization(context.TODO(), db, id)
-				require.Error(t, err, "expected an error fetching the organization but got none")
+				require.Error(t, err, "expected error when updating a non-existent organization")
+				assert.Contains(t, err.Error(), "expected exactly one entry for entity: 32123")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization) {
 				updateData = model.UpdateOrganization{
@@ -360,43 +360,6 @@ func Test_UpdateOrganization(t *testing.T) {
 		_, err = m.UpdateOrganization(testCtx, txHandlerDb, &updateData)
 		testCase.assertions(t, db, updateData.Id, err)
 	}
-}
-
-func Test_UpdateOrganization_Fail(t *testing.T) {
-	db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
-	defer cleanup()
-
-	cfg := &Config{
-		Logger:        testLogger,
-		QueryTimeouts: testQueryTimeouts,
-	}
-
-	m, err := New(cfg)
-	require.NoError(t, err, "unexpected error")
-	require.NotNil(t, m, "unexpected nil")
-
-	txHandler, err := mysqltx.New(&mysqltx.Config{
-		Logger:       testLogger,
-		Db:           db,
-		DatabaseName: cp.Database,
-	})
-	require.NoError(t, err, "unexpected error creating the tx handler")
-
-	txHandlerDb, err := txHandler.Db(testCtx)
-	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
-	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
-
-	updateOrganization := model.UpdateOrganization{
-		Id: 3123123123,
-		Name: null.String{
-			String: "Non-existent Organization",
-			Valid:  true,
-		},
-	}
-
-	_, err = m.UpdateOrganization(testCtx, txHandlerDb, &updateOrganization)
-	require.Error(t, err, "expected error when updating a non-existent organization")
-	assert.Contains(t, err.Error(), "expected exactly one entry for entity: 3123123123")
 }
 
 type testCaseCreateOrganization struct {
