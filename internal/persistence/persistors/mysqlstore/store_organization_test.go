@@ -271,16 +271,30 @@ func Test_DeleteOrganization(t *testing.T) {
 }
 
 type testCaseUpdateOrganization struct {
-	name       string
-	id         int
-	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
-	mutations  func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization)
+	name                string
+	initialOrganization mysqlmodel.Organization
+	updateOrganization  model.UpdateOrganization
+	assertions          func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations           func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization)
 }
 
 func getUpdateOrganizationTestCases() []testCaseUpdateOrganization {
 	return []testCaseUpdateOrganization{
 		{
 			name: "success",
+			initialOrganization: mysqlmodel.Organization{
+				ID:            1,
+				Name:          "Organization A",
+				CreatedBy:     null.IntFrom(1),
+				LastUpdatedBy: null.IntFrom(1),
+				CreatedAt:     time.Now(),
+				LastUpdatedAt: null.TimeFrom(time.Now()),
+				IsActive:      true,
+			},
+			updateOrganization: model.UpdateOrganization{
+				Id:   1,
+				Name: null.StringFrom("Organization A new"),
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				require.Nil(t, err, "unexpected non-nil error")
 				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
@@ -298,6 +312,19 @@ func getUpdateOrganizationTestCases() []testCaseUpdateOrganization {
 		},
 		{
 			name: "fail",
+			initialOrganization: mysqlmodel.Organization{
+				ID:            1,
+				Name:          "Organization A",
+				CreatedBy:     null.IntFrom(1),
+				LastUpdatedBy: null.IntFrom(1),
+				CreatedAt:     time.Now(),
+				LastUpdatedAt: null.TimeFrom(time.Now()),
+				IsActive:      true,
+			},
+			updateOrganization: model.UpdateOrganization{
+				Id:   32123,
+				Name: null.StringFrom("Wrong Name"),
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				require.Error(t, err, "expected error when updating a non-existent organization")
 				assert.Contains(t, err.Error(), "expected exactly one entry for entity: 32123")
@@ -338,33 +365,10 @@ func Test_UpdateOrganization(t *testing.T) {
 		require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 		require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-		initialOrganization := mysqlmodel.Organization{
-			ID:            1,
-			Name:          "Organization A",
-			CreatedBy:     null.IntFrom(1),
-			LastUpdatedBy: null.IntFrom(1),
-			CreatedAt:     time.Now(),
-			LastUpdatedAt: null.TimeFrom(time.Now()),
-			IsActive:      true,
-		}
-		err = initialOrganization.Insert(context.Background(), db, boil.Infer())
+		err = testCase.initialOrganization.Insert(context.Background(), db, boil.Infer())
 		require.NoError(t, err, "unexpected error inserting initial organization")
 
-		organization := &model.UpdateOrganization{}
-
-		if testCase.name == "success" {
-			organization = &model.UpdateOrganization{
-				Id:   1,
-				Name: null.StringFrom("Organization A new"),
-			}
-		} else if testCase.name == "fail" {
-			organization = &model.UpdateOrganization{
-				Id:   32123,
-				Name: null.StringFrom("Wrong Name"),
-			}
-		}
-
-		updateData := testCase.mutations(t, db, organization)
+		updateData := testCase.mutations(t, db, &testCase.updateOrganization)
 
 		_, err = m.UpdateOrganization(testCtx, txHandlerDb, &updateData)
 		testCase.assertions(t, db, updateData.Id, err)
