@@ -38,8 +38,8 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 					Name:          "TEST",
 					CreatedBy:     organization.CreatedBy,
 					LastUpdatedBy: organization.LastUpdatedBy,
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
+					CreatedAt:     organization.CreatedAt,
+					LastUpdatedAt: organization.LastUpdatedAt,
 					IsActive:      organization.IsActive,
 				}
 				err := entry.Insert(context.Background(), db, boil.Infer())
@@ -56,99 +56,99 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
 			},
 		},
-		//{
-		//	name: "success-filter-names-in",
-		//	filter: &model.OrganizationFilters{
-		//		OrganizationNameIn: []string{"Organization A", "Organization B"},
-		//	},
-		//	mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) {
-		//
-		//		entry := []mysqlmodel.Organization{
-		//			{
-		//				ID:            1,
-		//				Name:          "Organization A",
-		//				CreatedBy:     null.IntFrom(2),
-		//				LastUpdatedBy: null.IntFrom(3),
-		//				CreatedAt:     time.Now(),
-		//				LastUpdatedAt: null.TimeFrom(time.Now()),
-		//				IsActive:      true,
-		//			},
-		//			{
-		//				ID:            2,
-		//				Name:          "Organization B",
-		//				CreatedBy:     null.IntFrom(2),
-		//				LastUpdatedBy: null.IntFrom(3),
-		//				CreatedAt:     time.Now(),
-		//				LastUpdatedAt: null.TimeFrom(time.Now()),
-		//				IsActive:      true,
-		//			},
-		//		}
-		//
-		//		for _, org := range entry {
-		//			err := org.Insert(context.Background(), db, boil.Infer())
-		//			require.NoError(t, err, "error inserting sample data")
-		//		}
-		//	},
-		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
-		//		require.NoError(t, err, "unexpected error")
-		//		require.NotNil(t, paginated, "unexpected nil paginated")
-		//		require.NotNil(t, paginated.Organizations, "unexpected nil organization")
-		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-		//		assert.True(t, len(paginated.Organizations) == 2, "unexpected greater than 1 organization")
-		//		assert.True(t, paginated.Pagination.RowCount == 2, "unexpected count to be greater than 1 organization")
-		//
-		//		modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
-		//	},
-		//},
-		//{
-		//	name: "success-multiple-filters",
-		//	filter: &model.OrganizationFilters{
-		//		IdsIn:              []int{1},
-		//		OrganizationNameIn: []string{"Organization A"},
-		//	},
-		//	mutations: func(t *testing.T, db *sqlx.DB) {
-		//		entry := mysqlmodel.Organization{
-		//			ID:            1,
-		//			Name:          "Organization A",
-		//			CreatedBy:     null.IntFrom(2),
-		//			LastUpdatedBy: null.IntFrom(3),
-		//			CreatedAt:     time.Now(),
-		//			LastUpdatedAt: null.TimeFrom(time.Now()),
-		//			IsActive:      true,
-		//		}
-		//		err := entry.Insert(context.Background(), db, boil.Infer())
-		//		require.NoError(t, err, "error inserting sample data")
-		//	},
-		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
-		//		require.NoError(t, err, "unexpected error")
-		//		require.NotNil(t, paginated, "unexpected nil paginated")
-		//		require.NotNil(t, paginated.Organizations, "unexpected nil organization")
-		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-		//		assert.True(t, len(paginated.Organizations) == 1, "unexpected greater than 1 organization")
-		//		assert.True(t, paginated.Pagination.RowCount == 1, "unexpected count to be greater than 1 organization")
-		//
-		//		modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
-		//	},
-		//},
-		//{
-		//	name: "empty-results",
-		//	filter: &model.OrganizationFilters{
-		//		IdsIn:              []int{2},
-		//		OrganizationNameIn: []string{"Super Admin"},
-		//	},
-		//	mutations: func(t *testing.T, db *sqlx.DB) {
-		//	},
-		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
-		//		require.NoError(t, err, "unexpected error")
-		//		require.NotNil(t, paginated, "unexpected nil paginated")
-		//		require.NotNil(t, paginated.Organizations, "unexpected nil organization")
-		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-		//		assert.True(t, len(paginated.Organizations) == 0, "unexpected greater than 1 organization")
-		//		assert.True(t, paginated.Pagination.RowCount == 0, "unexpected count to be greater than 1 organization")
-		//
-		//		modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
-		//	},
-		//},
+		{
+			name: "success-filter-names-in",
+			filter: &model.OrganizationFilters{
+				OrganizationNameIn: []string{"Organization A", "Organization B"},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) {
+
+				entry := []mysqlmodel.Organization{
+					{
+						ID:            organization.Id,
+						Name:          "Organization A",
+						CreatedBy:     organization.CreatedBy,
+						LastUpdatedBy: organization.LastUpdatedBy,
+						CreatedAt:     organization.CreatedAt,
+						LastUpdatedAt: organization.LastUpdatedAt,
+						IsActive:      true,
+					},
+					{
+						ID:            organization.Id + 1,
+						Name:          "Organization B",
+						CreatedBy:     organization.CreatedBy,
+						LastUpdatedBy: organization.LastUpdatedBy,
+						CreatedAt:     organization.CreatedAt,
+						LastUpdatedAt: organization.LastUpdatedAt,
+						IsActive:      true,
+					},
+				}
+
+				for _, org := range entry {
+					err := org.Insert(context.Background(), db, boil.Infer())
+					require.NoError(t, err, "error inserting sample data")
+				}
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.Organizations, "unexpected nil organization")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.Organizations) == 2, "unexpected greater than 1 organization")
+				assert.True(t, paginated.Pagination.RowCount == 2, "unexpected count to be greater than 1 organization")
+
+				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
+			},
+		},
+		{
+			name: "success-multiple-filters",
+			filter: &model.OrganizationFilters{
+				IdsIn:              []int{1},
+				OrganizationNameIn: []string{"Organization A"},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) {
+				entry := mysqlmodel.Organization{
+					ID:            organization.Id,
+					Name:          "Organization A",
+					CreatedBy:     organization.CreatedBy,
+					LastUpdatedBy: organization.LastUpdatedBy,
+					CreatedAt:     organization.CreatedAt,
+					LastUpdatedAt: organization.LastUpdatedAt,
+					IsActive:      true,
+				}
+				err := entry.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting sample data")
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.Organizations, "unexpected nil organization")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.Organizations) == 1, "unexpected greater than 1 organization")
+				assert.True(t, paginated.Pagination.RowCount == 1, "unexpected count to be greater than 1 organization")
+
+				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
+			},
+		},
+		{
+			name: "empty-results",
+			filter: &model.OrganizationFilters{
+				IdsIn:              []int{2},
+				OrganizationNameIn: []string{"Super Admin"},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) {
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.Organizations, "unexpected nil organization")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.Organizations) == 0, "unexpected greater than 1 organization")
+				assert.True(t, paginated.Pagination.RowCount == 0, "unexpected count to be greater than 1 organization")
+
+				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
+			},
+		},
 	}
 }
 
