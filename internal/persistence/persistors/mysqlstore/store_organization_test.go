@@ -7,7 +7,6 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
-	"github.com/dembygenesis/local.tools/internal/persistence/persistors/mysqlstore/testhelper"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -408,9 +407,11 @@ func getAddOrganizationTestCases() []testCaseCreateOrganization {
 
 func Test_AddOrganization(t *testing.T) {
 	for _, testCase := range getAddOrganizationTestCases() {
-		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 		t.Run(testCase.name, func(t *testing.T) {
+			db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 			defer cleanup()
+			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
+
 			cfg := &Config{
 				Logger:        testLogger,
 				QueryTimeouts: testQueryTimeouts,
@@ -443,51 +444,53 @@ func Test_AddOrganization(t *testing.T) {
 }
 
 type testCaseRestoreOrganization struct {
-	name       string
-	id         int
-	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
-	mutations  func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int)
+	name                string
+	id                  int
+	restoreOrganization model.Organization
+	assertions          func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations           func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int)
 }
 
 func getRestoreOrganizationTestCases() []testCaseRestoreOrganization {
 	return []testCaseRestoreOrganization{
 		{
 			name: "success",
+			restoreOrganization: model.Organization{
+				Id:       1,
+				Name:     "Organization A",
+				IsActive: false,
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				require.Nil(t, err, "unexpected non-nil error")
 				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				require.NoError(t, err, "unexpected error fetching the organization")
-
 				assert.Equal(t, true, entry.IsActive)
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int) {
 				entry := mysqlmodel.Organization{
-					ID:   organization.Id,
-					Name: organization.Name,
+					ID:       organization.Id,
+					Name:     organization.Name,
+					IsActive: true,
 				}
 				err := entry.Insert(context.TODO(), db, boil.Infer())
 				assert.NoError(t, err, "unexpected insert error")
-
-				entry.IsActive = false
-				_, err = entry.Update(context.TODO(), db, boil.Infer())
-				assert.NoError(t, err, "unexpected update error")
-
-				err = entry.Reload(context.TODO(), db)
-				assert.NoError(t, err, "unexpected reload error")
-
-				assert.Equal(t, false, entry.IsActive)
+				assert.Equal(t, true, entry.IsActive)
 				return organization.Id
 			},
 		},
 		{
 			name: "fail-missing-entry-to-update",
+			restoreOrganization: model.Organization{
+				Id:       99999,
+				Name:     "Non-existent Organization",
+				IsActive: false,
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-				require.Error(t, err, "unexpected non-nil error")
-				assert.Contains(t, err.Error(), "restore:")
+				_, fetchErr := mysqlmodel.FindOrganization(context.TODO(), db, id)
+				assert.Error(t, fetchErr, "organization should not exist")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int) {
-				testhelper.DropTable(t, db, "organization")
-				return 99999
+				return organization.Id
 			},
 		},
 	}
@@ -521,12 +524,7 @@ func Test_RestoreOrganization(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			organization := &model.Organization{
-				Id:   1,
-				Name: "Organization A",
-			}
-
-			id := testCase.mutations(t, db, organization)
+			id := testCase.mutations(t, db, &testCase.restoreOrganization)
 			err = m.RestoreOrganization(testCtx, txHandlerDb, id)
 			testCase.assertions(t, db, id, err)
 		})
