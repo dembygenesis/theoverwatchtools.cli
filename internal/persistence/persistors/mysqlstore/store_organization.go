@@ -40,7 +40,7 @@ func (m *Repository) UpdateOrganization(ctx context.Context, tx persistence.Tran
 	}
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
-		return nil, fmt.Errorf("extract context executor: %v", err)
+		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
 	entry := &mysqlmodel.Organization{ID: params.Id}
