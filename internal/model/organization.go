@@ -13,8 +13,8 @@ type UpdateOrganization struct {
 }
 
 type CreateOrganization struct {
-	Name      string `json:"name" validate:"required"`
-	CreatedBy string `json:"created_by"`
+	Name   string `json:"name" validate:"required"`
+	UserId int    `json:"user_id"`
 }
 
 type Organization struct {
@@ -51,7 +51,7 @@ func (c *CreateOrganization) Validate() error {
 func (c *CreateOrganization) ToOrganization() *Organization {
 	organization := &Organization{
 		Name:      c.Name,
-		CreatedBy: c.CreatedBy,
+		CreatedBy: string(c.UserId),
 	}
 	return organization
 }

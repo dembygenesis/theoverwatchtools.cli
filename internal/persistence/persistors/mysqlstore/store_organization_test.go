@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"strings"
 	"testing"
 )
 
@@ -158,13 +159,13 @@ func Test_GetOrganizations(t *testing.T) {
 	}
 }
 
-type testCaseDeleteOrganization struct {
-	name       string
-	id         int
-	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
-	mutations  func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int)
-}
-
+//type testCaseDeleteOrganization struct {
+//	name       string
+//	id         int
+//	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
+//	mutations  func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int)
+//}
+//
 //func getDeleteOrganizationTestCases() []testCaseDeleteOrganization {
 //	return []testCaseDeleteOrganization{
 //		{
@@ -338,76 +339,77 @@ type testCaseDeleteOrganization struct {
 //		testCase.assertions(t, db, updateData.Id, err)
 //	}
 //}
-//
-//type testCaseCreateOrganization struct {
-//	name             string
-//	organizationName string
-//	createdBy        null.Int
-//	assertions       func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error)
-//}
-//
-//func getAddOrganizationTestCases() []testCaseCreateOrganization {
-//	return []testCaseCreateOrganization{
-//		{
-//			name:             "success",
-//			organizationName: "Example Organization",
-//			createdBy:        null.IntFrom(3),
-//			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
-//				assert.NotNil(t, organization, "unexpected nil organization")
-//				assert.NoError(t, err, "unexpected non-nil error")
-//
-//				modelhelpers.AssertNonEmptyOrganizations(t, []model.Organization{*organization})
-//			},
-//		},
-//		{
-//			name:             "fail-name-exceeds-limit",
-//			organizationName: strings.Repeat("a", 256),
-//			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
-//				assert.Nil(t, organization, "unexpected non-nil organization")
-//				assert.Error(t, err, "unexpected nil-error")
-//			},
-//		},
-//	}
-//}
-//
-//func Test_AddOrganization(t *testing.T) {
-//	for _, testCase := range getAddOrganizationTestCases() {
-//		t.Run(testCase.name, func(t *testing.T) {
-//			db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
-//			defer cleanup()
-//			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
-//
-//			cfg := &Config{
-//				Logger:        testLogger,
-//				QueryTimeouts: testQueryTimeouts,
-//			}
-//
-//			m, err := New(cfg)
-//			require.NoError(t, err, "unexpected error")
-//			require.NotNil(t, m, "unexpected nil")
-//
-//			txHandler, err := mysqltx.New(&mysqltx.Config{
-//				Logger:       testLogger,
-//				Db:           db,
-//				DatabaseName: cp.Database,
-//			})
-//			require.NoError(t, err, "unexpected error creating the tx handler")
-//
-//			txHandlerDb, err := txHandler.Db(testCtx)
-//			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
-//			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
-//
-//			org := &model.Organization{
-//				Name:      testCase.organizationName,
-//				CreatedBy: testCase.createdBy,
-//			}
-//
-//			org, err = m.AddOrganization(testCtx, txHandlerDb, org)
-//			testCase.assertions(t, db, org, err)
-//		})
-//	}
-//}
-//
+
+type testCaseCreateOrganization struct {
+	name             string
+	organizationName string
+	createdBy        null.Int
+	assertions       func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error)
+	mutations        func(t *testing.T, db *sqlx.DB, organization *model.CreateOrganization)
+}
+
+func getAddOrganizationTestCases() []testCaseCreateOrganization {
+	return []testCaseCreateOrganization{
+		{
+			name:             "success",
+			organizationName: "Example Organization",
+			createdBy:        null.IntFrom(3),
+			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
+				assert.NotNil(t, organization, "unexpected nil organization")
+				assert.NoError(t, err, "unexpected non-nil error")
+
+				modelhelpers.AssertNonEmptyOrganizations(t, []model.Organization{*organization})
+			},
+		},
+		{
+			name:             "fail-name-too-long",
+			organizationName: strings.Repeat("Demby", 256),
+			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
+				assert.Nil(t, organization, "unexpected non-nil organization")
+				assert.Error(t, err, "expected an error due to name exceeding length limit")
+			},
+		},
+	}
+}
+
+func Test_AddOrganization(t *testing.T) {
+	for _, testCase := range getAddOrganizationTestCases() {
+		t.Run(testCase.name, func(t *testing.T) {
+			db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+			defer cleanup()
+			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
+
+			cfg := &Config{
+				Logger:        testLogger,
+				QueryTimeouts: testQueryTimeouts,
+			}
+
+			m, err := New(cfg)
+			require.NoError(t, err, "unexpected error")
+			require.NotNil(t, m, "unexpected nil")
+
+			txHandler, err := mysqltx.New(&mysqltx.Config{
+				Logger:       testLogger,
+				Db:           db,
+				DatabaseName: cp.Database,
+			})
+			require.NoError(t, err, "unexpected error creating the tx handler")
+
+			txHandlerDb, err := txHandler.Db(testCtx)
+			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+			organization := &model.CreateOrganization{
+				Name:   testCase.organizationName,
+				UserId: 1,
+			}
+
+			createOrganization, err := m.AddOrganization(testCtx, txHandlerDb, organization)
+			testCase.assertions(t, db, createOrganization, err)
+		})
+	}
+}
+
 //type testCaseRestoreOrganization struct {
 //	name                string
 //	id                  int

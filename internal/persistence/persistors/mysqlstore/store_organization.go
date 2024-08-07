@@ -221,8 +221,6 @@ func (m *Repository) getOrganizations(ctx context.Context,
 		return nil, fmt.Errorf("get organizations: %w", err)
 	}
 
-	fmt.Println("the querymods --- ", queryMods)
-
 	pagination.RowCount = len(res)
 	paginated.Organizations = res
 	paginated.Pagination = pagination
@@ -265,32 +263,43 @@ func (m *Repository) ConvertNameToID(ctx context.Context, tx persistence.Transac
 	return userID, nil
 }
 
-func (m *Repository) AddOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.Organization) (*model.Organization, error) {
+func (m *Repository) AddOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.CreateOrganization) (*model.Organization, error) {
+
+	fmt.Println("did I make it here?")
+
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
-	createdByID, err := m.ConvertNameToID(ctx, tx, organization.CreatedBy)
-	if err != nil {
-		return nil, fmt.Errorf("convert createdBy to ID: %w", err)
-	}
+	//createdByValue, err := strconv.Atoi(organization.CreatedBy)
+	//if err != nil {
+	//	return nil, fmt.Errorf("convert CreatedBy to int: %w", err)
+	//}
+	//
+	//lastUpdatedByValue, err := strconv.Atoi(organization.LastUpdatedBy)
+	//if err != nil {
+	//	return nil, fmt.Errorf("convert CreatedBy to int: %w", err)
+	//}
 
 	entry := &mysqlmodel.Organization{
-		Name:      organization.Name,
-		CreatedBy: null.IntFrom(createdByID),
+		Name:          organization.Name,
+		CreatedBy:     null.IntFrom(organization.UserId),
+		LastUpdatedBy: null.IntFrom(organization.UserId),
 	}
 
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert organization: %w", err)
 	}
 
-	organization, err = m.GetOrganizationById(ctx, tx, entry.ID)
+	fmt.Println("did I make here #2 ")
+
+	createdOrganization, err := m.GetOrganizationById(ctx, tx, entry.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get organization by id: %w", err)
 	}
 
-	return organization, nil
+	return createdOrganization, nil
 }
 
 func (m *Repository) RestoreOrganization(
