@@ -51,7 +51,7 @@ func (c *CreateOrganization) Validate() error {
 func (c *CreateOrganization) ToOrganization() *Organization {
 	organization := &Organization{
 		Name:      c.Name,
-		CreatedBy: string(c.UserId),
+		CreatedBy: fmt.Sprint(c.UserId),
 	}
 	return organization
 }
