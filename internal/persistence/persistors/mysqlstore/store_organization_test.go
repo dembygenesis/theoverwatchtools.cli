@@ -47,7 +47,7 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 			mutations: func(t *testing.T, db *sqlx.DB) {
 				entryUser := mysqlmodel.User{
 					Firstname:         "Demby",
-					Lastname:          "Demby",
+					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
@@ -69,66 +69,60 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				require.NoError(t, err, "error inserting sample data")
 			},
 		},
-		//{
-		//	name: "success-filter-names-in",
-		//	filter: &model.OrganizationFilters{
-		//		OrganizationNameIn: []string{"Lawrence", "Younes"},
-		//	},
-		//	mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) ([]mysqlmodel.Organization, []mysqlmodel.User) {
-		//		entryUser := mysqlmodel.User{
-		//			Firstname: "Demby",
-		//			Lastname:  "Abella",
-		//			Email:     "demby@test.com",
-		//			Password:  "password",
-		//		}
-		//
-		//		err := entryUser.Insert(context.Background(), db, boil.Infer())
-		//		require.NoError(t, err, "error inserting in the user db")
-		//
-		//		foundUser, err := mysqlmodel.Users(
-		//			mysqlmodel.UserWhere.Firstname.EQ(organization.CreatedBy),
-		//		).One(context.TODO(), db)
-		//		require.NoError(t, err, "error converting CreatedBy to ID")
-		//
-		//		entryOrg1 := mysqlmodel.Organization{
-		//			ID:            1,
-		//			Name:          "Lawrence",
-		//			CreatedBy:     null.IntFrom(foundUser.ID),
-		//			LastUpdatedBy: null.IntFrom(foundUser.ID),
-		//			CreatedAt:     organization.CreatedAt,
-		//			LastUpdatedAt: organization.LastUpdatedAt,
-		//			IsActive:      organization.IsActive,
-		//		}
-		//
-		//		entryOrg2 := mysqlmodel.Organization{
-		//			ID:            2,
-		//			Name:          "Younes",
-		//			CreatedBy:     null.IntFrom(foundUser.ID),
-		//			LastUpdatedBy: null.IntFrom(foundUser.ID),
-		//			CreatedAt:     organization.CreatedAt,
-		//			LastUpdatedAt: organization.LastUpdatedAt,
-		//			IsActive:      organization.IsActive,
-		//		}
-		//
-		//		err = entryOrg1.Insert(context.Background(), db, boil.Infer())
-		//		require.NoError(t, err, "error inserting first organization")
-		//
-		//		err = entryOrg2.Insert(context.Background(), db, boil.Infer())
-		//		require.NoError(t, err, "error inserting second organization")
-		//
-		//		return []mysqlmodel.Organization{entryOrg1, entryOrg2}, []mysqlmodel.User{entryUser}
-		//	},
-		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
-		//		require.NoError(t, err, "unexpected error")
-		//		require.NotNil(t, paginated, "unexpected nil paginated")
-		//		require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
-		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-		//		assert.True(t, len(paginated.Organizations) == 2, "unexpected number of organizations")
-		//		assert.True(t, paginated.Pagination.RowCount == 2, "unexpected row count")
-		//
-		//		modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
-		//	},
-		//},
+		{
+			name: "success-filter-names-in",
+			filter: &model.OrganizationFilters{
+				OrganizationNameIn: []string{"Lawrence", "Younes"},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				entryUser := mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+
+				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				entryOrg1 := mysqlmodel.Organization{
+					ID:            1,
+					Name:          "Lawrence",
+					CreatedBy:     null.IntFrom(entryUser.ID),
+					LastUpdatedBy: null.IntFrom(entryUser.ID),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				}
+
+				entryOrg2 := mysqlmodel.Organization{
+					ID:            2,
+					Name:          "Younes",
+					CreatedBy:     null.IntFrom(entryUser.ID),
+					LastUpdatedBy: null.IntFrom(entryUser.ID),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				}
+
+				err = entryOrg1.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting first organization")
+
+				err = entryOrg2.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting second organization")
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.Organizations) == 2, "unexpected number of organizations")
+				assert.True(t, paginated.Pagination.RowCount == 2, "unexpected row count")
+
+				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
+			},
+		},
 	}
 }
 
