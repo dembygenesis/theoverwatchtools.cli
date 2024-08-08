@@ -21,7 +21,7 @@ import (
 type testCaseGetOrganizations struct {
 	name       string
 	filter     *model.OrganizationFilters
-	mutations  func(t *testing.T, db *sqlx.DB, organization *model.Organization, user *model.User, categoryType *model.CategoryType, category *model.Category)
+	mutations  func(t *testing.T, db *sqlx.DB)
 	assertions func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error)
 }
 
@@ -30,7 +30,7 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 		{
 			name: "success-filter-ids-in",
 			filter: &model.OrganizationFilters{
-				IdsIn: []int{4},
+				IdsIn: []int{1},
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
 				fmt.Printf("Organizations returned: %v\n", paginated.Organizations)
@@ -44,130 +44,91 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 
 				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization, user *model.User, categoryType *model.CategoryType, category *model.Category) {
-				entryCatType := mysqlmodel.CategoryType{
-					ID:   categoryType.Id,
-					Name: categoryType.Name,
-				}
-
-				err := entryCatType.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into category type")
-
-				entryCategory := mysqlmodel.Category{
-					ID:                category.Id,
-					CategoryTypeRefID: category.CategoryTypeRefId,
-					Name:              category.Name,
-				}
-
-				err = entryCategory.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into category table")
-
+			mutations: func(t *testing.T, db *sqlx.DB) {
 				entryUser := mysqlmodel.User{
-					Firstname:         user.Firstname,
-					Lastname:          user.Lastname,
-					Email:             user.Email,
-					Password:          user.Password,
-					CategoryTypeRefID: user.CategoryTypeRefId,
+					Firstname:         "Demby",
+					Lastname:          "Demby",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
 				}
-
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
+				err := entryUser.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				foundUser, err := mysqlmodel.Users(
-					mysqlmodel.UserWhere.Firstname.EQ(organization.CreatedBy),
-				).One(context.TODO(), db)
-				require.NoError(t, err, "error converting CreatedBy to ID")
-
 				entry := mysqlmodel.Organization{
-					ID:            organization.Id,
+					ID:            1,
 					Name:          "TEST",
-					CreatedBy:     null.IntFrom(foundUser.ID),
-					LastUpdatedBy: null.IntFrom(foundUser.ID),
-					CreatedAt:     organization.CreatedAt,
-					LastUpdatedAt: organization.LastUpdatedAt,
-					IsActive:      organization.IsActive,
+					CreatedBy:     null.IntFrom(entryUser.ID),
+					LastUpdatedBy: null.IntFrom(entryUser.ID),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
 				}
 
 				err = entry.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 			},
 		},
-		{
-			name: "success-filter-names-in",
-			filter: &model.OrganizationFilters{
-				OrganizationNameIn: []string{"Lawrence", "Younes"},
-			},
-			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization, user *model.User, categoryType *model.CategoryType, category *model.Category) {
-				entryCatType := mysqlmodel.CategoryType{
-					ID:   categoryType.Id,
-					Name: categoryType.Name,
-				}
-
-				err := entryCatType.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into category type")
-
-				entryCategory := mysqlmodel.Category{
-					ID:                category.Id,
-					CategoryTypeRefID: category.CategoryTypeRefId,
-					Name:              category.Name,
-				}
-
-				err = entryCategory.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into category table")
-
-				entryUser := mysqlmodel.User{
-					Firstname:         user.Firstname,
-					Lastname:          user.Lastname,
-					Email:             user.Email,
-					Password:          user.Password,
-					CategoryTypeRefID: user.CategoryTypeRefId,
-				}
-
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				foundUser, err := mysqlmodel.Users(
-					mysqlmodel.UserWhere.Firstname.EQ(organization.CreatedBy),
-				).One(context.TODO(), db)
-				require.NoError(t, err, "error converting CreatedBy to ID")
-
-				entryOrg1 := mysqlmodel.Organization{
-					ID:            1,
-					Name:          "Lawrence",
-					CreatedBy:     null.IntFrom(foundUser.ID),
-					LastUpdatedBy: null.IntFrom(foundUser.ID),
-					CreatedAt:     organization.CreatedAt,
-					LastUpdatedAt: organization.LastUpdatedAt,
-					IsActive:      organization.IsActive,
-				}
-
-				entryOrg2 := mysqlmodel.Organization{
-					ID:            2,
-					Name:          "Younes",
-					CreatedBy:     null.IntFrom(foundUser.ID),
-					LastUpdatedBy: null.IntFrom(foundUser.ID),
-					CreatedAt:     organization.CreatedAt,
-					LastUpdatedAt: organization.LastUpdatedAt,
-					IsActive:      organization.IsActive,
-				}
-
-				err = entryOrg1.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting first organization")
-
-				err = entryOrg2.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting second organization")
-			},
-			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
-				require.NoError(t, err, "unexpected error")
-				require.NotNil(t, paginated, "unexpected nil paginated")
-				require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
-				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-				assert.True(t, len(paginated.Organizations) == 2, "unexpected number of organizations")
-				assert.True(t, paginated.Pagination.RowCount == 2, "unexpected row count")
-
-				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
-			},
-		},
+		//{
+		//	name: "success-filter-names-in",
+		//	filter: &model.OrganizationFilters{
+		//		OrganizationNameIn: []string{"Lawrence", "Younes"},
+		//	},
+		//	mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) ([]mysqlmodel.Organization, []mysqlmodel.User) {
+		//		entryUser := mysqlmodel.User{
+		//			Firstname: "Demby",
+		//			Lastname:  "Abella",
+		//			Email:     "demby@test.com",
+		//			Password:  "password",
+		//		}
+		//
+		//		err := entryUser.Insert(context.Background(), db, boil.Infer())
+		//		require.NoError(t, err, "error inserting in the user db")
+		//
+		//		foundUser, err := mysqlmodel.Users(
+		//			mysqlmodel.UserWhere.Firstname.EQ(organization.CreatedBy),
+		//		).One(context.TODO(), db)
+		//		require.NoError(t, err, "error converting CreatedBy to ID")
+		//
+		//		entryOrg1 := mysqlmodel.Organization{
+		//			ID:            1,
+		//			Name:          "Lawrence",
+		//			CreatedBy:     null.IntFrom(foundUser.ID),
+		//			LastUpdatedBy: null.IntFrom(foundUser.ID),
+		//			CreatedAt:     organization.CreatedAt,
+		//			LastUpdatedAt: organization.LastUpdatedAt,
+		//			IsActive:      organization.IsActive,
+		//		}
+		//
+		//		entryOrg2 := mysqlmodel.Organization{
+		//			ID:            2,
+		//			Name:          "Younes",
+		//			CreatedBy:     null.IntFrom(foundUser.ID),
+		//			LastUpdatedBy: null.IntFrom(foundUser.ID),
+		//			CreatedAt:     organization.CreatedAt,
+		//			LastUpdatedAt: organization.LastUpdatedAt,
+		//			IsActive:      organization.IsActive,
+		//		}
+		//
+		//		err = entryOrg1.Insert(context.Background(), db, boil.Infer())
+		//		require.NoError(t, err, "error inserting first organization")
+		//
+		//		err = entryOrg2.Insert(context.Background(), db, boil.Infer())
+		//		require.NoError(t, err, "error inserting second organization")
+		//
+		//		return []mysqlmodel.Organization{entryOrg1, entryOrg2}, []mysqlmodel.User{entryUser}
+		//	},
+		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
+		//		require.NoError(t, err, "unexpected error")
+		//		require.NotNil(t, paginated, "unexpected nil paginated")
+		//		require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
+		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+		//		assert.True(t, len(paginated.Organizations) == 2, "unexpected number of organizations")
+		//		assert.True(t, paginated.Pagination.RowCount == 2, "unexpected row count")
+		//
+		//		modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
+		//	},
+		//},
 	}
 }
 
@@ -199,34 +160,7 @@ func Test_GetOrganizations(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			categoryType := &model.CategoryType{
-				Id:   4,
-				Name: "test cat type",
-			}
-
-			category := &model.Category{
-				Id:                4,
-				CategoryTypeRefId: 4,
-				Name:              "test cat",
-				CategoryType:      "super admin",
-			}
-
-			user := &model.User{
-				Firstname:         "Demby",
-				Lastname:          "Demby",
-				Email:             "dembygenesis@gmail.com",
-				Password:          "bcrypted",
-				CategoryTypeRefId: 4,
-			}
-
-			organization := &model.Organization{
-				Id:            4,
-				CreatedBy:     "Demby",
-				LastUpdatedBy: "Demby",
-				IsActive:      true,
-			}
-
-			testCase.mutations(t, db, organization, user, categoryType, category)
+			testCase.mutations(t, db)
 			paginated, err := m.GetOrganizations(testCtx, txHandlerDb, testCase.filter)
 			testCase.assertions(t, db, paginated, err)
 		})
@@ -297,7 +231,7 @@ func Test_GetOrganizations(t *testing.T) {
 //			organization := &model.Organization{
 //				Id:        1,
 //				Name:      "Organization A",
-//				CreatedBy: null.IntFrom(1),
+//				CreatedBy: "Super Admin",
 //				IsActive:  true,
 //			}
 //

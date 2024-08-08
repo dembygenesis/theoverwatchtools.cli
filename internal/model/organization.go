@@ -35,7 +35,6 @@ type PaginatedOrganizations struct {
 type OrganizationFilters struct {
 	OrganizationNameIn     []string  `query:"organization_name_in" json:"organization_name_in"`
 	OrganizationIsActive   null.Bool `query:"is_active" json:"is_active"`
-	UserId                 int       `query:"user_id" json:"user_id"`
 	IdsIn                  []int     `query:"ids_in" json:"ids_in"`
 	CreatedBy              null.Int  `query:"created_by" json:"created_by"`
 	LastUpdatedBy          null.Int  `query:"last_updated_by" json:"last_updated_by"`
