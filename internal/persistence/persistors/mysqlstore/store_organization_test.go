@@ -15,6 +15,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"strings"
 	"testing"
+	"time"
 )
 
 type testCaseGetOrganizations struct {
@@ -72,19 +73,16 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				err = entryUser.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				var createdByID, lastUpdatedByID int
-
-				err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.CreatedBy).Scan(&createdByID)
+				foundUser, err := mysqlmodel.Users(
+					mysqlmodel.UserWhere.Firstname.EQ(organization.CreatedBy),
+				).One(context.TODO(), db)
 				require.NoError(t, err, "error converting CreatedBy to ID")
-
-				err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.LastUpdatedBy).Scan(&lastUpdatedByID)
-				require.NoError(t, err, "error converting LastUpdatedBy to ID")
 
 				entry := mysqlmodel.Organization{
 					ID:            organization.Id,
 					Name:          "TEST",
-					CreatedBy:     null.IntFrom(createdByID),
-					LastUpdatedBy: null.IntFrom(lastUpdatedByID),
+					CreatedBy:     null.IntFrom(foundUser.ID),
+					LastUpdatedBy: null.IntFrom(foundUser.ID),
 					CreatedAt:     organization.CreatedAt,
 					LastUpdatedAt: organization.LastUpdatedAt,
 					IsActive:      organization.IsActive,
@@ -310,111 +308,111 @@ func Test_GetOrganizations(t *testing.T) {
 //		})
 //	}
 //}
-//
-//type testCaseUpdateOrganization struct {
-//	name                string
-//	initialOrganization mysqlmodel.Organization
-//	updateOrganization  model.UpdateOrganization
-//	assertions          func(t *testing.T, db *sqlx.DB, id int, err error)
-//	mutations           func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization)
-//}
-//
-//func getUpdateOrganizationTestCases() []testCaseUpdateOrganization {
-//	return []testCaseUpdateOrganization{
-//		{
-//			name: "success",
-//			initialOrganization: mysqlmodel.Organization{
-//				ID:            1,
-//				Name:          "Organization A",
-//				CreatedBy:     null.IntFrom(1),
-//				LastUpdatedBy: null.IntFrom(1),
-//				CreatedAt:     time.Now(),
-//				LastUpdatedAt: null.TimeFrom(time.Now()),
-//				IsActive:      true,
-//			},
-//			updateOrganization: model.UpdateOrganization{
-//				Id:   1,
-//				Name: null.StringFrom("Organization A new"),
-//			},
-//			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-//				require.Nil(t, err, "unexpected non-nil error")
-//				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
-//				require.NoError(t, err, "unexpected error fetching the organization")
-//
-//				assert.Equal(t, true, entry.IsActive)
-//			},
-//			mutations: func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization) {
-//				updateData = model.UpdateOrganization{
-//					Id:   organization.Id,
-//					Name: organization.Name,
-//				}
-//				return updateData
-//			},
-//		},
-//		{
-//			name: "fail",
-//			initialOrganization: mysqlmodel.Organization{
-//				ID:            1,
-//				Name:          "Organization A",
-//				CreatedBy:     null.IntFrom(1),
-//				LastUpdatedBy: null.IntFrom(1),
-//				CreatedAt:     time.Now(),
-//				LastUpdatedAt: null.TimeFrom(time.Now()),
-//				IsActive:      true,
-//			},
-//			updateOrganization: model.UpdateOrganization{
-//				Id:   32123,
-//				Name: null.StringFrom("Wrong Name"),
-//			},
-//			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-//				require.Error(t, err, "expected error when updating a non-existent organization")
-//				assert.Contains(t, err.Error(), "expected exactly one entry for entity: 32123")
-//			},
-//			mutations: func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization) {
-//				updateData = model.UpdateOrganization{
-//					Id:   organization.Id,
-//					Name: organization.Name,
-//				}
-//				return updateData
-//			},
-//		},
-//	}
-//}
-//
-//func Test_UpdateOrganization(t *testing.T) {
-//	for _, testCase := range getUpdateOrganizationTestCases() {
-//		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
-//		defer cleanup()
-//
-//		cfg := &Config{
-//			Logger:        testLogger,
-//			QueryTimeouts: testQueryTimeouts,
-//		}
-//
-//		m, err := New(cfg)
-//		require.NoError(t, err, "unexpected error")
-//		require.NotNil(t, m, "unexpected nil")
-//
-//		txHandler, err := mysqltx.New(&mysqltx.Config{
-//			Logger:       testLogger,
-//			Db:           db,
-//			DatabaseName: cp.Database,
-//		})
-//		require.NoError(t, err, "unexpected error creating the tx handler")
-//
-//		txHandlerDb, err := txHandler.Db(testCtx)
-//		require.NoError(t, err, "unexpected error fetching the db from the tx handler")
-//		require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
-//
-//		err = testCase.initialOrganization.Insert(context.Background(), db, boil.Infer())
-//		require.NoError(t, err, "unexpected error inserting initial organization")
-//
-//		updateData := testCase.mutations(t, db, &testCase.updateOrganization)
-//
-//		_, err = m.UpdateOrganization(testCtx, txHandlerDb, &updateData)
-//		testCase.assertions(t, db, updateData.Id, err)
-//	}
-//}
+
+type testCaseUpdateOrganization struct {
+	name                string
+	initialOrganization mysqlmodel.Organization
+	updateOrganization  model.UpdateOrganization
+	assertions          func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations           func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization)
+}
+
+func getUpdateOrganizationTestCases() []testCaseUpdateOrganization {
+	return []testCaseUpdateOrganization{
+		{
+			name: "success",
+			initialOrganization: mysqlmodel.Organization{
+				ID:            1,
+				Name:          "Organization A",
+				CreatedBy:     null.IntFrom(1),
+				LastUpdatedBy: null.IntFrom(1),
+				CreatedAt:     time.Now(),
+				LastUpdatedAt: null.TimeFrom(time.Now()),
+				IsActive:      true,
+			},
+			updateOrganization: model.UpdateOrganization{
+				Id:   1,
+				Name: null.StringFrom("Organization A new"),
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Nil(t, err, "unexpected non-nil error")
+				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
+				require.NoError(t, err, "unexpected error fetching the organization")
+
+				assert.Equal(t, true, entry.IsActive)
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization) {
+				updateData = model.UpdateOrganization{
+					Id:   organization.Id,
+					Name: organization.Name,
+				}
+				return updateData
+			},
+		},
+		{
+			name: "fail",
+			initialOrganization: mysqlmodel.Organization{
+				ID:            1,
+				Name:          "Organization A",
+				CreatedBy:     null.IntFrom(1),
+				LastUpdatedBy: null.IntFrom(1),
+				CreatedAt:     time.Now(),
+				LastUpdatedAt: null.TimeFrom(time.Now()),
+				IsActive:      true,
+			},
+			updateOrganization: model.UpdateOrganization{
+				Id:   32123,
+				Name: null.StringFrom("Wrong Name"),
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Error(t, err, "expected error when updating a non-existent organization")
+				assert.Contains(t, err.Error(), "expected exactly one entry for entity: 32123")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, organization *model.UpdateOrganization) (updateData model.UpdateOrganization) {
+				updateData = model.UpdateOrganization{
+					Id:   organization.Id,
+					Name: organization.Name,
+				}
+				return updateData
+			},
+		},
+	}
+}
+
+func Test_UpdateOrganization(t *testing.T) {
+	for _, testCase := range getUpdateOrganizationTestCases() {
+		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+		defer cleanup()
+
+		cfg := &Config{
+			Logger:        testLogger,
+			QueryTimeouts: testQueryTimeouts,
+		}
+
+		m, err := New(cfg)
+		require.NoError(t, err, "unexpected error")
+		require.NotNil(t, m, "unexpected nil")
+
+		txHandler, err := mysqltx.New(&mysqltx.Config{
+			Logger:       testLogger,
+			Db:           db,
+			DatabaseName: cp.Database,
+		})
+		require.NoError(t, err, "unexpected error creating the tx handler")
+
+		txHandlerDb, err := txHandler.Db(testCtx)
+		require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+		require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+		err = testCase.initialOrganization.Insert(context.Background(), db, boil.Infer())
+		require.NoError(t, err, "unexpected error inserting initial organization")
+
+		updateData := testCase.mutations(t, db, &testCase.updateOrganization)
+
+		_, err = m.UpdateOrganization(testCtx, txHandlerDb, &updateData)
+		testCase.assertions(t, db, updateData.Id, err)
+	}
+}
 
 type testCaseCreateOrganization struct {
 	name             string
