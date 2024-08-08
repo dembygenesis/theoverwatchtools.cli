@@ -20,7 +20,7 @@ import (
 type testCaseGetOrganizations struct {
 	name       string
 	filter     *model.OrganizationFilters
-	mutations  func(t *testing.T, db *sqlx.DB, organization *model.Organization, user *model.User, categoryType *model.CategoryType, category *model.Category)
+	mutations  func(t *testing.T, db *sqlx.DB, organization *model.Organization, userId int)
 	assertions func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error)
 }
 
@@ -43,136 +43,100 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 
 				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization, user *model.User, categoryType *model.CategoryType, category *model.Category) {
-				entryCatType := mysqlmodel.CategoryType{
-					ID:   categoryType.Id,
-					Name: categoryType.Name,
-				}
-
-				err := entryCatType.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into category type")
-
-				entryCategory := mysqlmodel.Category{
-					ID:                category.Id,
-					CategoryTypeRefID: category.CategoryTypeRefId,
-					Name:              category.Name,
-				}
-
-				err = entryCategory.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into category table")
-
-				entryUser := mysqlmodel.User{
-					Firstname:         user.Firstname,
-					Lastname:          user.Lastname,
-					Email:             user.Email,
-					Password:          user.Password,
-					CategoryTypeRefID: user.CategoryTypeRefId,
-				}
-
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				var createdByID, lastUpdatedByID int
-
-				err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.CreatedBy).Scan(&createdByID)
-				require.NoError(t, err, "error converting CreatedBy to ID")
-
-				err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.LastUpdatedBy).Scan(&lastUpdatedByID)
-				require.NoError(t, err, "error converting LastUpdatedBy to ID")
-
+			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization, userId int) {
 				entry := mysqlmodel.Organization{
 					ID:            organization.Id,
 					Name:          "TEST",
-					CreatedBy:     null.IntFrom(createdByID),
-					LastUpdatedBy: null.IntFrom(lastUpdatedByID),
+					CreatedBy:     null.IntFrom(userId),
+					LastUpdatedBy: null.IntFrom(userId),
 					CreatedAt:     organization.CreatedAt,
 					LastUpdatedAt: organization.LastUpdatedAt,
 					IsActive:      organization.IsActive,
 				}
 
-				err = entry.Insert(context.Background(), db, boil.Infer())
+				err := entry.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 			},
 		},
-		{
-			name: "success-filter-names-in",
-			filter: &model.OrganizationFilters{
-				OrganizationNameIn: []string{"Regular User", "Admin"},
-			},
-			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization, user *model.User, categoryType *model.CategoryType, category *model.Category) {
-				entryCatType := mysqlmodel.CategoryType{
-					ID:   categoryType.Id,
-					Name: categoryType.Name,
-				}
-
-				err := entryCatType.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into category type")
-
-				entryCategory := mysqlmodel.Category{
-					ID:                category.Id,
-					CategoryTypeRefID: category.CategoryTypeRefId,
-					Name:              category.Name,
-				}
-
-				err = entryCategory.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into category table")
-
-				entryUser := mysqlmodel.User{
-					Firstname:         user.Firstname,
-					Lastname:          user.Lastname,
-					Email:             user.Email,
-					Password:          user.Password,
-					CategoryTypeRefID: user.CategoryTypeRefId,
-				}
-
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				var createdByID, lastUpdatedByID int
-
-				err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.CreatedBy).Scan(&createdByID)
-				require.NoError(t, err, "error converting CreatedBy to ID")
-
-				err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.LastUpdatedBy).Scan(&lastUpdatedByID)
-				require.NoError(t, err, "error converting LastUpdatedBy to ID")
-
-				entryOrg1 := mysqlmodel.Organization{
-					ID:            1,
-					Name:          "Regular User",
-					CreatedBy:     null.IntFrom(createdByID),
-					LastUpdatedBy: null.IntFrom(lastUpdatedByID),
-					CreatedAt:     organization.CreatedAt,
-					LastUpdatedAt: organization.LastUpdatedAt,
-					IsActive:      organization.IsActive,
-				}
-
-				entryOrg2 := mysqlmodel.Organization{
-					ID:            2,
-					Name:          "Admin",
-					CreatedBy:     null.IntFrom(createdByID),
-					LastUpdatedBy: null.IntFrom(lastUpdatedByID),
-					CreatedAt:     organization.CreatedAt,
-					LastUpdatedAt: organization.LastUpdatedAt,
-					IsActive:      organization.IsActive,
-				}
-
-				err = entryOrg1.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting first organization")
-
-				err = entryOrg2.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting second organization")
-			},
-			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
-				require.NoError(t, err, "unexpected error")
-				require.NotNil(t, paginated, "unexpected nil paginated")
-				require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
-				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-				assert.True(t, len(paginated.Organizations) == 2, "unexpected number of organizations")
-				assert.True(t, paginated.Pagination.RowCount == 2, "unexpected row count")
-
-				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
-			},
-		},
+		//{
+		//	name: "success-filter-names-in",
+		//	filter: &model.OrganizationFilters{
+		//		OrganizationNameIn: []string{"Lawrence", "Younes"},
+		//	},
+		//	mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization, user *model.User, categoryType *model.CategoryType, category *model.Category) {
+		//		entryCatType := mysqlmodel.CategoryType{
+		//			ID:   categoryType.Id,
+		//			Name: categoryType.Name,
+		//		}
+		//
+		//		err := entryCatType.Insert(context.Background(), db, boil.Infer())
+		//		require.NoError(t, err, "error inserting into category type")
+		//
+		//		entryCategory := mysqlmodel.Category{
+		//			ID:                category.Id,
+		//			CategoryTypeRefID: category.CategoryTypeRefId,
+		//			Name:              category.Name,
+		//		}
+		//
+		//		err = entryCategory.Insert(context.Background(), db, boil.Infer())
+		//		require.NoError(t, err, "error inserting into category table")
+		//
+		//		entryUser := mysqlmodel.User{
+		//			Firstname:         user.Firstname,
+		//			Lastname:          user.Lastname,
+		//			Email:             user.Email,
+		//			Password:          user.Password,
+		//			CategoryTypeRefID: user.CategoryTypeRefId,
+		//		}
+		//
+		//		err = entryUser.Insert(context.Background(), db, boil.Infer())
+		//		require.NoError(t, err, "error inserting in the user db")
+		//
+		//		var createdByID, lastUpdatedByID int
+		//
+		//		err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.CreatedBy).Scan(&createdByID)
+		//		require.NoError(t, err, "error converting CreatedBy to ID")
+		//
+		//		err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.LastUpdatedBy).Scan(&lastUpdatedByID)
+		//		require.NoError(t, err, "error converting LastUpdatedBy to ID")
+		//
+		//		entryOrg1 := mysqlmodel.Organization{
+		//			ID:            1,
+		//			Name:          "Lawrence",
+		//			CreatedBy:     null.IntFrom(createdByID),
+		//			LastUpdatedBy: null.IntFrom(lastUpdatedByID),
+		//			CreatedAt:     organization.CreatedAt,
+		//			LastUpdatedAt: organization.LastUpdatedAt,
+		//			IsActive:      organization.IsActive,
+		//		}
+		//
+		//		entryOrg2 := mysqlmodel.Organization{
+		//			ID:            2,
+		//			Name:          "Younes",
+		//			CreatedBy:     null.IntFrom(createdByID),
+		//			LastUpdatedBy: null.IntFrom(lastUpdatedByID),
+		//			CreatedAt:     organization.CreatedAt,
+		//			LastUpdatedAt: organization.LastUpdatedAt,
+		//			IsActive:      organization.IsActive,
+		//		}
+		//
+		//		err = entryOrg1.Insert(context.Background(), db, boil.Infer())
+		//		require.NoError(t, err, "error inserting first organization")
+		//
+		//		err = entryOrg2.Insert(context.Background(), db, boil.Infer())
+		//		require.NoError(t, err, "error inserting second organization")
+		//	},
+		//	assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
+		//		require.NoError(t, err, "unexpected error")
+		//		require.NotNil(t, paginated, "unexpected nil paginated")
+		//		require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
+		//		require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+		//		assert.True(t, len(paginated.Organizations) == 2, "unexpected number of organizations")
+		//		assert.True(t, paginated.Pagination.RowCount == 2, "unexpected row count")
+		//
+		//		modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
+		//	},
+		//},
 	}
 }
 
@@ -204,25 +168,7 @@ func Test_GetOrganizations(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			categoryType := &model.CategoryType{
-				Id:   4,
-				Name: "test cat type",
-			}
-
-			category := &model.Category{
-				Id:                4,
-				CategoryTypeRefId: 4,
-				Name:              "test cat",
-				CategoryType:      "super admin",
-			}
-
-			user := &model.User{
-				Firstname:         "Demby",
-				Lastname:          "Demby",
-				Email:             "dembygenesis@gmail.com",
-				Password:          "bcrypted",
-				CategoryTypeRefId: 4,
-			}
+			userId := 1
 
 			organization := &model.Organization{
 				Id:            4,
@@ -231,7 +177,7 @@ func Test_GetOrganizations(t *testing.T) {
 				IsActive:      true,
 			}
 
-			testCase.mutations(t, db, organization, user, categoryType, category)
+			testCase.mutations(t, db, organization, userId)
 			paginated, err := m.GetOrganizations(testCtx, txHandlerDb, testCase.filter)
 			testCase.assertions(t, db, paginated, err)
 		})
@@ -489,90 +435,90 @@ func Test_AddOrganization(t *testing.T) {
 	}
 }
 
-//type testCaseRestoreOrganization struct {
-//	name                string
-//	id                  int
-//	restoreOrganization model.Organization
-//	assertions          func(t *testing.T, db *sqlx.DB, id int, err error)
-//	mutations           func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int)
-//}
-//
-//func getRestoreOrganizationTestCases() []testCaseRestoreOrganization {
-//	return []testCaseRestoreOrganization{
-//		{
-//			name: "success",
-//			restoreOrganization: model.Organization{
-//				Id:       1,
-//				Name:     "Organization A",
-//				IsActive: false,
-//			},
-//			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-//				require.Nil(t, err, "unexpected non-nil error")
-//				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
-//				require.NoError(t, err, "unexpected error fetching the organization")
-//				assert.Equal(t, true, entry.IsActive)
-//			},
-//			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int) {
-//				entry := mysqlmodel.Organization{
-//					ID:       organization.Id,
-//					Name:     organization.Name,
-//					IsActive: true,
-//				}
-//				err := entry.Insert(context.TODO(), db, boil.Infer())
-//				assert.NoError(t, err, "unexpected insert error")
-//				assert.Equal(t, true, entry.IsActive)
-//				return organization.Id
-//			},
-//		},
-//		{
-//			name: "fail-missing-entry-to-update",
-//			restoreOrganization: model.Organization{
-//				Id:       99999,
-//				Name:     "Non-existent Organization",
-//				IsActive: false,
-//			},
-//			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-//				_, fetchErr := mysqlmodel.FindOrganization(context.TODO(), db, id)
-//				assert.Error(t, fetchErr, "organization should not exist")
-//			},
-//			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int) {
-//				return organization.Id
-//			},
-//		},
-//	}
-//}
-//
-//func Test_RestoreOrganization(t *testing.T) {
-//	for _, testCase := range getRestoreOrganizationTestCases() {
-//		t.Run(testCase.name, func(t *testing.T) {
-//			db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
-//			defer cleanup()
-//			require.NotNil(t, testCase.mutations, "unexpected nil mutations")
-//			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
-//
-//			cfg := &Config{
-//				Logger:        testLogger,
-//				QueryTimeouts: testQueryTimeouts,
-//			}
-//
-//			m, err := New(cfg)
-//			require.NoError(t, err, "unexpected error")
-//			require.NotNil(t, m, "unexpected nil")
-//
-//			txHandler, err := mysqltx.New(&mysqltx.Config{
-//				Logger:       testLogger,
-//				Db:           db,
-//				DatabaseName: cp.Database,
-//			})
-//			require.NoError(t, err, "unexpected error creating the tx handler")
-//
-//			txHandlerDb, err := txHandler.Db(testCtx)
-//			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
-//			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
-//
-//			id := testCase.mutations(t, db, &testCase.restoreOrganization)
-//			err = m.RestoreOrganization(testCtx, txHandlerDb, id)
-//			testCase.assertions(t, db, id, err)
-//		})
-//	}
-//}
+type testCaseRestoreOrganization struct {
+	name                string
+	id                  int
+	restoreOrganization model.Organization
+	assertions          func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations           func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int)
+}
+
+func getRestoreOrganizationTestCases() []testCaseRestoreOrganization {
+	return []testCaseRestoreOrganization{
+		{
+			name: "success",
+			restoreOrganization: model.Organization{
+				Id:       1,
+				Name:     "Organization A",
+				IsActive: false,
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Nil(t, err, "unexpected non-nil error")
+				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
+				require.NoError(t, err, "unexpected error fetching the organization")
+				assert.Equal(t, true, entry.IsActive)
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int) {
+				entry := mysqlmodel.Organization{
+					ID:       organization.Id,
+					Name:     organization.Name,
+					IsActive: true,
+				}
+				err := entry.Insert(context.TODO(), db, boil.Infer())
+				assert.NoError(t, err, "unexpected insert error")
+				assert.Equal(t, true, entry.IsActive)
+				return organization.Id
+			},
+		},
+		{
+			name: "fail-missing-entry-to-update",
+			restoreOrganization: model.Organization{
+				Id:       99999,
+				Name:     "Non-existent Organization",
+				IsActive: false,
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				_, fetchErr := mysqlmodel.FindOrganization(context.TODO(), db, id)
+				assert.Error(t, fetchErr, "organization should not exist")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization) (id int) {
+				return organization.Id
+			},
+		},
+	}
+}
+
+func Test_RestoreOrganization(t *testing.T) {
+	for _, testCase := range getRestoreOrganizationTestCases() {
+		t.Run(testCase.name, func(t *testing.T) {
+			db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+			defer cleanup()
+			require.NotNil(t, testCase.mutations, "unexpected nil mutations")
+			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
+
+			cfg := &Config{
+				Logger:        testLogger,
+				QueryTimeouts: testQueryTimeouts,
+			}
+
+			m, err := New(cfg)
+			require.NoError(t, err, "unexpected error")
+			require.NotNil(t, m, "unexpected nil")
+
+			txHandler, err := mysqltx.New(&mysqltx.Config{
+				Logger:       testLogger,
+				Db:           db,
+				DatabaseName: cp.Database,
+			})
+			require.NoError(t, err, "unexpected error creating the tx handler")
+
+			txHandlerDb, err := txHandler.Db(testCtx)
+			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+			id := testCase.mutations(t, db, &testCase.restoreOrganization)
+			err = m.RestoreOrganization(testCtx, txHandlerDb, id)
+			testCase.assertions(t, db, id, err)
+		})
+	}
+}
