@@ -34,10 +34,10 @@ type PaginatedOrganizations struct {
 
 type OrganizationFilters struct {
 	OrganizationNameIn     []string  `query:"organization_name_in" json:"organization_name_in"`
-	OrganizationIsActive   null.Bool `query:"is_active" json:"is_active"` // Change to null.Bool
+	OrganizationIsActive   null.Bool `query:"is_active" json:"is_active"`
 	IdsIn                  []int     `query:"ids_in" json:"ids_in"`
-	CreatedBy              null.Int  `query:"created_by" json:"created_by"`           // New field
-	LastUpdatedBy          null.Int  `query:"last_updated_by" json:"last_updated_by"` // New field
+	CreatedBy              null.Int  `query:"created_by" json:"created_by"`
+	LastUpdatedBy          null.Int  `query:"last_updated_by" json:"last_updated_by"`
 	PaginationQueryFilters `swaggerignore:"true"`
 }
 

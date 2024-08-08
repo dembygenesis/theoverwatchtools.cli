@@ -486,8 +486,8 @@ func Test_DeleteCategory(t *testing.T) {
 
 func Test_AddCategory(t *testing.T) {
 	for _, testCase := range getAddCategoryTestCases() {
-		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 		t.Run(testCase.name, func(t *testing.T) {
+			db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 			defer cleanup()
 			cfg := &Config{
 				Logger:        testLogger,
@@ -509,13 +509,13 @@ func Test_AddCategory(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			cat := &model.Category{
+			cat := &model.CreateCategory{
 				Name:              testCase.categoryName,
 				CategoryTypeRefId: testCase.categoryRefId,
 			}
 
-			cat, err = m.AddCategory(testCtx, txHandlerDb, cat)
-			testCase.assertions(t, db, cat, err)
+			createdCat, err := m.AddCategory(testCtx, txHandlerDb, cat)
+			testCase.assertions(t, db, createdCat, err)
 		})
 	}
 }

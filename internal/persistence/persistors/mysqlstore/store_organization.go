@@ -249,50 +249,20 @@ func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.Tran
 	return organization, nil
 }
 
-func (m *Repository) ConvertNameToID(ctx context.Context, tx persistence.TransactionHandler, userName string) (int, error) {
-	ctxExec, err := mysqltx.GetCtxExecutor(tx)
-	if err != nil {
-		return 0, fmt.Errorf("extract context executor: %w", err)
-	}
-
-	var userID int
-	err = ctxExec.QueryRowContext(ctx, "SELECT id FROM users WHERE name = ?", userName).Scan(&userID)
-	if err != nil {
-		return 0, fmt.Errorf("query user id: %w", err)
-	}
-	return userID, nil
-}
-
 func (m *Repository) AddOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.CreateOrganization) (*model.Organization, error) {
-
-	fmt.Println("did I make it here?")
-
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
-
-	//createdByValue, err := strconv.Atoi(organization.CreatedBy)
-	//if err != nil {
-	//	return nil, fmt.Errorf("convert CreatedBy to int: %w", err)
-	//}
-	//
-	//lastUpdatedByValue, err := strconv.Atoi(organization.LastUpdatedBy)
-	//if err != nil {
-	//	return nil, fmt.Errorf("convert CreatedBy to int: %w", err)
-	//}
 
 	entry := &mysqlmodel.Organization{
 		Name:          organization.Name,
 		CreatedBy:     null.IntFrom(organization.UserId),
 		LastUpdatedBy: null.IntFrom(organization.UserId),
 	}
-
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert organization: %w", err)
 	}
-
-	fmt.Println("did I make here #2 ")
 
 	createdOrganization, err := m.GetOrganizationById(ctx, tx, entry.ID)
 	if err != nil {

@@ -31,6 +31,18 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 			filter: &model.OrganizationFilters{
 				IdsIn: []int{4},
 			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
+				fmt.Printf("Organizations returned: %v\n", paginated.Organizations)
+
+				require.NoError(t, err, "unexpected error")
+				require.NotNil(t, paginated, "unexpected nil paginated")
+				require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
+				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
+				assert.True(t, len(paginated.Organizations) == 1, "unexpected number of organizations")
+				assert.True(t, paginated.Pagination.RowCount == 1, "unexpected row count")
+
+				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
+			},
 			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization, user *model.User, categoryType *model.CategoryType, category *model.Category) {
 				entryCatType := mysqlmodel.CategoryType{
 					ID:   categoryType.Id,
@@ -81,15 +93,82 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				err = entry.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 			},
-			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
-				fmt.Printf("Organizations returned: %v\n", paginated.Organizations)
+		},
+		{
+			name: "success-filter-names-in",
+			filter: &model.OrganizationFilters{
+				OrganizationNameIn: []string{"Regular User", "Admin"},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, organization *model.Organization, user *model.User, categoryType *model.CategoryType, category *model.Category) {
+				entryCatType := mysqlmodel.CategoryType{
+					ID:   categoryType.Id,
+					Name: categoryType.Name,
+				}
 
+				err := entryCatType.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting into category type")
+
+				entryCategory := mysqlmodel.Category{
+					ID:                category.Id,
+					CategoryTypeRefID: category.CategoryTypeRefId,
+					Name:              category.Name,
+				}
+
+				err = entryCategory.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting into category table")
+
+				entryUser := mysqlmodel.User{
+					Firstname:         user.Firstname,
+					Lastname:          user.Lastname,
+					Email:             user.Email,
+					Password:          user.Password,
+					CategoryTypeRefID: user.CategoryTypeRefId,
+				}
+
+				err = entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				var createdByID, lastUpdatedByID int
+
+				err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.CreatedBy).Scan(&createdByID)
+				require.NoError(t, err, "error converting CreatedBy to ID")
+
+				err = db.QueryRow("SELECT id FROM user WHERE firstname = ?", organization.LastUpdatedBy).Scan(&lastUpdatedByID)
+				require.NoError(t, err, "error converting LastUpdatedBy to ID")
+
+				entryOrg1 := mysqlmodel.Organization{
+					ID:            1,
+					Name:          "Regular User",
+					CreatedBy:     null.IntFrom(createdByID),
+					LastUpdatedBy: null.IntFrom(lastUpdatedByID),
+					CreatedAt:     organization.CreatedAt,
+					LastUpdatedAt: organization.LastUpdatedAt,
+					IsActive:      organization.IsActive,
+				}
+
+				entryOrg2 := mysqlmodel.Organization{
+					ID:            2,
+					Name:          "Admin",
+					CreatedBy:     null.IntFrom(createdByID),
+					LastUpdatedBy: null.IntFrom(lastUpdatedByID),
+					CreatedAt:     organization.CreatedAt,
+					LastUpdatedAt: organization.LastUpdatedAt,
+					IsActive:      organization.IsActive,
+				}
+
+				err = entryOrg1.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting first organization")
+
+				err = entryOrg2.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting second organization")
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
 				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-				assert.True(t, len(paginated.Organizations) == 1, "unexpected number of organizations")
-				assert.True(t, paginated.Pagination.RowCount == 1, "unexpected row count")
+				assert.True(t, len(paginated.Organizations) == 2, "unexpected number of organizations")
+				assert.True(t, paginated.Pagination.RowCount == 2, "unexpected row count")
 
 				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
 			},
