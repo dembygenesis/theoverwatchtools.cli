@@ -178,7 +178,7 @@ func Test_GetOrganizations(t *testing.T) {
 type testCaseDeleteOrganization struct {
 	name       string
 	id         int
-	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
+	assertions func(t *testing.T, db *sqlx.DB, id int)
 	mutations  func(t *testing.T, db *sqlx.DB) (orgId int)
 }
 
@@ -186,9 +186,9 @@ func getDeleteOrganizationTestCases() []testCaseDeleteOrganization {
 	return []testCaseDeleteOrganization{
 		{
 			name: "success",
-			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-				require.Nil(t, err, "unexpected non-nil error")
+			assertions: func(t *testing.T, db *sqlx.DB, id int) {
 				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
+				require.Nil(t, err, "unexpected non-nil error")
 				require.NoError(t, err, "unexpected error fetching the organization")
 
 				assert.Equal(t, false, entry.IsActive)
@@ -221,8 +221,8 @@ func getDeleteOrganizationTestCases() []testCaseDeleteOrganization {
 		},
 		{
 			name: "failure-non-existent-organization",
-			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-				_, err = mysqlmodel.FindOrganization(context.TODO(), db, id)
+			assertions: func(t *testing.T, db *sqlx.DB, id int) {
+				_, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				require.Error(t, err, "expected an error for non-existent organization")
 				require.Contains(t, err.Error(), "no rows", "error should indicate that the organization was not found")
 			},
@@ -274,7 +274,8 @@ func Test_DeleteOrganization(t *testing.T) {
 
 			id := testCase.mutations(t, db)
 			err = m.DeleteOrganization(testCtx, txHandlerDb, id)
-			testCase.assertions(t, db, id, err)
+			require.NoError(t, err, "error deleting organization")
+			testCase.assertions(t, db, id)
 		})
 	}
 }
