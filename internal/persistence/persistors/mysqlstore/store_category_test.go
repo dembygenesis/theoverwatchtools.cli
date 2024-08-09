@@ -338,15 +338,15 @@ func Test_UpdateCategories_Fail(t *testing.T) {
 	assert.Nil(t, cat, "unexpected non nil entry")
 }
 
-type restoreCategoryTestCase struct {
+type testCaseRestoreCategory struct {
 	name       string
 	id         int
 	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
 	mutations  func(t *testing.T, db *sqlx.DB)
 }
 
-func getRestoreCategoryTestCases() []restoreCategoryTestCase {
-	return []restoreCategoryTestCase{
+func getRestoreCategoryTestCases() []testCaseRestoreCategory {
+	return []testCaseRestoreCategory{
 		{
 			name: "success",
 			id:   1,
@@ -424,15 +424,15 @@ func Test_RestoreCategory(t *testing.T) {
 	}
 }
 
-type createCategoryTestCase struct {
+type testCaseCreateCategory struct {
 	name          string
 	categoryName  string
 	categoryRefId int
 	assertions    func(t *testing.T, db *sqlx.DB, category *model.Category, err error)
 }
 
-func getAddCategoryTestCases() []createCategoryTestCase {
-	return []createCategoryTestCase{
+func getAddCategoryTestCases() []testCaseCreateCategory {
+	return []testCaseCreateCategory{
 		{
 			name:          "success",
 			categoryName:  "Example Category",
@@ -501,15 +501,15 @@ func Test_AddCategory(t *testing.T) {
 	}
 }
 
-type deleteCategoryTestCase struct {
+type testCaseDeleteCategory struct {
 	name       string
 	id         int
 	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
 	mutations  func(t *testing.T, db *sqlx.DB)
 }
 
-func getDeleteCategoryTestCases() []deleteCategoryTestCase {
-	return []deleteCategoryTestCase{
+func getDeleteCategoryTestCases() []testCaseDeleteCategory {
+	return []testCaseDeleteCategory{
 		{
 			name: "success",
 			id:   1,
