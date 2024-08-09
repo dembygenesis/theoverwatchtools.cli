@@ -1,10 +1,8 @@
 package api
 
 import (
-	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
-	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"strconv"
@@ -36,7 +34,6 @@ func (a *Api) ListCategories(ctx *fiber.Ctx) error {
 	}
 	filter.SetPaginationDefaults()
 
-	fmt.Println("the filter ---- ", strutil.GetAsJson(&filter))
 	categories, err := a.cfg.CategoryService.ListCategories(ctx.Context(), &filter)
 	return a.WriteResponse(ctx, http.StatusOK, categories, err)
 }

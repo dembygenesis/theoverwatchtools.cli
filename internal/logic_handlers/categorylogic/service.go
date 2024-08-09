@@ -7,7 +7,6 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
-	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -118,7 +117,6 @@ func (i *Service) ListCategories(
 		})
 	}
 
-	fmt.Println("the filter at the service --- ", strutil.GetAsJson(filter))
 	paginated, err := i.cfg.Persistor.GetCategories(ctx, db, filter)
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
@@ -170,7 +168,6 @@ func (s *Service) DeleteCategory(ctx context.Context, params *model.DeleteCatego
 	}
 	defer tx.Rollback(ctx)
 
-	fmt.Println("the params id ---- ", params.ID)
 	err = s.cfg.Persistor.DeleteCategory(ctx, tx, params.ID)
 	if err != nil {
 		return errs.New(&errs.Cfg{
