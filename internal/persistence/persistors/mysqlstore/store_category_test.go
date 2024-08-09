@@ -291,35 +291,51 @@ func Test_UpdateCategories_Success(t *testing.T) {
 	assert.Equal(t, paginatedCategories.Categories[0].Name+" new", cat.Name)
 }
 
-type deleteCategoryTestCase struct {
-	name       string
-	id         int
-	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
-	mutations  func(t *testing.T, db *sqlx.DB)
-}
+func Test_UpdateCategories_Fail(t *testing.T) {
+	db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+	defer cleanup()
 
-func getDeleteCategoryTestCases() []deleteCategoryTestCase {
-	return []deleteCategoryTestCase{
-		{
-			name: "success",
-			id:   1,
-			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-				require.Nil(t, err, "unexpected non-nil error")
-				entry, err := mysqlmodel.FindCategory(context.TODO(), db, id)
-				require.NoError(t, err, "unexpected error fetching the category")
+	cfg := &Config{
+		Logger:        testLogger,
+		QueryTimeouts: testQueryTimeouts,
+	}
 
-				assert.Equal(t, 0, entry.IsActive)
-			},
-			mutations: func(t *testing.T, db *sqlx.DB) {
-				entry := mysqlmodel.Category{
-					CategoryTypeRefID: 1,
-					Name:              "test",
-				}
-				err := entry.Insert(context.TODO(), db, boil.Infer())
-				assert.NoError(t, err, "unexpected insert error")
-			},
+	m, err := New(cfg)
+	require.NoError(t, err, "unexpected error")
+	require.NotNil(t, m, "unexpected nil")
+
+	txHandler, err := mysqltx.New(&mysqltx.Config{
+		Logger:       testLogger,
+		Db:           db,
+		DatabaseName: cp.Database,
+	})
+	require.NoError(t, err, "unexpected error creating the tx handler")
+
+	txHandlerDb, err := txHandler.Db(testCtx)
+	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+	paginatedCategories, err := m.GetCategories(testCtx, txHandlerDb, nil)
+	require.NoError(t, err, "unexpected error fetching the categories from the database")
+	require.NotNil(t, txHandlerDb, "unexpected nil categories")
+	require.True(t, len(paginatedCategories.Categories) > 0, "unexpected empty categories")
+
+	updateCategory := model.UpdateCategory{
+		Id: paginatedCategories.Categories[1].Id,
+		CategoryTypeRefId: null.Int{
+			Int:   paginatedCategories.Categories[0].CategoryTypeRefId,
+			Valid: true,
+		},
+		Name: null.String{
+			String: paginatedCategories.Categories[0].Name,
+			Valid:  true,
 		},
 	}
+
+	cat, err := m.UpdateCategory(testCtx, txHandlerDb, &updateCategory)
+	require.Error(t, err, "unexpected nil error fetching a conflicting category from the database")
+	assert.Contains(t, err.Error(), "Duplicate entry")
+	assert.Nil(t, cat, "unexpected non nil entry")
 }
 
 type restoreCategoryTestCase struct {
@@ -449,41 +465,6 @@ func getAddCategoryTestCases() []createCategoryTestCase {
 	}
 }
 
-func Test_DeleteCategory(t *testing.T) {
-	for _, testCase := range getDeleteCategoryTestCases() {
-		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
-		t.Run(testCase.name, func(t *testing.T) {
-			require.NotNil(t, testCase.mutations, "unexpected nil mutations")
-			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
-
-			defer cleanup()
-			cfg := &Config{
-				Logger:        testLogger,
-				QueryTimeouts: testQueryTimeouts,
-			}
-
-			m, err := New(cfg)
-			require.NoError(t, err, "unexpected error")
-			require.NotNil(t, m, "unexpected nil")
-
-			txHandler, err := mysqltx.New(&mysqltx.Config{
-				Logger:       testLogger,
-				Db:           db,
-				DatabaseName: cp.Database,
-			})
-			require.NoError(t, err, "unexpected error creating the tx handler")
-
-			txHandlerDb, err := txHandler.Db(testCtx)
-			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
-			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
-
-			testCase.mutations(t, db)
-			err = m.DeleteCategory(testCtx, txHandlerDb, testCase.id)
-			testCase.assertions(t, db, testCase.id, err)
-		})
-	}
-}
-
 func Test_AddCategory(t *testing.T) {
 	for _, testCase := range getAddCategoryTestCases() {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -520,49 +501,68 @@ func Test_AddCategory(t *testing.T) {
 	}
 }
 
-func Test_UpdateCategories_Fail(t *testing.T) {
-	db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
-	defer cleanup()
+type deleteCategoryTestCase struct {
+	name       string
+	id         int
+	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations  func(t *testing.T, db *sqlx.DB)
+}
 
-	cfg := &Config{
-		Logger:        testLogger,
-		QueryTimeouts: testQueryTimeouts,
-	}
+func getDeleteCategoryTestCases() []deleteCategoryTestCase {
+	return []deleteCategoryTestCase{
+		{
+			name: "success",
+			id:   1,
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Nil(t, err, "unexpected non-nil error")
+				entry, err := mysqlmodel.FindCategory(context.TODO(), db, id)
+				require.NoError(t, err, "unexpected error fetching the category")
 
-	m, err := New(cfg)
-	require.NoError(t, err, "unexpected error")
-	require.NotNil(t, m, "unexpected nil")
-
-	txHandler, err := mysqltx.New(&mysqltx.Config{
-		Logger:       testLogger,
-		Db:           db,
-		DatabaseName: cp.Database,
-	})
-	require.NoError(t, err, "unexpected error creating the tx handler")
-
-	txHandlerDb, err := txHandler.Db(testCtx)
-	require.NoError(t, err, "unexpected error fetching the db from the tx handler")
-	require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
-
-	paginatedCategories, err := m.GetCategories(testCtx, txHandlerDb, nil)
-	require.NoError(t, err, "unexpected error fetching the categories from the database")
-	require.NotNil(t, txHandlerDb, "unexpected nil categories")
-	require.True(t, len(paginatedCategories.Categories) > 0, "unexpected empty categories")
-
-	updateCategory := model.UpdateCategory{
-		Id: paginatedCategories.Categories[1].Id,
-		CategoryTypeRefId: null.Int{
-			Int:   paginatedCategories.Categories[0].CategoryTypeRefId,
-			Valid: true,
-		},
-		Name: null.String{
-			String: paginatedCategories.Categories[0].Name,
-			Valid:  true,
+				assert.Equal(t, 0, entry.IsActive)
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				entry := mysqlmodel.Category{
+					CategoryTypeRefID: 1,
+					Name:              "test",
+				}
+				err := entry.Insert(context.TODO(), db, boil.Infer())
+				assert.NoError(t, err, "unexpected insert error")
+			},
 		},
 	}
+}
 
-	cat, err := m.UpdateCategory(testCtx, txHandlerDb, &updateCategory)
-	require.Error(t, err, "unexpected nil error fetching a conflicting category from the database")
-	assert.Contains(t, err.Error(), "Duplicate entry")
-	assert.Nil(t, cat, "unexpected non nil entry")
+func Test_DeleteCategory(t *testing.T) {
+	for _, testCase := range getDeleteCategoryTestCases() {
+		db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+		t.Run(testCase.name, func(t *testing.T) {
+			require.NotNil(t, testCase.mutations, "unexpected nil mutations")
+			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
+
+			defer cleanup()
+			cfg := &Config{
+				Logger:        testLogger,
+				QueryTimeouts: testQueryTimeouts,
+			}
+
+			m, err := New(cfg)
+			require.NoError(t, err, "unexpected error")
+			require.NotNil(t, m, "unexpected nil")
+
+			txHandler, err := mysqltx.New(&mysqltx.Config{
+				Logger:       testLogger,
+				Db:           db,
+				DatabaseName: cp.Database,
+			})
+			require.NoError(t, err, "unexpected error creating the tx handler")
+
+			txHandlerDb, err := txHandler.Db(testCtx)
+			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+			testCase.mutations(t, db)
+			err = m.DeleteCategory(testCtx, txHandlerDb, testCase.id)
+			testCase.assertions(t, db, testCase.id, err)
+		})
+	}
 }

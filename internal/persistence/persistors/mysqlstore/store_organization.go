@@ -8,7 +8,6 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
-	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -121,8 +120,6 @@ func (m *Repository) getOrganizations(ctx context.Context,
 		err        error
 	)
 
-	fmt.Println("the filters --- ", strutil.GetAsJson(filters))
-
 	ctx, cancel := context.WithTimeout(ctx, m.cfg.QueryTimeouts.Query)
 	defer cancel()
 
@@ -175,8 +172,6 @@ func (m *Repository) getOrganizations(ctx context.Context,
 			),
 		),
 	}
-
-	fmt.Println("the query mods --- ", queryMods)
 
 	if filters != nil {
 		if len(filters.IdsIn) > 0 {

@@ -168,7 +168,6 @@ func (s *Service) DeleteCategory(ctx context.Context, params *model.DeleteCatego
 	}
 	defer tx.Rollback(ctx)
 
-	fmt.Println("the params id ---- ", params.ID)
 	err = s.cfg.Persistor.DeleteCategory(ctx, tx, params.ID)
 	if err != nil {
 		return errs.New(&errs.Cfg{
