@@ -472,7 +472,7 @@ type testCaseCreateOrganization struct {
 	organizationName string
 	createdBy        null.Int
 	assertions       func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error)
-	mutations        func(t *testing.T, db *sqlx.DB, organization *model.CreateOrganization)
+	mutations        func(t *testing.T, db *sqlx.DB) (organization *model.CreateOrganization)
 }
 
 func getAddOrganizationTestCases() []testCaseCreateOrganization {
@@ -481,6 +481,36 @@ func getAddOrganizationTestCases() []testCaseCreateOrganization {
 			name:             "success",
 			organizationName: "Example Organization",
 			createdBy:        null.IntFrom(3),
+			mutations: func(t *testing.T, db *sqlx.DB) (organization *model.CreateOrganization) {
+				entry := mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err := entry.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				entry1 := mysqlmodel.Organization{
+					ID:            4,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(entry.ID),
+					LastUpdatedBy: null.IntFrom(entry.ID),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				}
+				err = entry1.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting sample data")
+
+				createOrganizationData := model.CreateOrganization{
+					Name:   "Demby",
+					UserId: 1,
+				}
+
+				return &createOrganizationData
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
 				assert.NotNil(t, organization, "unexpected nil organization")
 				assert.NoError(t, err, "unexpected non-nil error")
@@ -491,6 +521,36 @@ func getAddOrganizationTestCases() []testCaseCreateOrganization {
 		{
 			name:             "fail-name-too-long",
 			organizationName: strings.Repeat("Demby", 256),
+			mutations: func(t *testing.T, db *sqlx.DB) (organization *model.CreateOrganization) {
+				entry := mysqlmodel.User{
+					Firstname:         "DembyYounesLawrence",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err := entry.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				entry1 := mysqlmodel.Organization{
+					ID:            4,
+					Name:          "DembyYounesLawrence",
+					CreatedBy:     null.IntFrom(entry.ID),
+					LastUpdatedBy: null.IntFrom(entry.ID),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				}
+				err = entry1.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting sample data")
+
+				createOrganizationData := model.CreateOrganization{
+					Name:   "DembyYounesLawrence",
+					UserId: 1,
+				}
+
+				return &createOrganizationData
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, organization *model.Organization, err error) {
 				assert.Nil(t, organization, "unexpected non-nil organization")
 				assert.Error(t, err, "expected an error due to name exceeding length limit")
@@ -526,12 +586,9 @@ func Test_AddOrganization(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			organization := &model.CreateOrganization{
-				Name:   testCase.organizationName,
-				UserId: 1,
-			}
+			organizationData := testCase.mutations(t, db)
 
-			createOrganization, err := m.AddOrganization(testCtx, txHandlerDb, organization)
+			createOrganization, err := m.AddOrganization(testCtx, txHandlerDb, organizationData)
 			testCase.assertions(t, db, createOrganization, err)
 		})
 	}
