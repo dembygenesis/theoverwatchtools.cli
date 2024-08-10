@@ -2,14 +2,37 @@ package model
 
 import (
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
+	"strings"
 	"time"
 )
 
 type UpdateOrganization struct {
 	Id   int         `json:"id" validate:"required,greater_than_zero"`
 	Name null.String `json:"name"`
+}
+
+func (c *UpdateOrganization) Validate() error {
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %w", err)
+	}
+
+	hasAtLeastOneUpdateParameters := false
+
+	if c.Name.Valid {
+		if c.Name.Valid && strings.TrimSpace(c.Name.String) != "" {
+			hasAtLeastOneUpdateParameters = true
+		}
+	}
+
+	if !hasAtLeastOneUpdateParameters {
+		return errors.New(sysconsts.ErrHasNotASingleValidateUpdateParameter)
+	}
+
+	return nil
 }
 
 type CreateOrganization struct {
