@@ -78,7 +78,7 @@ type testCaseDeleteOrganizations struct {
 	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
 	args            argsDeleteOrganization
 	mutations       func(t *testing.T, db *sqlx.DB) []int
-	assertions      func(t *testing.T, db *sqlx.DB, id int, err error)
+	assertions      func(t *testing.T, db *sqlx.DB, id int)
 }
 
 func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
@@ -119,7 +119,7 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 
 				return Ids
 			},
-			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+			assertions: func(t *testing.T, db *sqlx.DB, id int) {
 				returnOrganization, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				require.Nil(t, returnOrganization, "expected to be nil")
 				require.Error(t, err, "error fetching organization from db")
@@ -161,7 +161,7 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 
 				return Ids
 			},
-			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+			assertions: func(t *testing.T, db *sqlx.DB, id int) {
 				returnOrganization, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				require.Nil(t, returnOrganization, "expected to be nil")
 				require.Error(t, err, "expected an error when deleting a non-existent organization")
@@ -192,7 +192,8 @@ func TestDeleteOrganization(t *testing.T) {
 			require.NoError(t, err, "unexpected new service error")
 
 			err = svc.DeleteOrganization(testCase.args.ctx, testCase.args.params)
-			testCase.assertions(t, db, OrgIds[0], err)
+			require.NoError(t, err, "unexpected error deleting organization.")
+			testCase.assertions(t, db, OrgIds[0])
 		})
 	}
 }
