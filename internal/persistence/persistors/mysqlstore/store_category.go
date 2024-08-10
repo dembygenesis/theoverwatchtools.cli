@@ -96,6 +96,29 @@ func (m *Repository) AddCategory(ctx context.Context, tx persistence.Transaction
 	return createdCategory, nil
 }
 
+// CreateCategory attempts to add a new category
+func (m *Repository) CreateCategory(ctx context.Context, tx persistence.TransactionHandler, category *model.Category) (*model.Category, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %v", err)
+	}
+
+	entry := &mysqlmodel.Category{
+		Name:              category.Name,
+		CategoryTypeRefID: category.CategoryTypeRefId,
+	}
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("insert category: %v", err)
+	}
+
+	createdCategory, err := m.GetCategoryById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get category by id: %v", err)
+	}
+
+	return createdCategory, nil
+}
+
 // GetCategoryById attempts to fetch the category.
 func (m *Repository) GetCategoryById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.Category, error) {
 	paginated, err := m.GetCategories(ctx, tx, &model.CategoryFilters{
