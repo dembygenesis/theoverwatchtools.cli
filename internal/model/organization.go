@@ -11,8 +11,9 @@ import (
 )
 
 type UpdateOrganization struct {
-	Id   int         `json:"id" validate:"required,greater_than_zero"`
-	Name null.String `json:"name"`
+	Id     int         `json:"id" validate:"required,greater_than_zero"`
+	UserId null.Int    `json:"userId"`
+	Name   null.String `json:"name"`
 }
 
 func (c *UpdateOrganization) Validate() error {
@@ -62,6 +63,14 @@ type OrganizationFilters struct {
 	CreatedBy              null.Int  `query:"created_by" json:"created_by"`
 	LastUpdatedBy          null.Int  `query:"last_updated_by" json:"last_updated_by"`
 	PaginationQueryFilters `swaggerignore:"true"`
+}
+
+type DeleteOrganization struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
+}
+
+type RestoreOrganization struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
 }
 
 func (c *CreateOrganization) Validate() error {

@@ -29,7 +29,7 @@ type Service struct {
 
 func New(cfg *Config) (*Service, error) {
 	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("validate: %v", err)
+		return nil, fmt.Errorf("validate: %w", err)
 	}
 	return &Service{cfg}, nil
 }
@@ -38,7 +38,7 @@ func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOr
 	if err := params.Validate(); err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusBadRequest,
-			Err:        fmt.Errorf("validate: %v", err),
+			Err:        fmt.Errorf("validate: %w", err),
 		})
 	}
 
@@ -46,7 +46,7 @@ func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOr
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("get db: %v", err),
+			Err:        fmt.Errorf("get db: %w", err),
 		})
 	}
 	defer tx.Rollback(ctx)
@@ -58,7 +58,7 @@ func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOr
 		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
 			return nil, errs.New(&errs.Cfg{
 				StatusCode: http.StatusBadRequest,
-				Err:        fmt.Errorf("check category unique: %v", err),
+				Err:        fmt.Errorf("check category unique: %w", err),
 			})
 		}
 	}
@@ -73,7 +73,7 @@ func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOr
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("create: %v", err),
+			Err:        fmt.Errorf("create: %w", err),
 		})
 	}
 
@@ -99,7 +99,7 @@ func (i *Service) ListOrganization(
 		})
 	}
 
-	paginated, err := i.cfg.Persistor.GetOrganization(ctx, db, filter)
+	paginated, err := i.cfg.Persistor.GetOrganizations(ctx, db, filter)
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
@@ -115,7 +115,7 @@ func (i *Service) UpdateOrganization(ctx context.Context, params *model.UpdateOr
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("get db: %v", err),
+			Err:        fmt.Errorf("get db: %w", err),
 		})
 	}
 	defer tx.Rollback(ctx)
@@ -130,4 +130,60 @@ func (i *Service) UpdateOrganization(ctx context.Context, params *model.UpdateOr
 	}
 
 	return organization, nil
+}
+
+func (s *Service) DeleteOrganization(ctx context.Context, params *model.DeleteOrganization) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %w", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	err = s.cfg.Persistor.DeleteOrganization(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("delete organization: %w", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %w", err),
+		})
+	}
+
+	return nil
+}
+
+func (s *Service) RestoreOrganization(ctx context.Context, params *model.RestoreOrganization) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %w", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	err = s.cfg.Persistor.RestoreOrganization(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("restore organization: %w", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %w", err),
+		})
+	}
+
+	return nil
 }

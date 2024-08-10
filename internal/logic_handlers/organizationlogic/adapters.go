@@ -10,7 +10,7 @@ import (
 
 //counterfeiter:generate . persistor
 type persistor interface {
-	GetOrganization(ctx context.Context, tx persistence.TransactionHandler, filters *model.OrganizationFilters) (*model.PaginatedOrganizations, error)
+	GetOrganizations(ctx context.Context, tx persistence.TransactionHandler, filters *model.OrganizationFilters) (*model.PaginatedOrganizations, error)
 	CreateOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.Organization) (*model.Organization, error)
 	GetOrganizationByName(ctx context.Context, tx persistence.TransactionHandler, name string) (*model.Organization, error)
 	UpdateOrganization(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateOrganization) (*model.Organization, error)
