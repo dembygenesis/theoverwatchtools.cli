@@ -68,16 +68,11 @@ func getConcreteDependencies(t *testing.T) (*dependencies, func(ignoreErrors ...
 	}, cleanup
 }
 
-type argsDeleteOrganization struct {
-	ctx    context.Context
-	params *model.DeleteOrganization
-}
-
 type testCaseDeleteOrganizations struct {
 	name            string
 	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
-	args            argsDeleteOrganization
-	mutations       func(t *testing.T, db *sqlx.DB) []int
+	ctx             context.Context
+	mutations       func(t *testing.T, db *sqlx.DB) *model.DeleteOrganization
 	assertions      func(t *testing.T, db *sqlx.DB, id int)
 }
 
@@ -86,13 +81,8 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 		{
 			name:            "success",
 			getDependencies: getConcreteDependencies,
-			args: argsDeleteOrganization{
-				ctx: context.TODO(),
-				params: &model.DeleteOrganization{
-					ID: 4,
-				},
-			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
+			ctx:             context.TODO(),
+			mutations: func(t *testing.T, db *sqlx.DB) *model.DeleteOrganization {
 				entryUser := mysqlmodel.User{
 					Firstname:         "Demby",
 					Lastname:          "Abella",
@@ -115,9 +105,11 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 
-				Ids := []int{entryOrganization.ID}
+				toBeDeletedOrganization := &model.DeleteOrganization{
+					ID: entryOrganization.ID,
+				}
 
-				return Ids
+				return toBeDeletedOrganization
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int) {
 				returnOrganization, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
@@ -128,13 +120,8 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 		{
 			name:            "fail-organization-not-found",
 			getDependencies: getConcreteDependencies,
-			args: argsDeleteOrganization{
-				ctx: context.TODO(),
-				params: &model.DeleteOrganization{
-					ID: 1232,
-				},
-			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
+			ctx:             context.TODO(),
+			mutations: func(t *testing.T, db *sqlx.DB) *model.DeleteOrganization {
 				entryUser := mysqlmodel.User{
 					Firstname:         "Demby",
 					Lastname:          "Abella",
@@ -157,9 +144,11 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 
-				Ids := []int{entryUser.ID}
+				toBeDeletedOrganization := &model.DeleteOrganization{
+					ID: entryOrganization.ID,
+				}
 
-				return Ids
+				return toBeDeletedOrganization
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int) {
 				returnOrganization, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
@@ -188,12 +177,12 @@ func TestDeleteOrganization(t *testing.T) {
 			})
 			require.NoError(t, err, "unexpected new error")
 
-			OrgIds := testCase.mutations(t, _dependencies.Db)
+			toBeRestoredOrganization := testCase.mutations(t, _dependencies.Db)
 			require.NoError(t, err, "unexpected new service error")
 
-			err = svc.DeleteOrganization(testCase.args.ctx, testCase.args.params)
+			err = svc.DeleteOrganization(testCase.ctx, toBeRestoredOrganization)
 			require.NoError(t, err, "unexpected error deleting organization.")
-			testCase.assertions(t, db, OrgIds[0])
+			testCase.assertions(t, db, toBeRestoredOrganization.ID)
 		})
 	}
 }
