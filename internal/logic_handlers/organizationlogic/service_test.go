@@ -198,16 +198,11 @@ func TestDeleteOrganization(t *testing.T) {
 	}
 }
 
-type argsRestoreOrganization struct {
-	ctx    context.Context
-	params *model.RestoreOrganization
-}
-
 type testCaseRestoreOrganizations struct {
 	name            string
 	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
-	args            argsRestoreOrganization
-	mutations       func(t *testing.T, db *sqlx.DB) []int
+	ctx             context.Context
+	mutations       func(t *testing.T, db *sqlx.DB) *model.RestoreOrganization
 	assertions      func(t *testing.T, db *sqlx.DB, id int, err error)
 }
 
@@ -216,13 +211,8 @@ func getTestCasesRestoreOrganizations() []testCaseRestoreOrganizations {
 		{
 			name:            "success",
 			getDependencies: getConcreteDependencies,
-			args: argsRestoreOrganization{
-				ctx: context.TODO(),
-				params: &model.RestoreOrganization{
-					ID: 4,
-				},
-			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
+			ctx:             context.TODO(),
+			mutations: func(t *testing.T, db *sqlx.DB) *model.RestoreOrganization {
 				entryUser := mysqlmodel.User{
 					Firstname:         "Demby",
 					Lastname:          "Abella",
@@ -245,9 +235,11 @@ func getTestCasesRestoreOrganizations() []testCaseRestoreOrganizations {
 				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 
-				Ids := []int{entryOrganization.ID}
+				toBeRestoredOrganization := &model.RestoreOrganization{
+					ID: entryOrganization.ID,
+				}
 
-				return Ids
+				return toBeRestoredOrganization
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				require.NoError(t, err, "error restoring organization from db")
@@ -263,13 +255,8 @@ func getTestCasesRestoreOrganizations() []testCaseRestoreOrganizations {
 		{
 			name:            "fail-organization-not-found",
 			getDependencies: getConcreteDependencies,
-			args: argsRestoreOrganization{
-				ctx: context.TODO(),
-				params: &model.RestoreOrganization{
-					ID: 3212,
-				},
-			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
+			ctx:             context.TODO(),
+			mutations: func(t *testing.T, db *sqlx.DB) *model.RestoreOrganization {
 				entryUser := mysqlmodel.User{
 					Firstname:         "Demby",
 					Lastname:          "Abella",
@@ -292,9 +279,11 @@ func getTestCasesRestoreOrganizations() []testCaseRestoreOrganizations {
 				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 
-				Ids := []int{2312}
+				toBeRestoredOrganization := &model.RestoreOrganization{
+					ID: entryOrganization.ID + 12321,
+				}
 
-				return Ids
+				return toBeRestoredOrganization
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				returnOrganization, fetchErr := mysqlmodel.FindOrganization(context.TODO(), db, id)
@@ -318,11 +307,11 @@ func TestRestoreOrganization(t *testing.T) {
 			})
 			require.NoError(t, err, "unexpected new error")
 
-			OrgIds := testCase.mutations(t, _dependencies.Db)
+			toBeRestoredOrganization := testCase.mutations(t, _dependencies.Db)
 			require.NoError(t, err, "unexpected error in mutations")
 
-			err = svc.RestoreOrganization(testCase.args.ctx, testCase.args.params)
-			testCase.assertions(t, _dependencies.Db, OrgIds[0], err)
+			err = svc.RestoreOrganization(testCase.ctx, toBeRestoredOrganization)
+			testCase.assertions(t, _dependencies.Db, toBeRestoredOrganization.ID, err)
 		})
 	}
 }
