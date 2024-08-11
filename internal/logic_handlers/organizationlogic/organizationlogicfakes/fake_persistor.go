@@ -38,21 +38,6 @@ type FakePersistor struct {
 	deleteOrganizationReturnsOnCall map[int]struct {
 		result1 error
 	}
-	GetOrganizationStub        func(context.Context, persistence.TransactionHandler, *model.OrganizationFilters) (*model.PaginatedOrganizations, error)
-	getOrganizationMutex       sync.RWMutex
-	getOrganizationArgsForCall []struct {
-		arg1 context.Context
-		arg2 persistence.TransactionHandler
-		arg3 *model.OrganizationFilters
-	}
-	getOrganizationReturns struct {
-		result1 *model.PaginatedOrganizations
-		result2 error
-	}
-	getOrganizationReturnsOnCall map[int]struct {
-		result1 *model.PaginatedOrganizations
-		result2 error
-	}
 	GetOrganizationByNameStub        func(context.Context, persistence.TransactionHandler, string) (*model.Organization, error)
 	getOrganizationByNameMutex       sync.RWMutex
 	getOrganizationByNameArgsForCall []struct {
@@ -66,6 +51,21 @@ type FakePersistor struct {
 	}
 	getOrganizationByNameReturnsOnCall map[int]struct {
 		result1 *model.Organization
+		result2 error
+	}
+	GetOrganizationsStub        func(context.Context, persistence.TransactionHandler, *model.OrganizationFilters) (*model.PaginatedOrganizations, error)
+	getOrganizationsMutex       sync.RWMutex
+	getOrganizationsArgsForCall []struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 *model.OrganizationFilters
+	}
+	getOrganizationsReturns struct {
+		result1 *model.PaginatedOrganizations
+		result2 error
+	}
+	getOrganizationsReturnsOnCall map[int]struct {
+		result1 *model.PaginatedOrganizations
 		result2 error
 	}
 	RestoreOrganizationStub        func(context.Context, persistence.TransactionHandler, int) error
@@ -229,72 +229,6 @@ func (fake *FakePersistor) DeleteOrganizationReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakePersistor) GetOrganization(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.OrganizationFilters) (*model.PaginatedOrganizations, error) {
-	fake.getOrganizationMutex.Lock()
-	ret, specificReturn := fake.getOrganizationReturnsOnCall[len(fake.getOrganizationArgsForCall)]
-	fake.getOrganizationArgsForCall = append(fake.getOrganizationArgsForCall, struct {
-		arg1 context.Context
-		arg2 persistence.TransactionHandler
-		arg3 *model.OrganizationFilters
-	}{arg1, arg2, arg3})
-	stub := fake.GetOrganizationStub
-	fakeReturns := fake.getOrganizationReturns
-	fake.recordInvocation("GetOrganization", []interface{}{arg1, arg2, arg3})
-	fake.getOrganizationMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakePersistor) GetOrganizationCallCount() int {
-	fake.getOrganizationMutex.RLock()
-	defer fake.getOrganizationMutex.RUnlock()
-	return len(fake.getOrganizationArgsForCall)
-}
-
-func (fake *FakePersistor) GetOrganizationCalls(stub func(context.Context, persistence.TransactionHandler, *model.OrganizationFilters) (*model.PaginatedOrganizations, error)) {
-	fake.getOrganizationMutex.Lock()
-	defer fake.getOrganizationMutex.Unlock()
-	fake.GetOrganizationStub = stub
-}
-
-func (fake *FakePersistor) GetOrganizationArgsForCall(i int) (context.Context, persistence.TransactionHandler, *model.OrganizationFilters) {
-	fake.getOrganizationMutex.RLock()
-	defer fake.getOrganizationMutex.RUnlock()
-	argsForCall := fake.getOrganizationArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakePersistor) GetOrganizationReturns(result1 *model.PaginatedOrganizations, result2 error) {
-	fake.getOrganizationMutex.Lock()
-	defer fake.getOrganizationMutex.Unlock()
-	fake.GetOrganizationStub = nil
-	fake.getOrganizationReturns = struct {
-		result1 *model.PaginatedOrganizations
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakePersistor) GetOrganizationReturnsOnCall(i int, result1 *model.PaginatedOrganizations, result2 error) {
-	fake.getOrganizationMutex.Lock()
-	defer fake.getOrganizationMutex.Unlock()
-	fake.GetOrganizationStub = nil
-	if fake.getOrganizationReturnsOnCall == nil {
-		fake.getOrganizationReturnsOnCall = make(map[int]struct {
-			result1 *model.PaginatedOrganizations
-			result2 error
-		})
-	}
-	fake.getOrganizationReturnsOnCall[i] = struct {
-		result1 *model.PaginatedOrganizations
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakePersistor) GetOrganizationByName(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 string) (*model.Organization, error) {
 	fake.getOrganizationByNameMutex.Lock()
 	ret, specificReturn := fake.getOrganizationByNameReturnsOnCall[len(fake.getOrganizationByNameArgsForCall)]
@@ -357,6 +291,72 @@ func (fake *FakePersistor) GetOrganizationByNameReturnsOnCall(i int, result1 *mo
 	}
 	fake.getOrganizationByNameReturnsOnCall[i] = struct {
 		result1 *model.Organization
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakePersistor) GetOrganizations(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.OrganizationFilters) (*model.PaginatedOrganizations, error) {
+	fake.getOrganizationsMutex.Lock()
+	ret, specificReturn := fake.getOrganizationsReturnsOnCall[len(fake.getOrganizationsArgsForCall)]
+	fake.getOrganizationsArgsForCall = append(fake.getOrganizationsArgsForCall, struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 *model.OrganizationFilters
+	}{arg1, arg2, arg3})
+	stub := fake.GetOrganizationsStub
+	fakeReturns := fake.getOrganizationsReturns
+	fake.recordInvocation("GetOrganizations", []interface{}{arg1, arg2, arg3})
+	fake.getOrganizationsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakePersistor) GetOrganizationsCallCount() int {
+	fake.getOrganizationsMutex.RLock()
+	defer fake.getOrganizationsMutex.RUnlock()
+	return len(fake.getOrganizationsArgsForCall)
+}
+
+func (fake *FakePersistor) GetOrganizationsCalls(stub func(context.Context, persistence.TransactionHandler, *model.OrganizationFilters) (*model.PaginatedOrganizations, error)) {
+	fake.getOrganizationsMutex.Lock()
+	defer fake.getOrganizationsMutex.Unlock()
+	fake.GetOrganizationsStub = stub
+}
+
+func (fake *FakePersistor) GetOrganizationsArgsForCall(i int) (context.Context, persistence.TransactionHandler, *model.OrganizationFilters) {
+	fake.getOrganizationsMutex.RLock()
+	defer fake.getOrganizationsMutex.RUnlock()
+	argsForCall := fake.getOrganizationsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakePersistor) GetOrganizationsReturns(result1 *model.PaginatedOrganizations, result2 error) {
+	fake.getOrganizationsMutex.Lock()
+	defer fake.getOrganizationsMutex.Unlock()
+	fake.GetOrganizationsStub = nil
+	fake.getOrganizationsReturns = struct {
+		result1 *model.PaginatedOrganizations
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakePersistor) GetOrganizationsReturnsOnCall(i int, result1 *model.PaginatedOrganizations, result2 error) {
+	fake.getOrganizationsMutex.Lock()
+	defer fake.getOrganizationsMutex.Unlock()
+	fake.GetOrganizationsStub = nil
+	if fake.getOrganizationsReturnsOnCall == nil {
+		fake.getOrganizationsReturnsOnCall = make(map[int]struct {
+			result1 *model.PaginatedOrganizations
+			result2 error
+		})
+	}
+	fake.getOrganizationsReturnsOnCall[i] = struct {
+		result1 *model.PaginatedOrganizations
 		result2 error
 	}{result1, result2}
 }
@@ -497,10 +497,10 @@ func (fake *FakePersistor) Invocations() map[string][][]interface{} {
 	defer fake.createOrganizationMutex.RUnlock()
 	fake.deleteOrganizationMutex.RLock()
 	defer fake.deleteOrganizationMutex.RUnlock()
-	fake.getOrganizationMutex.RLock()
-	defer fake.getOrganizationMutex.RUnlock()
 	fake.getOrganizationByNameMutex.RLock()
 	defer fake.getOrganizationByNameMutex.RUnlock()
+	fake.getOrganizationsMutex.RLock()
+	defer fake.getOrganizationsMutex.RUnlock()
 	fake.restoreOrganizationMutex.RLock()
 	defer fake.restoreOrganizationMutex.RUnlock()
 	fake.updateOrganizationMutex.RLock()
