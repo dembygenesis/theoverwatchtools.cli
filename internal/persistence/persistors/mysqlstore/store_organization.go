@@ -110,7 +110,7 @@ func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.Transa
 		return nil, fmt.Errorf("read organizations: %w", err)
 	}
 
-	fmt.Println("the res --- ", strutil.GetAsJson(res))
+	fmt.Println("the res at store orgs concrete --- ", strutil.GetAsJson(res))
 
 	return res, nil
 }
@@ -181,10 +181,12 @@ func (m *Repository) getOrganizations(ctx context.Context,
 
 	if filters != nil {
 		if len(filters.IdsIn) > 0 {
+			fmt.Println("the filters --- ", filters.IdsIn)
 			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.IdsIn))
 		}
 
 		if filters.OrganizationIsActive.Valid {
+			fmt.Println("the filters valid --- ", filters.OrganizationIsActive)
 			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.IsActive.EQ(filters.OrganizationIsActive.Bool))
 		}
 
