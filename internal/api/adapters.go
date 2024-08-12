@@ -15,3 +15,7 @@ type categoryService interface {
 	DeleteCategory(ctx context.Context, params *model.DeleteCategory) error
 	RestoreCategory(ctx context.Context, params *model.RestoreCategory) error
 }
+
+type organizationService interface {
+	ListOrganizations(ctx context.Context, filters *model.OrganizationFilters) (*model.PaginatedOrganizations, error)
+}

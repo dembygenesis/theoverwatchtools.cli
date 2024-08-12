@@ -34,6 +34,9 @@ type Config struct {
 
 	// CategoryService is the biz function for category
 	CategoryService categoryService `json:"category_manager" validate:"required"`
+
+	// OrganizationService is the biz function for the organization
+	OrganizationService organizationService `json:"organization_service" validate:"required"`
 }
 
 func (a *Config) Validate() error {

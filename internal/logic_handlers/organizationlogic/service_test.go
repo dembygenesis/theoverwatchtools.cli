@@ -184,7 +184,7 @@ func TestService_GetOrganizations(t *testing.T) {
 
 			tt.mutations(t, _dependencies.Db)
 
-			paginatedOrganizations, err := svc.ListOrganization(tt.args.ctx, tt.args.filter)
+			paginatedOrganizations, err := svc.ListOrganizations(tt.args.ctx, tt.args.filter)
 			tt.assertions(t, paginatedOrganizations, err)
 		})
 	}
@@ -381,7 +381,7 @@ type argsCreateOrganization struct {
 type testCaseCreateOrganization struct {
 	name            string
 	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
-	args            argsCreateOrganization
+	ctx             context.Context
 	mutations       func(t *testing.T, db *sqlx.DB) (organization *model.CreateOrganization)
 	assertions      func(t *testing.T, organization *model.Organization, err error)
 }
@@ -391,40 +391,44 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 		{
 			name:            "success",
 			getDependencies: getConcreteDependencies,
-			args: argsCreateOrganization{
-				ctx: context.TODO(),
-				organization: &model.CreateOrganization{
-					UserId: 2,
-					Name:   "Demby",
-				},
-			},
+			ctx:             context.TODO(),
 			assertions: func(t *testing.T, organization *model.Organization, err error) {
 				require.NoError(t, err, "unexpected error")
-				require.NotNil(t, organization, "unexpected nil organization")
+				require.NotNil(t, organization, "unexpected nil orga	nization")
 
 				require.NotEqual(t, 0, organization.Id, "unexpected nil organization")
 				require.NotEmpty(t, organization.Name, "unexpected empty organization name")
 				//require.NotEqual(t, 0, organization.CreatedBy, "unexpected empty Created_by")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (organization *model.CreateOrganization) {
-				entry := mysqlmodel.Organization{
-					ID:            1,
-					Name:          organization.Name,
-					CreatedBy:     null.IntFrom(2),
-					LastUpdatedBy: null.IntFrom(2),
+				entryUser := mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				entryOrganization := mysqlmodel.Organization{
+					ID:            4,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(entryUser.ID),
+					LastUpdatedBy: null.IntFrom(entryUser.ID),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
+					IsActive:      false,
 				}
-				err := entry.Insert(context.Background(), db, boil.Infer())
+				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 
-				createdOrganization := model.CreateOrganization{
+				createdOrganization := &model.CreateOrganization{
 					Name:   "Demby",
-					UserId: 2,
+					UserId: 4,
 				}
 
-				return &createdOrganization
+				return createdOrganization
 			},
 		},
 	}
@@ -443,9 +447,9 @@ func TestService_CreateOrganization(t *testing.T) {
 			})
 			require.NoError(t, err, "unexpected new error")
 
-			tt.mutations(t, _dependencies.Db)
+			toBeCreatedOrganization := tt.mutations(t, _dependencies.Db)
 
-			organization, err := svc.CreateOrganization(tt.args.ctx, tt.args.organization)
+			organization, err := svc.AddOrganization(tt.ctx, toBeCreatedOrganization)
 			tt.assertions(t, organization, err)
 		})
 	}

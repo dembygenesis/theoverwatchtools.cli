@@ -21,6 +21,7 @@ import (
 
 type testServices struct {
 	catService categoryService
+	orgService organizationService
 }
 
 type testCaseCreateCategory struct {
@@ -312,10 +313,11 @@ func Test_ListCategories(t *testing.T) {
 			defer cleanup()
 
 			cfg := &Config{
-				BaseUrl:         testassets.MockBaseUrl,
-				Port:            3000,
-				CategoryService: handlers.CategoryService,
-				Logger:          logger.New(context.TODO()),
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CategoryService:     handlers.CategoryService,
+				OrganizationService: handlers.OrganizationService,
+				Logger:              logger.New(context.TODO()),
 			}
 
 			api, err := New(cfg)

@@ -8,6 +8,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -69,6 +70,9 @@ func (m *Repository) GetOrganizationById(ctx context.Context, tx persistence.Tra
 	paginated, err := m.GetOrganizations(ctx, tx, &model.OrganizationFilters{
 		IdsIn: []int{id},
 	})
+
+	fmt.Println("the paginated --- ", strutil.GetAsJson(paginated))
+
 	if err != nil {
 		return nil, fmt.Errorf("organization filtered by id: %w", err)
 	}
@@ -105,6 +109,8 @@ func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.Transa
 	if err != nil {
 		return nil, fmt.Errorf("read organizations: %w", err)
 	}
+
+	fmt.Println("the res --- ", strutil.GetAsJson(res))
 
 	return res, nil
 }

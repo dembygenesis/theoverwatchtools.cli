@@ -87,3 +87,14 @@ func (c *CreateOrganization) ToOrganization() *Organization {
 	}
 	return organization
 }
+
+func (c *OrganizationFilters) Validate() error {
+	if err := c.ValidatePagination(); err != nil {
+		return fmt.Errorf("pagination: %v", err)
+	}
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("organization filters: %v", err)
+	}
+
+	return nil
+}
