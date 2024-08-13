@@ -82,7 +82,7 @@ type testCaseGetOrganizations struct {
 	name            string
 	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
 	args            argsGetOrganizations
-	mutations       func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization)
+	mutations       func(t *testing.T, db *sqlx.DB)
 	assertions      func(t *testing.T, organization *model.PaginatedOrganizations, err error)
 }
 
@@ -95,7 +95,7 @@ func getGetOrganizationTestCases() []testCaseGetOrganizations {
 				ctx:    context.Background(),
 				filter: &model.OrganizationFilters{},
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
+			mutations: func(t *testing.T, db *sqlx.DB) {
 				entry := mysqlmodel.Organization{
 					Name:          "Demby",
 					CreatedBy:     null.IntFrom(1),
@@ -104,13 +104,6 @@ func getGetOrganizationTestCases() []testCaseGetOrganizations {
 
 				err := entry.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
-
-				createOrg := model.CreateOrganization{
-					Name:   "Demby",
-					UserId: 1,
-				}
-
-				return &createOrg
 			},
 			assertions: func(t *testing.T, paginated *model.PaginatedOrganizations, err error) {
 				require.NoError(t, err, "unexpected get organizations error")
@@ -127,9 +120,8 @@ func getGetOrganizationTestCases() []testCaseGetOrganizations {
 				ctx:    context.Background(),
 				filter: &model.OrganizationFilters{},
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
+			mutations: func(t *testing.T, db *sqlx.DB) {
 				testhelper.DropTable(t, db, mysqlmodel.TableNames.Organization)
-				return nil
 			},
 			assertions: func(t *testing.T, paginated *model.PaginatedOrganizations, err error) {
 				require.Error(t, err, "unexpected get organizations error")
@@ -157,9 +149,7 @@ func getGetOrganizationTestCases() []testCaseGetOrganizations {
 				ctx:    context.Background(),
 				filter: &model.OrganizationFilters{},
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
-				return nil
-			},
+			mutations: func(t *testing.T, db *sqlx.DB) {},
 			assertions: func(t *testing.T, paginated *model.PaginatedOrganizations, err error) {
 				require.Error(t, err, "unexpected get organizations error")
 				require.Contains(t, err.Error(), "get db:")
