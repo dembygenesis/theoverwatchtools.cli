@@ -73,7 +73,6 @@ func getConcreteDependencies(t *testing.T) (*dependencies, func(ignoreErrors ...
 	}, cleanup
 }
 
-// get orgs
 type argsGetOrganizations struct {
 	ctx    context.Context
 	filter *model.OrganizationFilters
@@ -190,7 +189,6 @@ func TestService_GetOrganizations(t *testing.T) {
 	}
 }
 
-// update org
 type argsUpdateOrganizations struct {
 	ctx    context.Context
 	params *model.UpdateOrganization
@@ -372,8 +370,7 @@ func TestService_UpdateOrganization(t *testing.T) {
 	}
 }
 
-// create org
-type argsCreateOrganization struct {
+type argsCreateOrganizations struct {
 	ctx          context.Context
 	organization *model.CreateOrganization
 }
@@ -381,8 +378,8 @@ type argsCreateOrganization struct {
 type testCaseCreateOrganization struct {
 	name            string
 	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
-	args            argsCreateOrganization
-	mutations       func(t *testing.T, db *sqlx.DB) (organization *model.CreateOrganization)
+	args            argsCreateOrganizations
+	mutations       func(t *testing.T, db *sqlx.DB)
 	assertions      func(t *testing.T, organization *model.Organization, err error)
 }
 
@@ -391,11 +388,11 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 		{
 			name:            "success",
 			getDependencies: getConcreteDependencies,
-			args: argsCreateOrganization{
+			args: argsCreateOrganizations{
 				ctx: context.TODO(),
 				organization: &model.CreateOrganization{
-					UserId: 2,
 					Name:   "Demby",
+					UserId: 1,
 				},
 			},
 			assertions: func(t *testing.T, organization *model.Organization, err error) {
@@ -404,27 +401,98 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 
 				require.NotEqual(t, 0, organization.Id, "unexpected nil organization")
 				require.NotEmpty(t, organization.Name, "unexpected empty organization name")
-				//require.NotEqual(t, 0, organization.CreatedBy, "unexpected empty Created_by")
+				require.NotEqual(t, 0, organization.CreatedBy, "unexpected empty Created_by")
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) (organization *model.CreateOrganization) {
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+		},
+		{
+			name:            "fail-internal-error",
+			getDependencies: getConcreteDependencies,
+			args: argsCreateOrganizations{
+				ctx: context.TODO(),
+				organization: &model.CreateOrganization{
+					UserId: 1,
+					Name:   "Example",
+				},
+			},
+			assertions: func(t *testing.T, organization *model.Organization, err error) {
+				assert.Error(t, err, "unexpected error")
+				assert.Nil(t, organization, "unexpected nil organization")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+				testhelper.DropTable(t, db, mysqlmodel.TableNames.Organization)
+			},
+		},
+		{
+			name:            "fail-invalid-args",
+			getDependencies: getConcreteDependencies,
+			args: argsCreateOrganizations{
+				ctx: context.TODO(),
+				organization: &model.CreateOrganization{
+					UserId: 0,
+					Name:   "Example",
+				},
+			},
+			assertions: func(t *testing.T, organization *model.Organization, err error) {
+				assert.Error(t, err, "unexpected error")
+				assert.Nil(t, organization, "unexpected nil organization")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
+
+			},
+		},
+		{
+			name:            "fail-unique",
+			getDependencies: getConcreteDependencies,
+			args: argsCreateOrganizations{
+				ctx: context.TODO(),
+				organization: &model.CreateOrganization{
+					UserId: 1,
+					Name:   "Example",
+				},
+			},
+			assertions: func(t *testing.T, organization *model.Organization, err error) {
+				assert.Error(t, err, "unexpected error")
+				assert.Nil(t, organization, "unexpected nil organization")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
 				entry := mysqlmodel.Organization{
-					ID:            1,
-					Name:          organization.Name,
-					CreatedBy:     null.IntFrom(2),
-					LastUpdatedBy: null.IntFrom(2),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
+					Name:      "Example",
+					CreatedBy: null.IntFrom(1),
 				}
-				err := entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
+				err := entry.Insert(context.TODO(), db, boil.Infer())
+				require.NoError(t, err, "unexpected insert error")
+			},
+		},
+		{
+			name: "fail-mock",
+			getDependencies: func(t *testing.T) (*dependencies, func(ignoreErrors ...bool)) {
+				fakeCleanup := func(ignoreErrors ...bool) {}
+				mockTxProvider := persistencefakes.FakeTransactionProvider{}
+				mockTxProvider.TxReturns(&persistencefakes.FakeTransactionHandler{}, errors.New(mockDbReturnsErr))
 
-				createdOrganization := model.CreateOrganization{
-					Name:   "Demby",
-					UserId: 2,
-				}
+				return &dependencies{
+					Persistor:  &organizationlogicfakes.FakePersistor{},
+					TxProvider: &mockTxProvider,
+					Logger:     mockLogger,
+					Cleanup:    fakeCleanup,
+				}, fakeCleanup
+			},
+			args: argsCreateOrganizations{
+				ctx: context.TODO(),
+				organization: &model.CreateOrganization{
+					UserId: 1,
+					Name:   "Example",
+				},
+			},
+			assertions: func(t *testing.T, organization *model.Organization, err error) {
+				assert.Error(t, err, "unexpected error")
+				assert.Nil(t, organization, "unexpected nil category")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB) {
 
-				return &createdOrganization
 			},
 		},
 	}
@@ -445,13 +513,12 @@ func TestService_CreateOrganization(t *testing.T) {
 
 			tt.mutations(t, _dependencies.Db)
 
-			organization, err := svc.CreateOrganization(tt.args.ctx, tt.args.organization)
+			organization, err := svc.AddOrganization(tt.args.ctx, tt.args.organization)
 			tt.assertions(t, organization, err)
 		})
 	}
 }
 
-// delete test
 type testCaseDeleteOrganizations struct {
 	name            string
 	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))

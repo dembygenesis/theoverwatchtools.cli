@@ -87,6 +87,57 @@ func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOr
 	return organization, nil
 }
 
+func (i *Service) AddOrganization(ctx context.Context, params *model.CreateOrganization) (*model.Organization, error) {
+	if err := params.Validate(); err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusBadRequest,
+			Err:        fmt.Errorf("validate: %w", err),
+		})
+	}
+
+	tx, err := i.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %w", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	exists, err := i.cfg.Persistor.GetOrganizationByName(ctx, tx, params.Name)
+	if err != nil {
+		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
+			return nil, errs.New(&errs.Cfg{
+				StatusCode: http.StatusBadRequest,
+				Err:        fmt.Errorf("check organization unique: %v", err),
+			})
+		}
+	}
+	if exists != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusBadRequest,
+			Err:        fmt.Errorf("organization already exists"),
+		})
+	}
+
+	organization, err := i.cfg.Persistor.AddOrganization(ctx, tx, params)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("create: %w", err),
+		})
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit: %w", err),
+		})
+	}
+
+	return organization, nil
+}
+
 func (i *Service) ListOrganization(
 	ctx context.Context,
 	filter *model.OrganizationFilters,
