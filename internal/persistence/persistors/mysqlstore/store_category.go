@@ -96,6 +96,7 @@ func (m *Repository) AddCategory(ctx context.Context, tx persistence.Transaction
 	return createdCategory, nil
 }
 
+// CreateCategory attempts to add a new category
 func (m *Repository) CreateCategory(ctx context.Context, tx persistence.TransactionHandler, category *model.Category) (*model.Category, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {
@@ -111,6 +112,7 @@ func (m *Repository) CreateCategory(ctx context.Context, tx persistence.Transact
 	}
 
 	category, err = m.GetCategoryById(ctx, tx, entry.ID)
+
 	if err != nil {
 		return nil, fmt.Errorf("get category by id: %v", err)
 	}
