@@ -58,14 +58,14 @@ func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOr
 		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
 			return nil, errs.New(&errs.Cfg{
 				StatusCode: http.StatusBadRequest,
-				Err:        fmt.Errorf("check category unique: %w", err),
+				Err:        fmt.Errorf("check organization unique: %w", err),
 			})
 		}
 	}
 	if exists != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusBadRequest,
-			Err:        fmt.Errorf("category already exists"),
+			Err:        fmt.Errorf("organization already exists"),
 		})
 	}
 
@@ -80,7 +80,7 @@ func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOr
 	if err = tx.Commit(ctx); err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("commit: %v", err),
+			Err:        fmt.Errorf("commit: %w", err),
 		})
 	}
 
@@ -109,7 +109,7 @@ func (i *Service) AddOrganization(ctx context.Context, params *model.CreateOrgan
 		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
 			return nil, errs.New(&errs.Cfg{
 				StatusCode: http.StatusBadRequest,
-				Err:        fmt.Errorf("check organization unique: %v", err),
+				Err:        fmt.Errorf("check organization unique: %w", err),
 			})
 		}
 	}
@@ -146,7 +146,7 @@ func (i *Service) ListOrganization(
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("get db: %v", err),
+			Err:        fmt.Errorf("get db: %w", err),
 		})
 	}
 
@@ -154,7 +154,7 @@ func (i *Service) ListOrganization(
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("get organizations: %v", err),
+			Err:        fmt.Errorf("get organizations: %w", err),
 		})
 	}
 

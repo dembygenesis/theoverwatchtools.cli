@@ -489,7 +489,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 			},
 			assertions: func(t *testing.T, organization *model.Organization, err error) {
 				assert.Error(t, err, "unexpected error")
-				assert.Nil(t, organization, "unexpected nil category")
+				assert.Nil(t, organization, "unexpected nil organization")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
 
