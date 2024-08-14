@@ -96,10 +96,12 @@ func getGetOrganizationTestCases() []testCaseGetOrganizations {
 				filter: &model.OrganizationFilters{},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
+				createdBy := 1
+				lastUpdatedBy := 1
 				entry := mysqlmodel.Organization{
 					Name:          "Demby",
-					CreatedBy:     null.IntFrom(1),
-					LastUpdatedBy: null.IntFrom(1),
+					CreatedBy:     null.IntFrom(createdBy),
+					LastUpdatedBy: null.IntFrom(lastUpdatedBy),
 				}
 
 				err := entry.Insert(context.Background(), db, boil.Infer())
@@ -212,11 +214,14 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 			},
 			getDependencies: getConcreteDependencies,
 			mutations: func(t *testing.T, db *sqlx.DB) {
+				id := 1
+				createdBy := 3
+				lastUpdatedBy := 3
 				entry := mysqlmodel.Organization{
-					ID:            1,
+					ID:            id,
 					Name:          "Demby",
-					CreatedBy:     null.IntFrom(3),
-					LastUpdatedBy: null.IntFrom(3),
+					CreatedBy:     null.IntFrom(createdBy),
+					LastUpdatedBy: null.IntFrom(lastUpdatedBy),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
@@ -248,11 +253,14 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 			},
 			getDependencies: getConcreteDependencies,
 			mutations: func(t *testing.T, db *sqlx.DB) {
+				id := 1
+				createdBy := 3
+				lastUpdatedBy := 3
 				entry := mysqlmodel.Organization{
-					ID:            1,
+					ID:            id,
 					Name:          "Demby",
-					CreatedBy:     null.IntFrom(3),
-					LastUpdatedBy: null.IntFrom(3),
+					CreatedBy:     null.IntFrom(createdBy),
+					LastUpdatedBy: null.IntFrom(lastUpdatedBy),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
@@ -368,8 +376,9 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				require.NotEqual(t, 0, organization.CreatedBy, "unexpected empty Created_by")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
+				id := 4
 				entryUser := mysqlmodel.User{
-					ID:                4,
+					ID:                id,
 					Firstname:         "Demby2",
 					Lastname:          "Abella2",
 					CategoryTypeRefID: 1,
@@ -408,8 +417,9 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				assert.Nil(t, organization, "unexpected nil organization")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
+				id := 4
 				entryUser := mysqlmodel.User{
-					ID:                4,
+					ID:                id,
 					Firstname:         "Demby2",
 					Lastname:          "Abella2",
 					CategoryTypeRefID: 1,
@@ -436,7 +446,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
 				entryUser := mysqlmodel.User{
-					ID:                4,
+					ID:                1,
 					Firstname:         "Demby2",
 					Lastname:          "Abella2",
 					CategoryTypeRefID: 1,
@@ -538,11 +548,14 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
+				id := 1
+				createdBy := 1
+				lastUpdatedBy := 1
 				entryOrganization := mysqlmodel.Organization{
-					ID:            4,
+					ID:            id,
 					Name:          "TEST",
-					CreatedBy:     null.IntFrom(1),
-					LastUpdatedBy: null.IntFrom(1),
+					CreatedBy:     null.IntFrom(createdBy),
+					LastUpdatedBy: null.IntFrom(lastUpdatedBy),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
@@ -628,11 +641,14 @@ func getTestCasesRestoreOrganizations() []testCaseRestoreOrganizations {
 				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
+				id := 1
+				createdBy := 1
+				lastUpdatedBy := 1
 				entryOrganization := mysqlmodel.Organization{
-					ID:            1,
+					ID:            id,
 					Name:          "TEST",
-					CreatedBy:     null.IntFrom(1),
-					LastUpdatedBy: null.IntFrom(1),
+					CreatedBy:     null.IntFrom(createdBy),
+					LastUpdatedBy: null.IntFrom(lastUpdatedBy),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      false,
