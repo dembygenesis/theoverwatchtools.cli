@@ -173,7 +173,7 @@ func TestService_GetOrganizations(t *testing.T) {
 
 			tt.mutations(t, _dependencies.Db)
 
-			paginatedOrganizations, err := svc.ListOrganization(tt.args.ctx, tt.args.filter)
+			paginatedOrganizations, err := svc.ListOrganizations(tt.args.ctx, tt.args.filter)
 			tt.assertions(t, paginatedOrganizations, err)
 		})
 	}

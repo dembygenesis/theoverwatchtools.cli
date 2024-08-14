@@ -138,7 +138,7 @@ func (i *Service) AddOrganization(ctx context.Context, params *model.CreateOrgan
 	return organization, nil
 }
 
-func (i *Service) ListOrganization(
+func (i *Service) ListOrganizations(
 	ctx context.Context,
 	filter *model.OrganizationFilters,
 ) (*model.PaginatedOrganizations, error) {
@@ -184,27 +184,19 @@ func (i *Service) UpdateOrganization(ctx context.Context, params *model.UpdateOr
 }
 
 func (s *Service) DeleteOrganization(ctx context.Context, params *model.DeleteOrganization) error {
-	tx, err := s.cfg.TxProvider.Tx(ctx)
+	db, err := s.cfg.TxProvider.Db(ctx)
 	if err != nil {
 		return errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("get db: %w", err),
 		})
 	}
-	defer tx.Rollback(ctx)
 
-	err = s.cfg.Persistor.DeleteOrganization(ctx, tx, params.ID)
+	err = s.cfg.Persistor.DeleteOrganization(ctx, db, params.ID)
 	if err != nil {
 		return errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("delete organization: %w", err),
-		})
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return errs.New(&errs.Cfg{
-			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("commit transaction: %w", err),
 		})
 	}
 
