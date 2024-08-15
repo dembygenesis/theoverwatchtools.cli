@@ -97,15 +97,15 @@ func getGetOrganizationTestCases() []testCaseGetOrganizations {
 				filter: &model.OrganizationFilters{},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				createdBy := 1
-				lastUpdatedBy := 1
+				user, err := mysqlmodel.Users().One(context.TODO(), db)
+				require.NoError(t, err, "error fetching a user from the user table")
+
 				entry := mysqlmodel.Organization{
 					Name:          "Demby",
-					CreatedBy:     null.IntFrom(createdBy),
-					LastUpdatedBy: null.IntFrom(lastUpdatedBy),
+					CreatedBy:     null.IntFrom(user.ID),
+					LastUpdatedBy: null.IntFrom(user.ID),
 				}
-
-				err := entry.Insert(context.Background(), db, boil.Infer())
+				err = entry.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 			},
 			assertions: func(t *testing.T, paginated *model.PaginatedOrganizations, err error) {
