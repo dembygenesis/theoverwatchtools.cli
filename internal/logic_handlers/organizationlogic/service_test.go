@@ -246,6 +246,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				assert.Equal(t, params.Id, organization.Id, "expected id to be equal")
 				assert.Equal(t, params.UserId.Int, createdByConvToInt, "expected created_by id to be equal")
 				assert.Equal(t, params.Name.String, "Lawrence", "expected name to be equal")
+				assert.Contains(t, organization.Name, "Lawrence", "expected organization name to contain 'Lawrence'")
 			},
 		},
 		{
@@ -287,6 +288,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, organization, "unexpected nil organization")
 				assert.Equal(t, params.Name.String, "Demby2", "expected name to be equal")
+				assert.Contains(t, organization.Name, "Demby2", "expected organization name to contain 'Demby2'")
 			},
 		},
 		{
@@ -324,21 +326,23 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				assert.Error(t, err, "unexpected error")
 				assert.Contains(t, err.Error(), "get db: error getting db", "expected error message to contain 'get db: error getting db'")
 				assert.Nil(t, organization, "expected organization to be nil due to failure")
+				assert.Contains(t, err.Error(), "get db: error getting db", "expected error message to contain 'sql: no rows in result set'")
 			},
 		},
-		//{
-		//	name:            "fail-internal-server-error",
-		//	ctx:             context.TODO(),
-		//	getDependencies: getConcreteDependencies,
-		//	mutations: func(t *testing.T, db *sqlx.DB) (toUpdatedOrganization *model.UpdateOrganization) {
-		//		testhelper.DropTable(t, db, mysqlmodel.TableNames.Organization)
-		//		return nil
-		//	},
-		//	assertions: func(t *testing.T, params *model.UpdateOrganization, organization *model.Organization, err error) {
-		//		assert.Error(t, err, "unexpected error")
-		//		assert.Nil(t, organization, "unexpected nil organization")
-		//	},
-		//},
+		{
+			name:            "fail-internal-server-error",
+			ctx:             context.TODO(),
+			getDependencies: getConcreteDependencies,
+			mutations: func(t *testing.T, db *sqlx.DB) (toUpdatedOrganization *model.UpdateOrganization) {
+				testhelper.DropTable(t, db, mysqlmodel.TableNames.Organization)
+				return nil
+			},
+			assertions: func(t *testing.T, params *model.UpdateOrganization, organization *model.Organization, err error) {
+				assert.Error(t, err, "unexpected error")
+				assert.Nil(t, organization, "unexpected nil organization")
+				assert.Contains(t, err.Error(), "validate: validate: error, struct is nil", "expected error message to contain 'sql: no rows in result set'")
+			},
+		},
 	}
 }
 
@@ -383,6 +387,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				require.NotZero(t, organization.Id, "unexpected zero value for organization id")
 				require.NotEmpty(t, organization.Name, "unexpected empty organization name")
 				require.NotZero(t, organization.CreatedBy, "unexpected zero value for CreatedBy")
+				assert.Contains(t, organization.Name, "Demby", "expected organization name to contain 'Demby'")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
 				user, err := mysqlmodel.Users().One(context.TODO(), db)
@@ -403,6 +408,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 			assertions: func(t *testing.T, organization *model.Organization, err error) {
 				assert.Error(t, err, "unexpected error")
 				assert.Nil(t, organization, "unexpected nil organization")
+				assert.Contains(t, err.Error(), "validate: validate: error, struct is nil", "expected error message to contain 'sql: no rows in result set'")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
 				testhelper.DropTable(t, db, mysqlmodel.TableNames.Organization)
@@ -416,6 +422,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 			assertions: func(t *testing.T, organization *model.Organization, err error) {
 				assert.Error(t, err, "unexpected error")
 				assert.Nil(t, organization, "unexpected nil organization")
+				assert.Contains(t, err.Error(), "create: insert organization: mysqlmodel: unable to insert into organization: Error 1264: Out of range value for column 'created_by' at row 1", "expected error message to contain 'sql: no rows in result set'")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
 				createOrg := &model.CreateOrganization{
@@ -433,6 +440,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 			assertions: func(t *testing.T, organization *model.Organization, err error) {
 				assert.Error(t, err, "unexpected error")
 				assert.Nil(t, organization, "unexpected nil organization")
+				assert.Contains(t, err.Error(), "organization already exists", "expected error message to contain 'sql: no rows in result set'")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
 				user, err := mysqlmodel.Users().One(context.TODO(), db)
@@ -474,6 +482,8 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 			assertions: func(t *testing.T, organization *model.Organization, err error) {
 				assert.Error(t, err, "expected error but got none")
 				assert.Nil(t, organization, "expected nil organization but got non-nil")
+				assert.Contains(t, err.Error(), "get db: mock database error", "expected error message to contain 'sql: no rows in result set'")
+
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) *model.CreateOrganization {
 				return &model.CreateOrganization{
@@ -550,6 +560,7 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 				returnOrganization, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				require.Nil(t, returnOrganization, "expected to be nil")
 				require.Error(t, err, "error fetching organization from db")
+				assert.Contains(t, err.Error(), "sql: no rows in result set", "expected error message to contain 'sql: no rows in result set'")
 			},
 		},
 		{
@@ -566,6 +577,7 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 				returnOrganization, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				require.Nil(t, returnOrganization, "expected to be nil")
 				require.Error(t, err, "expected an error when deleting a non-existent organization")
+				assert.Contains(t, err.Error(), "sql: no rows in result set", "expected error message to contain 'sql: no rows in result set'")
 			},
 		},
 	}
@@ -648,6 +660,7 @@ func getTestCasesRestoreOrganizations() []testCaseRestoreOrganizations {
 
 				require.True(t, returnOrganization.IsActive, "expected organization to be active")
 				assert.Equal(t, returnOrganization.IsActive, true)
+				assert.Contains(t, returnOrganization.Name, "Demby", "expected organization name to contain 'Demby'")
 			},
 		},
 		{
@@ -664,6 +677,7 @@ func getTestCasesRestoreOrganizations() []testCaseRestoreOrganizations {
 				returnOrganization, fetchErr := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				require.Error(t, fetchErr, "expected an error when fetching organization from db")
 				require.Nil(t, returnOrganization, "expected organization to be nil")
+				assert.Contains(t, fetchErr.Error(), "sql: no rows in result set", "expected error message to contain 'sql: no rows in result set'")
 			},
 		},
 	}
