@@ -260,7 +260,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				toUpdateOrganization := &model.UpdateOrganization{
 					Id: user.ID,
 					Name: null.String{
-						String: "Demby",
+						String: "Demby2",
 						Valid:  true,
 					},
 					UserId: null.Int{
