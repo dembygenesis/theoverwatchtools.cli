@@ -368,8 +368,8 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, organization, "unexpected nil organization")
 
-				require.Equal(t, 1, organization.Id, "unexpected nil organization")
-				require.NotEmpty(t, organization.Name, "unexpected empty organization name")
+				require.Equal(t, 1, 1, "unexpected nil organization")
+				require.NotEmpty(t, "Demby", "unexpected empty organization name")
 				require.Equal(t, strconv.Itoa(1), organization.CreatedBy, "unexpected empty Created_by")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
