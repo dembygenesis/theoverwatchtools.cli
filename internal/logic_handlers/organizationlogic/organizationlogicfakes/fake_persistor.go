@@ -25,21 +25,6 @@ type FakePersistor struct {
 		result1 *model.Organization
 		result2 error
 	}
-	CreateOrganizationStub        func(context.Context, persistence.TransactionHandler, *model.Organization) (*model.Organization, error)
-	createOrganizationMutex       sync.RWMutex
-	createOrganizationArgsForCall []struct {
-		arg1 context.Context
-		arg2 persistence.TransactionHandler
-		arg3 *model.Organization
-	}
-	createOrganizationReturns struct {
-		result1 *model.Organization
-		result2 error
-	}
-	createOrganizationReturnsOnCall map[int]struct {
-		result1 *model.Organization
-		result2 error
-	}
 	DeleteOrganizationStub        func(context.Context, persistence.TransactionHandler, int) error
 	deleteOrganizationMutex       sync.RWMutex
 	deleteOrganizationArgsForCall []struct {
@@ -176,72 +161,6 @@ func (fake *FakePersistor) AddOrganizationReturnsOnCall(i int, result1 *model.Or
 		})
 	}
 	fake.addOrganizationReturnsOnCall[i] = struct {
-		result1 *model.Organization
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakePersistor) CreateOrganization(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.Organization) (*model.Organization, error) {
-	fake.createOrganizationMutex.Lock()
-	ret, specificReturn := fake.createOrganizationReturnsOnCall[len(fake.createOrganizationArgsForCall)]
-	fake.createOrganizationArgsForCall = append(fake.createOrganizationArgsForCall, struct {
-		arg1 context.Context
-		arg2 persistence.TransactionHandler
-		arg3 *model.Organization
-	}{arg1, arg2, arg3})
-	stub := fake.CreateOrganizationStub
-	fakeReturns := fake.createOrganizationReturns
-	fake.recordInvocation("CreateOrganization", []interface{}{arg1, arg2, arg3})
-	fake.createOrganizationMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakePersistor) CreateOrganizationCallCount() int {
-	fake.createOrganizationMutex.RLock()
-	defer fake.createOrganizationMutex.RUnlock()
-	return len(fake.createOrganizationArgsForCall)
-}
-
-func (fake *FakePersistor) CreateOrganizationCalls(stub func(context.Context, persistence.TransactionHandler, *model.Organization) (*model.Organization, error)) {
-	fake.createOrganizationMutex.Lock()
-	defer fake.createOrganizationMutex.Unlock()
-	fake.CreateOrganizationStub = stub
-}
-
-func (fake *FakePersistor) CreateOrganizationArgsForCall(i int) (context.Context, persistence.TransactionHandler, *model.Organization) {
-	fake.createOrganizationMutex.RLock()
-	defer fake.createOrganizationMutex.RUnlock()
-	argsForCall := fake.createOrganizationArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakePersistor) CreateOrganizationReturns(result1 *model.Organization, result2 error) {
-	fake.createOrganizationMutex.Lock()
-	defer fake.createOrganizationMutex.Unlock()
-	fake.CreateOrganizationStub = nil
-	fake.createOrganizationReturns = struct {
-		result1 *model.Organization
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakePersistor) CreateOrganizationReturnsOnCall(i int, result1 *model.Organization, result2 error) {
-	fake.createOrganizationMutex.Lock()
-	defer fake.createOrganizationMutex.Unlock()
-	fake.CreateOrganizationStub = nil
-	if fake.createOrganizationReturnsOnCall == nil {
-		fake.createOrganizationReturnsOnCall = make(map[int]struct {
-			result1 *model.Organization
-			result2 error
-		})
-	}
-	fake.createOrganizationReturnsOnCall[i] = struct {
 		result1 *model.Organization
 		result2 error
 	}{result1, result2}
@@ -576,8 +495,6 @@ func (fake *FakePersistor) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.addOrganizationMutex.RLock()
 	defer fake.addOrganizationMutex.RUnlock()
-	fake.createOrganizationMutex.RLock()
-	defer fake.createOrganizationMutex.RUnlock()
 	fake.deleteOrganizationMutex.RLock()
 	defer fake.deleteOrganizationMutex.RUnlock()
 	fake.getOrganizationByNameMutex.RLock()
