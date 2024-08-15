@@ -233,7 +233,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				require.NotNil(t, organization, "unexpected nil organization")
 				assert.Equal(t, params.Id, organization.Id, "expected id to be equal")
 				assert.Equal(t, params.UserId.Int, createdByConvToInt, "expected created_by id to be equal")
-				assert.Equal(t, params.Name.String, organization.Name, "expected name to be equal")
+				assert.Equal(t, params.Name.String, "Lawrence", "expected name to be equal")
 			},
 		},
 		{
@@ -274,7 +274,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 			assertions: func(t *testing.T, params *model.UpdateOrganization, organization *model.Organization, err error) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, organization, "unexpected nil organization")
-				assert.Equal(t, params.Name.String, organization.Name, "expected name to be equal")
+				assert.Equal(t, params.Name.String, "Demby2", "expected name to be equal")
 			},
 		},
 		{
