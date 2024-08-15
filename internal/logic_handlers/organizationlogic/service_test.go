@@ -196,7 +196,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 			ctx:             context.TODO(),
 			getDependencies: getConcreteDependencies,
 			mutations: func(t *testing.T, db *sqlx.DB) (toUpdatedOrganization *model.UpdateOrganization) {
-				user, err := mysqlmodel.FindUser(context.TODO(), db, 1)
+				user, err := mysqlmodel.Users().One(context.TODO(), db)
 				require.NoError(t, err, "error finding user from user table.")
 
 				entry := mysqlmodel.Organization{
@@ -240,7 +240,7 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 			ctx:             context.TODO(),
 			getDependencies: getConcreteDependencies,
 			mutations: func(t *testing.T, db *sqlx.DB) (toUpdatedOrganization *model.UpdateOrganization) {
-				user, err := mysqlmodel.FindUser(context.TODO(), db, 1)
+				user, err := mysqlmodel.Users().One(context.TODO(), db)
 				require.NoError(t, err, "error finding user from user table.")
 
 				entry := mysqlmodel.Organization{
