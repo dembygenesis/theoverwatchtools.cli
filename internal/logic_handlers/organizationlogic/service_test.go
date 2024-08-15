@@ -519,19 +519,19 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				id := 1
-				createdBy := 1
-				lastUpdatedBy := 1
+				user, err := mysqlmodel.Users().One(context.TODO(), db)
+				require.NoError(t, err, "error fetching user from user table")
+
 				entryOrganization := mysqlmodel.Organization{
-					ID:            id,
-					Name:          "TEST",
-					CreatedBy:     null.IntFrom(createdBy),
-					LastUpdatedBy: null.IntFrom(lastUpdatedBy),
+					ID:            user.ID,
+					Name:          user.Firstname,
+					CreatedBy:     null.IntFrom(user.ID),
+					LastUpdatedBy: null.IntFrom(user.ID),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
 				}
-				err := entryOrganization.Insert(context.Background(), db, boil.Infer())
+				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int) {
