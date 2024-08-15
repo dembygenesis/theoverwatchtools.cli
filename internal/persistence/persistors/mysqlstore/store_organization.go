@@ -228,27 +228,6 @@ func (m *Repository) getOrganizations(ctx context.Context,
 	return &paginated, nil
 }
 
-func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.Organization) (*model.Organization, error) {
-	ctxExec, err := mysqltx.GetCtxExecutor(tx)
-	if err != nil {
-		return nil, fmt.Errorf("extract context executor: %w", err)
-	}
-
-	entry := mysqlmodel.Organization{
-		Name: organization.Name,
-	}
-	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
-		return nil, fmt.Errorf("insert organization: %w", err)
-	}
-
-	organization, err = m.GetOrganizationById(ctx, tx, entry.ID)
-	if err != nil {
-		return nil, fmt.Errorf("get organization by id: %w", err)
-	}
-
-	return organization, nil
-}
-
 func (m *Repository) AddOrganization(ctx context.Context, tx persistence.TransactionHandler, organization *model.CreateOrganization) (*model.Organization, error) {
 	ctxExec, err := mysqltx.GetCtxExecutor(tx)
 	if err != nil {

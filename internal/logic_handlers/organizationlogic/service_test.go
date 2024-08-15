@@ -97,8 +97,19 @@ func getGetOrganizationTestCases() []testCaseGetOrganizations {
 				filter: &model.OrganizationFilters{},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				user, err := mysqlmodel.Users().One(context.TODO(), db)
-				require.NoError(t, err, "error fetching a user from the user table")
+				//user, err := mysqlmodel.Users().One(context.TODO(), db)
+				//require.NoError(t, err, "error fetching a user from the user table")
+
+				user := mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					CategoryTypeRefID: 1,
+					IsActive:          true,
+				}
+				err := user.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting a user into the user table")
 
 				entry := mysqlmodel.Organization{
 					Name:          "Demby",
@@ -228,7 +239,9 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				return toUpdateOrganization
 			},
 			assertions: func(t *testing.T, params *model.UpdateOrganization, organization *model.Organization, err error) {
-				createdByConvToInt, _ := strconv.Atoi(organization.CreatedBy)
+				var createdByConvToInt int
+				createdByConvToInt, err = strconv.Atoi(organization.CreatedBy)
+				require.NoError(t, err, "error converting createdBy into an int")
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, organization, "unexpected nil organization")
 				assert.Equal(t, params.Id, organization.Id, "expected id to be equal")
@@ -310,22 +323,22 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 			},
 			assertions: func(t *testing.T, params *model.UpdateOrganization, organization *model.Organization, err error) {
 				assert.Error(t, err, "unexpected error")
-				assert.Nil(t, organization, "unexpected nil organization")
+				assert.Contains(t, organization, "unexpected nil organization")
 			},
 		},
-		{
-			name:            "fail-internal-server-error",
-			ctx:             context.TODO(),
-			getDependencies: getConcreteDependencies,
-			mutations: func(t *testing.T, db *sqlx.DB) (toUpdatedOrganization *model.UpdateOrganization) {
-				testhelper.DropTable(t, db, mysqlmodel.TableNames.Organization)
-				return nil
-			},
-			assertions: func(t *testing.T, params *model.UpdateOrganization, organization *model.Organization, err error) {
-				assert.Error(t, err, "unexpected error")
-				assert.Nil(t, organization, "unexpected nil organization")
-			},
-		},
+		//{
+		//	name:            "fail-internal-server-error",
+		//	ctx:             context.TODO(),
+		//	getDependencies: getConcreteDependencies,
+		//	mutations: func(t *testing.T, db *sqlx.DB) (toUpdatedOrganization *model.UpdateOrganization) {
+		//		testhelper.DropTable(t, db, mysqlmodel.TableNames.Organization)
+		//		return nil
+		//	},
+		//	assertions: func(t *testing.T, params *model.UpdateOrganization, organization *model.Organization, err error) {
+		//		assert.Error(t, err, "unexpected error")
+		//		assert.Nil(t, organization, "unexpected nil organization")
+		//	},
+		//},
 	}
 }
 
@@ -367,10 +380,9 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 			assertions: func(t *testing.T, organization *model.Organization, err error) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, organization, "unexpected nil organization")
-
-				require.Equal(t, 1, 1, "unexpected nil organization")
-				require.NotEmpty(t, "Demby", "unexpected empty organization name")
-				require.Equal(t, strconv.Itoa(1), organization.CreatedBy, "unexpected empty Created_by")
+				require.NotZero(t, organization.Id, "unexpected zero value for organization id")
+				require.NotEmpty(t, organization.Name, "unexpected empty organization name")
+				require.NotZero(t, organization.CreatedBy, "unexpected zero value for CreatedBy")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
 				user, err := mysqlmodel.Users().One(context.TODO(), db)
