@@ -239,9 +239,8 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				return toUpdateOrganization
 			},
 			assertions: func(t *testing.T, params *model.UpdateOrganization, organization *model.Organization, err error) {
-				var createdByConvToInt int
-				createdByConvToInt, err = strconv.Atoi(organization.CreatedBy)
-				require.NoError(t, err, "error converting createdBy into an int")
+				createdByConvToInt, convErr := strconv.Atoi(organization.CreatedBy)
+				require.NoError(t, convErr, "error converting createdBy into an int")
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, organization, "unexpected nil organization")
 				assert.Equal(t, params.Id, organization.Id, "expected id to be equal")
@@ -323,7 +322,8 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 			},
 			assertions: func(t *testing.T, params *model.UpdateOrganization, organization *model.Organization, err error) {
 				assert.Error(t, err, "unexpected error")
-				assert.Contains(t, organization, "unexpected nil organization")
+				assert.Contains(t, err.Error(), "get db: error getting db", "expected error message to contain 'get db: error getting db'")
+				assert.Nil(t, organization, "expected organization to be nil due to failure")
 			},
 		},
 		//{
