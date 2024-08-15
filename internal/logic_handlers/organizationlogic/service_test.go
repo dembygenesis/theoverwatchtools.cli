@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"math/rand"
 	"strconv"
 	"testing"
 	"time"
@@ -293,15 +294,14 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 				}, cleanup
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (toUpdatedOrganization *model.UpdateOrganization) {
-				id := 1
 				toUpdateOrganization := &model.UpdateOrganization{
-					Id: id,
+					Id: rand.Int(),
 					Name: null.String{
 						String: "Demby",
 						Valid:  true,
 					},
 					UserId: null.Int{
-						Int:   id,
+						Int:   rand.Int(),
 						Valid: true,
 					},
 				}
@@ -373,20 +373,12 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				require.NotEqual(t, 0, organization.CreatedBy, "unexpected empty Created_by")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
-				id := 4
-				entryUser := mysqlmodel.User{
-					ID:                id,
-					Firstname:         "Demby2",
-					Lastname:          "Abella2",
-					CategoryTypeRefID: 1,
-					IsActive:          true,
-				}
-				err := entryUser.Insert(context.TODO(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into user table")
+				user, err := mysqlmodel.Users().One(context.TODO(), db)
+				require.NoError(t, err, "error fetching one user record")
 
 				createOrg := model.CreateOrganization{
 					Name:   "Demby",
-					UserId: entryUser.ID,
+					UserId: user.ID,
 				}
 
 				return &createOrg
@@ -414,20 +406,9 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				assert.Nil(t, organization, "unexpected nil organization")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
-				id := 4
-				entryUser := mysqlmodel.User{
-					ID:                id,
-					Firstname:         "Demby2",
-					Lastname:          "Abella2",
-					CategoryTypeRefID: 1,
-					IsActive:          true,
-				}
-				err := entryUser.Insert(context.TODO(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into user table")
-
 				createOrg := &model.CreateOrganization{
 					Name:   "Demby",
-					UserId: entryUser.ID * entryUser.ID,
+					UserId: rand.Int(),
 				}
 
 				return createOrg
@@ -442,29 +423,22 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				assert.Nil(t, organization, "unexpected nil organization")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
-				entryUser := mysqlmodel.User{
-					ID:                4,
-					Firstname:         "Demby2",
-					Lastname:          "Abella2",
-					CategoryTypeRefID: 1,
-					IsActive:          true,
-				}
-				err := entryUser.Insert(context.TODO(), db, boil.Infer())
-				require.NoError(t, err, "error inserting into user table")
+				user, err := mysqlmodel.Users().One(context.TODO(), db)
+				require.NoError(t, err, "error fetching one user record")
 
 				entryOrganization := mysqlmodel.Organization{
-					ID:            1,
-					Name:          "Demby",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
+					ID:            user.ID,
+					Name:          user.Firstname,
+					CreatedBy:     null.IntFrom(user.ID),
+					LastUpdatedBy: null.IntFrom(user.ID),
 					IsActive:      true,
 				}
 				err = entryOrganization.Insert(context.TODO(), db, boil.Infer())
 				require.NoError(t, err, "error inserting into organization table")
 
 				createOrg := &model.CreateOrganization{
-					Name:   "Demby",
-					UserId: entryUser.ID,
+					Name:   user.Firstname,
+					UserId: user.ID,
 				}
 
 				return createOrg
@@ -490,11 +464,9 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				assert.Nil(t, organization, "expected nil organization but got non-nil")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) *model.CreateOrganization {
-				userId := 1232
-
 				return &model.CreateOrganization{
 					Name:   "Demby",
-					UserId: userId,
+					UserId: rand.Int(),
 				}
 			},
 		},
