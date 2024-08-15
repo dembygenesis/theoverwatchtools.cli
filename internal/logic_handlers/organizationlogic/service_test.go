@@ -113,7 +113,7 @@ func getGetOrganizationTestCases() []testCaseGetOrganizations {
 				require.NotNil(t, paginated, "unexpected nil organizations")
 				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
 				require.NotNil(t, paginated.Organizations, "unexpected nil organizations")
-				assert.NotEqual(t, 0, paginated.Pagination.RowCount, "unexpected total count")
+				assert.Equal(t, 1, paginated.Pagination.RowCount, "unexpected total count")
 			},
 		},
 		{
@@ -368,9 +368,9 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, organization, "unexpected nil organization")
 
-				require.NotEqual(t, 0, organization.Id, "unexpected nil organization")
+				require.Equal(t, 1, organization.Id, "unexpected nil organization")
 				require.NotEmpty(t, organization.Name, "unexpected empty organization name")
-				require.NotEqual(t, 0, organization.CreatedBy, "unexpected empty Created_by")
+				require.Equal(t, strconv.Itoa(1), organization.CreatedBy, "unexpected empty Created_by")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) (org *model.CreateOrganization) {
 				user, err := mysqlmodel.Users().One(context.TODO(), db)
