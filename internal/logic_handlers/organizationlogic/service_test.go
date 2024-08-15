@@ -428,7 +428,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 
 				entryOrganization := mysqlmodel.Organization{
 					ID:            user.ID,
-					Name:          user.Firstname,
+					Name:          "Demby2",
 					CreatedBy:     null.IntFrom(user.ID),
 					LastUpdatedBy: null.IntFrom(user.ID),
 					IsActive:      true,
@@ -437,7 +437,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				require.NoError(t, err, "error inserting into organization table")
 
 				createOrg := &model.CreateOrganization{
-					Name:   user.Firstname,
+					Name:   "Demby2",
 					UserId: user.ID,
 				}
 
@@ -524,7 +524,7 @@ func getTestCasesDeleteOrganizations() []testCaseDeleteOrganizations {
 
 				entryOrganization := mysqlmodel.Organization{
 					ID:            user.ID,
-					Name:          user.Firstname,
+					Name:          "Demby",
 					CreatedBy:     null.IntFrom(user.ID),
 					LastUpdatedBy: null.IntFrom(user.ID),
 					CreatedAt:     time.Now(),
@@ -617,7 +617,7 @@ func getTestCasesRestoreOrganizations() []testCaseRestoreOrganizations {
 
 				entryOrganization := mysqlmodel.Organization{
 					ID:            user.ID,
-					Name:          user.Firstname,
+					Name:          "Demby",
 					CreatedBy:     null.IntFrom(user.ID),
 					LastUpdatedBy: null.IntFrom(user.ID),
 					CreatedAt:     time.Now(),
