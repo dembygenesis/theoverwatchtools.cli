@@ -97,9 +97,6 @@ func getGetOrganizationTestCases() []testCaseGetOrganizations {
 				filter: &model.OrganizationFilters{},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				//user, err := mysqlmodel.Users().One(context.TODO(), db)
-				//require.NoError(t, err, "error fetching a user from the user table")
-
 				user := mysqlmodel.User{
 					ID:                4,
 					Firstname:         "Demby",
@@ -253,30 +250,39 @@ func getTestCasesUpdateOrganizations() []testCaseUpdateOrganization {
 			ctx:             context.TODO(),
 			getDependencies: getConcreteDependencies,
 			mutations: func(t *testing.T, db *sqlx.DB) *model.UpdateOrganization {
-				user, err := mysqlmodel.Users().One(context.TODO(), db)
-				require.NoError(t, err, "error finding user from user table.")
+				newUser := mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					CategoryTypeRefID: 1,
+					IsActive:          true,
+				}
+
+				err := newUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting new user")
 
 				entry := mysqlmodel.Organization{
-					ID:            user.ID,
+					ID:            newUser.ID,
 					Name:          "Demby",
-					CreatedBy:     null.IntFrom(user.ID),
-					LastUpdatedBy: null.IntFrom(user.ID),
+					CreatedBy:     null.IntFrom(newUser.ID),
+					LastUpdatedBy: null.IntFrom(newUser.ID),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
 				}
 
 				err = entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
+				require.NoError(t, err, "error inserting sample organization data")
 
 				toUpdateOrganization := &model.UpdateOrganization{
-					Id: user.ID,
+					Id: newUser.ID,
 					Name: null.String{
 						String: "Demby2",
 						Valid:  true,
 					},
 					UserId: null.Int{
-						Int:   user.ID,
+						Int:   newUser.ID,
 						Valid: true,
 					},
 				}
@@ -605,21 +611,30 @@ func getTestCasesRestoreOrganizations() []testCaseRestoreOrganizations {
 			args: argsRestoreOrganization{
 				ctx: context.TODO(),
 				params: &model.RestoreOrganization{
-					ID: 1,
+					ID: 4,
 				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) {
-				user, err := mysqlmodel.Users().One(context.TODO(), db)
-				require.NoError(t, err, "error fetching a user from user table")
+				newUser := mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					CategoryTypeRefID: 1,
+					IsActive:          true,
+				}
+
+				err := newUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting new user")
 
 				entryOrganization := mysqlmodel.Organization{
-					ID:            user.ID,
+					ID:            newUser.ID,
 					Name:          "Demby",
-					CreatedBy:     null.IntFrom(user.ID),
-					LastUpdatedBy: null.IntFrom(user.ID),
+					CreatedBy:     null.IntFrom(newUser.ID),
+					LastUpdatedBy: null.IntFrom(newUser.ID),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      false,
+					IsActive:      true,
 				}
 				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
