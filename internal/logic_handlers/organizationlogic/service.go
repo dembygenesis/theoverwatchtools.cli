@@ -34,7 +34,7 @@ func New(cfg *Config) (*Service, error) {
 	return &Service{cfg}, nil
 }
 
-func (i *Service) AddOrganization(ctx context.Context, params *model.CreateOrganization) (*model.Organization, error) {
+func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOrganization) (*model.Organization, error) {
 	if err := params.Validate(); err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusBadRequest,
