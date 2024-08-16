@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/dembygenesis/local.tools/internal/api/testassets"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/dembygenesis/local.tools/internal/model"
@@ -168,9 +167,8 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 					UserId: 1,
 				}
 
-				value, err := modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
 				require.NoError(t, err, "error adding the organization")
-				fmt.Println("the value ---- ", strutil.GetAsJson(value))
 
 				err = tx.Commit()
 				require.NoError(t, err, "unexpected error committing the transaction")

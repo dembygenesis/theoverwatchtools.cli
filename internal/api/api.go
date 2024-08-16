@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/global"
-	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -38,8 +37,6 @@ type Config struct {
 
 	// OrganizationService is the biz function for the organization
 	OrganizationService organizationService `json:"organization_service" validate:"required"`
-
-	TxHandler *mysqltx.Handler
 }
 
 func (a *Config) Validate() error {
