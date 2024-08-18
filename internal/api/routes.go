@@ -51,6 +51,7 @@ func (a *Api) Routes() error {
 	// Organization
 	groupOrganization := v1.Group("/organization")
 	groupOrganization.Name("List Organizations").Get("", a.ListOrganizations)
+	groupOrganization.Name("Create Organization").Post("", a.CreateOrganization)
 
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {
