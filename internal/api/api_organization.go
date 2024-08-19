@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
 	"github.com/gofiber/fiber/v2"
@@ -46,7 +45,6 @@ func (a *Api) CreateOrganization(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
 	}
 	organization, err := a.cfg.OrganizationService.CreateOrganization(ctx.Context(), &body)
-	fmt.Println("=========================================================================================++>", organization)
 	return a.WriteResponse(ctx, http.StatusCreated, organization, err)
 }
 

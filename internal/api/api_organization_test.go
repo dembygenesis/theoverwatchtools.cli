@@ -14,6 +14,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -23,7 +24,7 @@ import (
 type testCaseCreateOrganization struct {
 	name              string
 	fnGetTestServices func(t *testing.T) (*testassets.Container, func())
-	mutations         func(t *testing.T, db *sqlx.DB) *model.CreateOrganization
+	mutations         func(t *testing.T, db *sqlx.DB, modules *testassets.Container) *model.Organization
 	queryParameters   map[string]interface{}
 	assertions        func(t *testing.T, resp []byte, respCode int)
 }
@@ -33,7 +34,7 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 		{
 			name: "success",
 			queryParameters: map[string]interface{}{
-				"name":    "Younes",
+				"name":    "younes",
 				"user_id": 1,
 			},
 			fnGetTestServices: func(t *testing.T) (*testassets.Container, func()) {
@@ -42,18 +43,24 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 					cleanup()
 				}
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) *model.CreateOrganization {
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) *model.Organization {
+				tx, err := db.Begin()
+				require.NoError(t, err, "unexpected error starting a transaction")
+				defer tx.Rollback()
 
-				organizationModel := &model.CreateOrganization{
-					Name:   "Demby",
-					UserId: 1,
+				createdOrganization := &model.CreateOrganization{
+					Name:   "moahmed",
+					UserId: 2,
 				}
 
-				return organizationModel
+				h, err := modules.OrganizationService.AddOrganization(context.Background(), createdOrganization)
+				err = tx.Commit()
+				require.NoError(t, err, "error adding the organization")
+
+				return h
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				respStr := string(resp)
-				fmt.Println("+++++++++++++++++++++++++++++++++++++++++> respstr", respStr)
 				require.NotNilf(t, resp, "unexpected nil response: %s", respStr)
 				require.Equal(t, http.StatusCreated, respCode, "unexpected non-equal response code: %s", respStr)
 
@@ -88,13 +95,12 @@ func Test_CreateOrganization(t *testing.T) {
 			require.NoError(t, err, "unexpected error instantiating api")
 			require.NotNil(t, api, "unexpected api nil instance")
 
-			testCase.mutations(t, db)
 			reqB, err := json.Marshal(testCase.queryParameters)
-			fmt.Println("===============================>reqB", string(reqB))
 			require.NoError(t, err, "unexpected error marshalling parameters")
 
+			testCase.mutations(t, db, handlers)
+
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/organization", bytes.NewBuffer(reqB))
-			fmt.Println("===============================>req", req)
 
 			req.Header = map[string][]string{
 				"Content-Type":    {"application/json"},
@@ -102,11 +108,9 @@ func Test_CreateOrganization(t *testing.T) {
 			}
 
 			resp, err := api.app.Test(req, 100)
-			fmt.Println("===============================>resp", resp)
 			require.NoError(t, err, "unexpected error executing test")
 
 			respBytes, err := io.ReadAll(resp.Body)
-			fmt.Println("===============================>respBytes", string(respBytes))
 			require.Nil(t, err, "unexpected error reading the response")
 			testCase.assertions(t, respBytes, resp.StatusCode)
 		})
@@ -380,8 +384,8 @@ func Test_ListOrganizations(t *testing.T) {
 
 type testCaseUpdateOrganization struct {
 	name              string
-	fnGetTestServices func(t *testing.T) (*testServices, func())
-	mutations         func(t *testing.T, modules *testassets.Container)
+	fnGetTestServices func(t *testing.T) (*testassets.Container, func())
+	mutations         func(t *testing.T, db *sqlx.DB, modules *testassets.Container) *model.Organization
 	body              map[string]interface{}
 	assertions        func(t *testing.T, resp []byte, respCode int)
 }
@@ -390,19 +394,46 @@ func getTestCasesUpdateOrganization() []testCaseUpdateOrganization {
 	return []testCaseUpdateOrganization{
 		{
 			name: "success",
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService}, func() {
+			fnGetTestServices: func(t *testing.T) (*testassets.Container, func()) {
+				ctn, cleanup := testassets.GetConcreteContainer(t)
+				return ctn, func() {
 					cleanup()
 				}
 			},
-			mutations: func(t *testing.T, modules *testassets.Container) {
-
-			},
 			body: map[string]interface{}{
-				"id":   1,
-				"name": "demby",
+				"id":      1,
+				"name":    "demby",
+				"user_id": 3,
 			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) *model.Organization {
+				tx, err := db.Begin()
+				require.NoError(t, err, "unexpected error starting a transaction")
+				defer tx.Rollback()
+
+				createdOrganization := &model.CreateOrganization{
+					Name:   "demby",
+					UserId: 1,
+				}
+
+				updatedOrganization := &model.UpdateOrganization{
+					Id:     1,
+					Name:   null.StringFrom("younes"),
+					UserId: null.IntFrom(3),
+				}
+
+				f, err := modules.OrganizationService.AddOrganization(context.Background(), createdOrganization)
+				fmt.Println("==============================================>F", f, err)
+				require.NoError(t, err, "error adding the organization")
+
+				h, err := modules.OrganizationService.UpdateOrganization(context.Background(), updatedOrganization)
+				fmt.Println("==============================================>H", h, err)
+
+				err = tx.Commit()
+				require.NoError(t, err, "unexpected error committing the transaction")
+
+				return h
+			},
+
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				require.Equal(t, http.StatusOK, respCode)
 				var organization *model.Organization
@@ -417,14 +448,16 @@ func getTestCasesUpdateOrganization() []testCaseUpdateOrganization {
 func Test_UpdateOrganization(t *testing.T) {
 	for _, testCase := range getTestCasesUpdateOrganization() {
 		t.Run(testCase.name, func(t *testing.T) {
-			handlers, cleanup := testCase.fnGetTestServices(t)
+			db, _, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 			defer cleanup()
+
+			handlers, _ := testCase.fnGetTestServices(t)
 
 			cfg := &Config{
 				BaseUrl:             testassets.MockBaseUrl,
 				Port:                3000,
-				CategoryService:     handlers.catService,
-				OrganizationService: handlers.orgService,
+				CategoryService:     handlers.CategoryService,
+				OrganizationService: handlers.OrganizationService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -434,6 +467,8 @@ func Test_UpdateOrganization(t *testing.T) {
 
 			reqB, err := json.Marshal(testCase.body)
 			require.NoError(t, err, "unexpected error marshalling parameters")
+
+			testCase.mutations(t, db, handlers)
 
 			req := httptest.NewRequest(http.MethodPatch, "/api/v1/organization", bytes.NewBuffer(reqB))
 			req.Header = map[string][]string{
