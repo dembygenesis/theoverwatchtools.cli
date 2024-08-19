@@ -360,9 +360,12 @@ func getTestCasesUpdateCategory() []testCaseUpdateCategory {
 			name: "success",
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
-					cleanup()
-				}
+				return &testServices{
+						catService: container.CategoryService,
+						orgService: container.OrganizationService,
+					}, func() {
+						cleanup()
+					}
 			},
 			mutations: func(t *testing.T, modules *testassets.Container) {
 
@@ -389,10 +392,11 @@ func Test_UpdateCategory(t *testing.T) {
 			defer cleanup()
 
 			cfg := &Config{
-				BaseUrl:         testassets.MockBaseUrl,
-				Port:            3000,
-				CategoryService: handlers.catService,
-				Logger:          logger.New(context.TODO()),
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CategoryService:     handlers.catService,
+				OrganizationService: handlers.orgService,
+				Logger:              logger.New(context.TODO()),
 			}
 
 			api, err := New(cfg)
