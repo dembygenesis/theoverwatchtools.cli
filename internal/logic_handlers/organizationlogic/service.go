@@ -7,6 +7,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -229,6 +230,8 @@ func (s *Service) RestoreOrganization(ctx context.Context, params *model.Restore
 		})
 	}
 	defer tx.Rollback(ctx)
+
+	fmt.Println("the params --- ", strutil.GetAsJson(params))
 
 	err = s.cfg.Persistor.RestoreOrganization(ctx, tx, params.ID)
 	if err != nil {

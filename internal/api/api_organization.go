@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/gofiber/fiber/v2"
 	"github.com/volatiletech/null/v8"
 	"net/http"
@@ -48,40 +49,6 @@ func (a *Api) CreateOrganization(ctx *fiber.Ctx) error {
 	return a.WriteResponse(ctx, http.StatusCreated, organization, err)
 }
 
-// UpdateOrganization fetches the organizations
-//
-// @Id UpdateOrganization
-// @Summary Update Organization
-// @Description Update an organization
-// @Tags OrganizationService
-// @Accept application/json
-// @Produce application/json
-// @Param filters body model.UpdateOrganization false "Organization body"
-// @Success 200 {object} model.Organization
-// @Failure 400 {object} []string
-// @Failure 500 {object} []string
-// @Router /v1/organization [patch]
-func (a *Api) UpdateOrganization(ctx *fiber.Ctx) error {
-	var body model.UpdateOrganization
-	if err := ctx.BodyParser(&body); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
-	}
-	category, err := a.cfg.OrganizationService.UpdateOrganization(ctx.Context(), &body)
-	return a.WriteResponse(ctx, http.StatusOK, category, err)
-}
-
-// DeleteOrganization deletes an organization by ID
-//
-// @Summary Delete an organization by ID
-// @Description Deletes an organization by ID
-// @Tags OrganizationService
-// @Accept application/json
-// @Produce application/json
-// @Param filters body model.DeleteOrganization true "Organization ID to delete"
-// @Success 204 "No Content"
-// @Failure 400 {object} []string
-// @Failure 500 {object} []string
-// @Router /v1/organization/{id} [delete]
 func (a *Api) DeleteOrganization(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	organizationId, err := strconv.Atoi(id)
@@ -89,7 +56,9 @@ func (a *Api) DeleteOrganization(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
 	}
 
-	deleteParams := &model.DeleteOrganization{ID: organizationId}
+	deleteParams := &model.DeleteOrganization{
+		ID: organizationId,
+	}
 
 	err = a.cfg.OrganizationService.DeleteOrganization(ctx.Context(), deleteParams)
 	if err != nil {
@@ -99,27 +68,22 @@ func (a *Api) DeleteOrganization(ctx *fiber.Ctx) error {
 	return ctx.SendStatus(http.StatusNoContent)
 }
 
-// RestoreOrganization restores an organization by ID
-//
-// @Summary Restore an organization by ID
-// @Description Restores an organization by ID
-// @Tags OrganizationService
-// @Accept application/json
-// @Produce application/json
-// @Param id path int true "Organization ID"
-// @Param body model.RestoreOrganization false "Restore parameters"
-// @Success 204 "No Content"
-// @Failure 400 {object} []string
-// @Failure 500 {object} []string
-// @Router /v1/organization/{id}/restore [patch]
-func (a *Api) RestoreOrganization(ctx *fiber.Ctx) error {
-	id := ctx.Params("id")
-	organizationID, err := strconv.Atoi(id)
-	if err != nil {
+func (a *Api) UpdateOrganization(ctx *fiber.Ctx) error {
+	var body model.UpdateOrganization
+	if err := ctx.BodyParser(&body); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
 	}
+	organization, err := a.cfg.OrganizationService.UpdateOrganization(ctx.Context(), &body)
+	return a.WriteResponse(ctx, http.StatusOK, organization, err)
+}
 
-	restoreParams := &model.RestoreOrganization{ID: organizationID}
+func (a *Api) RestoreOrganization(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	organizationId, err := strconv.Atoi(id)
+
+	restoreParams := &model.RestoreOrganization{ID: organizationId}
+
+	fmt.Println("the restore params --- ", strutil.GetAsJson(restoreParams))
 
 	err = a.cfg.OrganizationService.RestoreOrganization(ctx.Context(), restoreParams)
 	if err != nil {

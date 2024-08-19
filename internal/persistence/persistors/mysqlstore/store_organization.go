@@ -321,6 +321,9 @@ func (m *Repository) RestoreOrganization(
 	}
 
 	entry := &mysqlmodel.Organization{ID: id, IsActive: true}
+
+	fmt.Println("the entry --- ", strutil.GetAsJson(entry))
+
 	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.OrganizationColumns.IsActive)); err != nil {
 		return fmt.Errorf("restore: %w", err)
 	}

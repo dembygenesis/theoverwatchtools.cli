@@ -19,8 +19,8 @@ type categoryService interface {
 //counterfeiter:generate . organizationService
 type organizationService interface {
 	ListOrganizations(ctx context.Context, filters *model.OrganizationFilters) (*model.PaginatedOrganizations, error)
-	CreateOrganization(ctx context.Context, organization *model.CreateOrganization) (*model.Organization, error)
-	UpdateOrganization(ctx context.Context, organization *model.UpdateOrganization) (*model.Organization, error)
 	DeleteOrganization(ctx context.Context, params *model.DeleteOrganization) error
+	UpdateOrganization(ctx context.Context, organization *model.UpdateOrganization) (*model.Organization, error)
+	CreateOrganization(ctx context.Context, organization *model.CreateOrganization) (*model.Organization, error)
 	RestoreOrganization(ctx context.Context, params *model.RestoreOrganization) error
 }
