@@ -9,13 +9,11 @@ import (
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/model/modelhelpers"
-	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
 	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -46,16 +44,9 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) *model.CreateOrganization {
 
-				userModel := mysqlmodel.User{
-					ID:                4,
-					CategoryTypeRefID: 1,
-				}
-				err := userModel.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
 				organizationModel := &model.CreateOrganization{
 					Name:   "Demby",
-					UserId: userModel.ID,
+					UserId: 1,
 				}
 
 				return organizationModel
@@ -74,36 +65,6 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				modelhelpers.AssertNonEmptyOrganizations(t, []model.Organization{*organization})
 			},
 		},
-		//{
-		//	name: "fail-empty-body",
-		//	body: map[string]interface{}{},
-		//	fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-		//		container, cleanup := testassets.GetConcreteContainer(t)
-		//		return &testServices{catService: container.CategoryService, orgService: container.OrganizationService}, func() {
-		//			cleanup()
-		//		}
-		//	},
-		//	assertions: func(t *testing.T, resp []byte, respCode int) {
-		//		require.NotNil(t, resp, "unexpected nil response")
-		//		require.Equal(t, http.StatusBadRequest, respCode, "unexpected non-equal response code")
-		//	},
-		//},
-		//{
-		//	name: "fail-mock-server-error",
-		//	body: map[string]interface{}{
-		//		"name":    "Example",
-		//		"user_id": 1,
-		//	},
-		//	fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-		//		fakeOrgService := apifakes.FakeOrganizationService{}
-		//		fakeOrgService.CreateOrganizationReturns(nil, errors.New("mock error"))
-		//		return &testServices{orgService: &fakeOrgService}, func() {}
-		//	},
-		//	assertions: func(t *testing.T, resp []byte, respCode int) {
-		//		require.NotNil(t, resp, "unexpected nil response")
-		//		assert.Equal(t, http.StatusInternalServerError, respCode)
-		//	},
-		//},
 	}
 }
 
@@ -406,6 +367,79 @@ func Test_ListOrganizations(t *testing.T) {
 			}
 
 			testCase.mutations(t, db, handlers)
+
+			resp, err := api.app.Test(req, 100)
+			require.NoError(t, err, "unexpected error executing test")
+
+			respBytes, err := io.ReadAll(resp.Body)
+			require.Nil(t, err, "unexpected error reading the response")
+			testCase.assertions(t, respBytes, resp.StatusCode)
+		})
+	}
+}
+
+type testCaseUpdateOrganization struct {
+	name              string
+	fnGetTestServices func(t *testing.T) (*testServices, func())
+	mutations         func(t *testing.T, modules *testassets.Container)
+	body              map[string]interface{}
+	assertions        func(t *testing.T, resp []byte, respCode int)
+}
+
+func getTestCasesUpdateOrganization() []testCaseUpdateOrganization {
+	return []testCaseUpdateOrganization{
+		{
+			name: "success",
+			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
+				container, cleanup := testassets.GetConcreteContainer(t)
+				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService}, func() {
+					cleanup()
+				}
+			},
+			mutations: func(t *testing.T, modules *testassets.Container) {
+
+			},
+			body: map[string]interface{}{
+				"id":   1,
+				"name": "demby",
+			},
+			assertions: func(t *testing.T, resp []byte, respCode int) {
+				require.Equal(t, http.StatusOK, respCode)
+				var organization *model.Organization
+				err := json.Unmarshal(resp, &organization)
+				require.NoError(t, err, "unexpected error unmarshalling the response")
+				modelhelpers.AssertNonEmptyOrganizations(t, []model.Organization{*organization})
+			},
+		},
+	}
+}
+
+func Test_UpdateOrganization(t *testing.T) {
+	for _, testCase := range getTestCasesUpdateOrganization() {
+		t.Run(testCase.name, func(t *testing.T) {
+			handlers, cleanup := testCase.fnGetTestServices(t)
+			defer cleanup()
+
+			cfg := &Config{
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CategoryService:     handlers.catService,
+				OrganizationService: handlers.orgService,
+				Logger:              logger.New(context.TODO()),
+			}
+
+			api, err := New(cfg)
+			require.NoError(t, err, "unexpected error instantiating api")
+			require.NotNil(t, api, "unexpected api nil instance")
+
+			reqB, err := json.Marshal(testCase.body)
+			require.NoError(t, err, "unexpected error marshalling parameters")
+
+			req := httptest.NewRequest(http.MethodPatch, "/api/v1/organization", bytes.NewBuffer(reqB))
+			req.Header = map[string][]string{
+				"Content-Type":    {"application/json"},
+				"Accept-Encoding": {"gzip", "deflate", "br"},
+			}
 
 			resp, err := api.app.Test(req, 100)
 			require.NoError(t, err, "unexpected error executing test")

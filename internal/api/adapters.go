@@ -20,4 +20,7 @@ type categoryService interface {
 type organizationService interface {
 	ListOrganizations(ctx context.Context, filters *model.OrganizationFilters) (*model.PaginatedOrganizations, error)
 	CreateOrganization(ctx context.Context, organization *model.CreateOrganization) (*model.Organization, error)
+	UpdateOrganization(ctx context.Context, organization *model.UpdateOrganization) (*model.Organization, error)
+	DeleteOrganization(ctx context.Context, params *model.DeleteOrganization) error
+	RestoreOrganization(ctx context.Context, params *model.RestoreOrganization) error
 }
