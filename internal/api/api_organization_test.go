@@ -49,9 +49,22 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 					require.NoError(t, err, "error rolling back")
 				}(tx)
 
+				entryUser := mysqlmodel.User{
+					ID:                4,
+					CreatedBy:         null.IntFrom(2),
+					LastUpdatedBy:     null.IntFrom(2),
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err = entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
 				createdOrganization := &model.CreateOrganization{
-					Name:   "moahmed",
-					UserId: 2,
+					Name:   "mohamed",
+					UserId: entryUser.CreatedBy.Int,
 				}
 
 				return createdOrganization
@@ -130,12 +143,26 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 				"ids_in": []int{1},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
+
+				entryUser := mysqlmodel.User{
+					ID:                4,
+					CreatedBy:         null.IntFrom(2),
+					LastUpdatedBy:     null.IntFrom(2),
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
 				organizationModel := &model.CreateOrganization{
 					Name:   "demby",
-					UserId: 1,
+					UserId: entryUser.CreatedBy.Int,
 				}
 
-				_, err := modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
 				require.NoError(t, err, "error adding the organization")
 			},
 			getContainer: func(t *testing.T) (*testassets.Container, func()) {
@@ -167,21 +194,35 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
 				tx, err := db.Begin()
 				require.NoError(t, err, "unexpected error starting a transaction")
-				defer func(tx *sql.Tx) {
-					err := tx.Rollback()
-					require.NoError(t, err, "error rolling back")
-				}(tx)
+				defer func() {
+					if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
+						require.NoError(t, err, "error rolling back")
+					}
+				}()
+
+				entryUser := mysqlmodel.User{
+					ID:                4,
+					CreatedBy:         null.IntFrom(2),
+					LastUpdatedBy:     null.IntFrom(2),
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err = entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
 
 				organizationModel := &model.CreateOrganization{
 					Name:   "demby",
-					UserId: 1,
+					UserId: entryUser.CreatedBy.Int,
 				}
 				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
 				require.NoError(t, err, "error inserting organization into organization table")
 
 				organizationModel1 := &model.CreateOrganization{
 					Name:   "younes",
-					UserId: 2,
+					UserId: entryUser.CreatedBy.Int,
 				}
 				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel1)
 				require.NoError(t, err, "error adding the organization")
@@ -217,28 +258,42 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
 				tx, err := db.Begin()
 				require.NoError(t, err, "unexpected error starting a transaction")
-				defer func(tx *sql.Tx) {
-					err := tx.Rollback()
-					require.NoError(t, err, "error rolling back")
-				}(tx)
+				defer func() {
+					if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
+						require.NoError(t, err, "error rolling back")
+					}
+				}()
+
+				entryUser := mysqlmodel.User{
+					ID:                4,
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err = entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
 
 				organizationModel := &model.CreateOrganization{
 					Name:   "demby",
-					UserId: 1,
+					UserId: entryUser.CreatedBy.Int,
 				}
 				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
 				require.NoError(t, err, "error inserting organization into organization table")
 
 				organizationModel1 := &model.CreateOrganization{
 					Name:   "younes",
-					UserId: 2,
+					UserId: entryUser.CreatedBy.Int,
 				}
 				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel1)
 				require.NoError(t, err, "error inserting organization into organization table")
 
 				organizationModel2 := &model.CreateOrganization{
 					Name:   "lawrence",
-					UserId: 3,
+					UserId: entryUser.CreatedBy.Int,
 				}
 				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel2)
 				require.NoError(t, err, "error adding the organization")
@@ -274,14 +329,28 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
 				tx, err := db.Begin()
 				require.NoError(t, err, "unexpected error starting a transaction")
-				defer func(tx *sql.Tx) {
-					err := tx.Rollback()
-					require.NoError(t, err, "error rolling back")
-				}(tx)
+				defer func() {
+					if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
+						require.NoError(t, err, "error rolling back")
+					}
+				}()
+
+				entryUser := mysqlmodel.User{
+					ID:                4,
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err = entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
 
 				organizationModel := &model.CreateOrganization{
 					Name:   "demby",
-					UserId: 1,
+					UserId: entryUser.CreatedBy.Int,
 				}
 				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
 				require.NoError(t, err, "error adding the organization")
@@ -396,9 +465,23 @@ func getTestCasesDeleteOrganization() []testCaseDeleteOrganization {
 		{
 			name: "success",
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) int {
+
+				entryUser := mysqlmodel.User{
+					ID:                4,
+					CreatedBy:         null.IntFrom(2),
+					LastUpdatedBy:     null.IntFrom(2),
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
 				organizationModel := &model.CreateOrganization{
 					Name:   "demby",
-					UserId: 1,
+					UserId: entryUser.CreatedBy.Int,
 				}
 
 				organization, err := modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
@@ -479,12 +562,25 @@ func getTestCasesUpdateOrganization() []testCaseUpdateOrganization {
 		{
 			name: "success",
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
+				entryUser := mysqlmodel.User{
+					ID:                4,
+					CreatedBy:         null.IntFrom(2),
+					LastUpdatedBy:     null.IntFrom(2),
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
 				organizationModel := &model.CreateOrganization{
 					Name:   "demby",
-					UserId: 1,
+					UserId: entryUser.CreatedBy.Int,
 				}
 
-				_, err := modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
 				require.NoError(t, err, "error adding the organization")
 			},
 			body: map[string]interface{}{
@@ -563,28 +659,27 @@ func getTestCasesRestoreOrganization() []testCaseRestoreOrganization {
 		{
 			name: "success",
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) int {
-				//organizationModel := &model.CreateOrganization{
-				//	Name:   "demby",
-				//	UserId: 1,
-				//}
-				//
-				//_, err := modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
-				//require.NoError(t, err, "error adding the organization")
-				//
-				//deleteModel := &model.DeleteOrganization{
-				//	ID: organizationModel.UserId,
-				//}
-				//
-				//err = modules.OrganizationService.DeleteOrganization(context.Background(), deleteModel)
-				//require.NoError(t, err, "error deleting the organization")
+
+				entryUser := mysqlmodel.User{
+					ID:                4,
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				}
+				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
 
 				organizationModel := mysqlmodel.Organization{
 					ID:        1,
 					Name:      "Demby",
-					CreatedBy: null.IntFrom(1),
+					CreatedBy: entryUser.CreatedBy,
 					IsActive:  false,
 				}
-				err := organizationModel.Insert(context.TODO(), db, boil.Infer())
+				err = organizationModel.Insert(context.TODO(), db, boil.Infer())
 				require.NoError(t, err, "error inserting organization into organization table")
 
 				id := organizationModel.ID
