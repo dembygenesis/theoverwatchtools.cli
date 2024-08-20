@@ -11,6 +11,7 @@ import (
 var (
 	ErrCatNil = errors.New("category provided is nil")
 	ErrOrgNil = errors.New("organization provided is nil")
+	ErrCapNil = errors.New("capture page provided is nil")
 )
 
 type Config struct {
