@@ -47,7 +47,6 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 				}
 			},
 			mutations: func(t *testing.T, db *sqlx.DB) *model.CreateOrganization {
-
 				organizationModel := &model.CreateOrganization{
 					Name:   "Demby",
 					UserId: 1,

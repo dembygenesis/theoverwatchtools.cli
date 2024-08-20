@@ -70,7 +70,7 @@ func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOr
 		})
 	}
 
-	organization, err = i.cfg.Persistor.CreateOrganization(ctx, tx, organization)
+	organizationCreated, err := i.cfg.Persistor.CreateOrganization(ctx, tx, organization)
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
@@ -85,7 +85,7 @@ func (i *Service) CreateOrganization(ctx context.Context, params *model.CreateOr
 		})
 	}
 
-	return organization, nil
+	return organizationCreated, nil
 }
 
 func (i *Service) AddOrganization(ctx context.Context, params *model.CreateOrganization) (*model.Organization, error) {

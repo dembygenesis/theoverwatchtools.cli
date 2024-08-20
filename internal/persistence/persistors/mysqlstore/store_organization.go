@@ -14,6 +14,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"strconv"
 )
 
 func (m *Repository) DropOrganizationTable(
@@ -267,8 +268,22 @@ func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.Tran
 		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
+	createdBy, err := strconv.Atoi(organization.CreatedBy)
+	if err != nil {
+		fmt.Println("error converting createdBy into int --- ", err)
+		return nil, nil
+	}
+
+	lastUpdatedBy, err := strconv.Atoi(organization.CreatedBy)
+	if err != nil {
+		fmt.Println("error converting lastUpdatedBy into int --- ", err)
+		return nil, nil
+	}
+
 	entry := mysqlmodel.Organization{
-		Name: organization.Name,
+		Name:          organization.Name,
+		CreatedBy:     null.IntFrom(createdBy),
+		LastUpdatedBy: null.IntFrom(lastUpdatedBy),
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert organization: %w", err)
