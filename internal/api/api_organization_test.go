@@ -3,8 +3,8 @@ package api
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/dembygenesis/local.tools/internal/api/testassets"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
 	"github.com/dembygenesis/local.tools/internal/model"
@@ -27,8 +27,7 @@ import (
 type testCaseCreateOrganization struct {
 	name              string
 	fnGetTestServices func(t *testing.T) (*testassets.Container, func())
-	mutations         func(t *testing.T, db *sqlx.DB) *model.CreateOrganization
-	queryParameters   map[string]interface{}
+	mutations         func(t *testing.T, db *sqlx.DB, modules *testassets.Container) *model.CreateOrganization
 	assertions        func(t *testing.T, resp []byte, respCode int)
 }
 
@@ -36,27 +35,29 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 	return []testCaseCreateOrganization{
 		{
 			name: "success",
-			queryParameters: map[string]interface{}{
-				"name":    "Younes",
-				"user_id": 1,
-			},
 			fnGetTestServices: func(t *testing.T) (*testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
 				return ctn, func() {
 					cleanup()
 				}
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) *model.CreateOrganization {
-				organizationModel := &model.CreateOrganization{
-					Name:   "Demby",
-					UserId: 1,
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) *model.CreateOrganization {
+				tx, err := db.Begin()
+				require.NoError(t, err, "unexpected error starting a transaction")
+				defer func(tx *sql.Tx) {
+					err := tx.Rollback()
+					require.NoError(t, err, "error rolling back")
+				}(tx)
+
+				createdOrganization := &model.CreateOrganization{
+					Name:   "moahmed",
+					UserId: 2,
 				}
 
-				return organizationModel
+				return createdOrganization
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				respStr := string(resp)
-				fmt.Println("+++++++++++++++++++++++++++++++++++++++++> respstr", respStr)
 				require.NotNilf(t, resp, "unexpected nil response: %s", respStr)
 				require.Equal(t, http.StatusCreated, respCode, "unexpected non-equal response code: %s", respStr)
 
@@ -87,17 +88,16 @@ func Test_CreateOrganization(t *testing.T) {
 				Logger:              logger.New(context.TODO()),
 			}
 
+			organization := testCase.mutations(t, db, handlers)
+
 			api, err := New(cfg)
 			require.NoError(t, err, "unexpected error instantiating api")
 			require.NotNil(t, api, "unexpected api nil instance")
 
-			testCase.mutations(t, db)
-			reqB, err := json.Marshal(testCase.queryParameters)
-			fmt.Println("===============================>reqB", string(reqB))
+			reqB, err := json.Marshal(organization)
 			require.NoError(t, err, "unexpected error marshalling parameters")
 
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/organization", bytes.NewBuffer(reqB))
-			fmt.Println("===============================>req", req)
 
 			req.Header = map[string][]string{
 				"Content-Type":    {"application/json"},
@@ -105,11 +105,9 @@ func Test_CreateOrganization(t *testing.T) {
 			}
 
 			resp, err := api.app.Test(req, 100)
-			fmt.Println("===============================>resp", resp)
 			require.NoError(t, err, "unexpected error executing test")
 
 			respBytes, err := io.ReadAll(resp.Body)
-			fmt.Println("===============================>respBytes", string(respBytes))
 			require.Nil(t, err, "unexpected error reading the response")
 			testCase.assertions(t, respBytes, resp.StatusCode)
 		})
@@ -169,18 +167,22 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
 				tx, err := db.Begin()
 				require.NoError(t, err, "unexpected error starting a transaction")
-				defer tx.Rollback()
+				defer func(tx *sql.Tx) {
+					err := tx.Rollback()
+					require.NoError(t, err, "error rolling back")
+				}(tx)
 
 				organizationModel := &model.CreateOrganization{
 					Name:   "demby",
 					UserId: 1,
 				}
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				require.NoError(t, err, "error inserting organization into organization table")
+
 				organizationModel1 := &model.CreateOrganization{
 					Name:   "younes",
 					UserId: 2,
 				}
-
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
 				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel1)
 				require.NoError(t, err, "error adding the organization")
 
@@ -215,23 +217,29 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
 				tx, err := db.Begin()
 				require.NoError(t, err, "unexpected error starting a transaction")
-				defer tx.Rollback()
+				defer func(tx *sql.Tx) {
+					err := tx.Rollback()
+					require.NoError(t, err, "error rolling back")
+				}(tx)
 
 				organizationModel := &model.CreateOrganization{
 					Name:   "demby",
 					UserId: 1,
 				}
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				require.NoError(t, err, "error inserting organization into organization table")
+
 				organizationModel1 := &model.CreateOrganization{
 					Name:   "younes",
 					UserId: 2,
 				}
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel1)
+				require.NoError(t, err, "error inserting organization into organization table")
+
 				organizationModel2 := &model.CreateOrganization{
 					Name:   "lawrence",
 					UserId: 3,
 				}
-
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel1)
 				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel2)
 				require.NoError(t, err, "error adding the organization")
 
@@ -266,15 +274,16 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
 				tx, err := db.Begin()
 				require.NoError(t, err, "unexpected error starting a transaction")
-				defer tx.Rollback()
+				defer func(tx *sql.Tx) {
+					err := tx.Rollback()
+					require.NoError(t, err, "error rolling back")
+				}(tx)
 
 				organizationModel := &model.CreateOrganization{
 					Name:   "demby",
 					UserId: 1,
 				}
-
 				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
-
 				require.NoError(t, err, "error adding the organization")
 
 				err = tx.Commit()
@@ -596,7 +605,6 @@ func getTestCasesRestoreOrganization() []testCaseRestoreOrganization {
 				assert.Empty(t, resp, "unexpected non-empty response body")
 
 				organization, err := mysqlmodel.FindOrganization(context.TODO(), db, orgID)
-				fmt.Println("the organization returned --- ", strutil.GetAsJson(organization))
 				require.NoError(t, err, "unexpected error fetching organization from database")
 
 				assert.True(t, organization.IsActive, "expected is_active to be true")
@@ -635,8 +643,6 @@ func Test_RestoreOrganization(t *testing.T) {
 				"Content-Type":    {"application/json"},
 				"Accept-Encoding": {"gzip", "deflate", "br"},
 			}
-
-			fmt.Println("the req --- ", req)
 
 			resp, err := api.app.Test(req, 100)
 			require.NoError(t, err, "unexpected error executing test")

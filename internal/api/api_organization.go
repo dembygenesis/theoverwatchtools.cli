@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
-	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/gofiber/fiber/v2"
 	"github.com/volatiletech/null/v8"
 	"net/http"
@@ -47,7 +46,6 @@ func (a *Api) CreateOrganization(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
 	}
 	organization, err := a.cfg.OrganizationService.CreateOrganization(ctx.Context(), &body)
-	fmt.Println("=========================================================================================++>", organization)
 	return a.WriteResponse(ctx, http.StatusCreated, organization, err)
 }
 
@@ -82,10 +80,11 @@ func (a *Api) UpdateOrganization(ctx *fiber.Ctx) error {
 func (a *Api) RestoreOrganization(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	organizationId, err := strconv.Atoi(id)
+	if err != nil {
+		return fmt.Errorf("invalid organization ID: %v", err)
+	}
 
 	restoreParams := &model.RestoreOrganization{ID: organizationId}
-
-	fmt.Println("the restore params --- ", strutil.GetAsJson(restoreParams))
 
 	err = a.cfg.OrganizationService.RestoreOrganization(ctx.Context(), restoreParams)
 	if err != nil {

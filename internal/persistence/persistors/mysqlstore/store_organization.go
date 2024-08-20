@@ -268,22 +268,12 @@ func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.Tran
 		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
-	createdBy, err := strconv.Atoi(organization.CreatedBy)
-	if err != nil {
-		fmt.Println("error converting createdBy into int --- ", err)
-		return nil, nil
-	}
-
-	lastUpdatedBy, err := strconv.Atoi(organization.CreatedBy)
-	if err != nil {
-		fmt.Println("error converting lastUpdatedBy into int --- ", err)
-		return nil, nil
-	}
-
+	createdBY, _ := strconv.Atoi(organization.CreatedBy)
+	lastUpdateBY, _ := strconv.Atoi(organization.LastUpdatedBy)
 	entry := mysqlmodel.Organization{
 		Name:          organization.Name,
-		CreatedBy:     null.IntFrom(createdBy),
-		LastUpdatedBy: null.IntFrom(lastUpdatedBy),
+		CreatedBy:     null.IntFrom(createdBY),
+		LastUpdatedBy: null.IntFrom(lastUpdateBY),
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert organization: %w", err)

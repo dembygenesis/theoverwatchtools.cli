@@ -31,7 +31,7 @@ func main() {
 
 	organizationMgr, err := ctn.SafeGetLogicOrganization()
 	if err != nil {
-		log.Fatalf("organiation mgr: %w", err)
+		log.Fatalf("organiation mgr: %v", err)
 	}
 
 	apiCfg := &api.Config{
