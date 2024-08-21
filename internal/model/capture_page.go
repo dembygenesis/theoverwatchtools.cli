@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/volatiletech/null/v8"
 	"time"
 )
@@ -44,4 +46,30 @@ type CapturePageFilters struct {
 	CreatedBy              null.Int  `query:"created_by" json:"created_by"`
 	LastUpdatedBy          null.Int  `query:"last_updated_by" json:"last_updated_by"`
 	PaginationQueryFilters `swaggerignore:"true"`
+}
+
+func (c *CreateCapturePage) Validate() error {
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %v", err)
+	}
+	return nil
+}
+
+func (c *CreateCapturePage) ToCapturePage() *CapturePage {
+	capturePage := &CapturePage{
+		Name:      c.Name,
+		CreatedBy: fmt.Sprint(c.UserId),
+	}
+	return capturePage
+}
+
+func (c *CapturePageFilters) Validate() error {
+	if err := c.ValidatePagination(); err != nil {
+		return fmt.Errorf("capture page: %v", err)
+	}
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("capture page filters: %v", err)
+	}
+
+	return nil
 }
