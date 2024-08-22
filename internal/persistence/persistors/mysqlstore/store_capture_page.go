@@ -9,10 +9,12 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"strconv"
 )
 
 func (m *Repository) DropCapturePageTable(
@@ -243,6 +245,46 @@ func (m *Repository) GetCapturePageById(ctx context.Context, tx persistence.Tran
 	}
 
 	return &paginated.CapturePages[0], nil
+}
+
+func (m *Repository) GetCapturePageByName(ctx context.Context, tx persistence.TransactionHandler, name string) (*model.CapturePage, error) {
+	paginated, err := m.GetCapturePages(ctx, tx, &model.CapturePageFilters{
+		CapturePageNameIn: []string{name},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("capture page filtered by name: %w", err)
+	}
+
+	if paginated.Pagination.RowCount != 1 {
+		return nil, errors.New(sysconsts.ErrExpectedExactlyOneEntry)
+	}
+
+	return &paginated.CapturePages[0], nil
+}
+
+func (m *Repository) CreateCapturePage(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CapturePage) (*model.CapturePage, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %w", err)
+	}
+
+	createdBY, _ := strconv.Atoi(capturePage.CreatedBy)
+	lastUpdateBY, _ := strconv.Atoi(capturePage.LastUpdatedBy)
+	entry := mysqlmodel.CapturePage{
+		Name:          capturePage.Name,
+		CreatedBy:     null.IntFrom(createdBY),
+		LastUpdatedBy: null.IntFrom(lastUpdateBY),
+	}
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("insert capture page: %w", err)
+	}
+
+	capturePage, err = m.GetCapturePageById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get capture page by id: %w", err)
+	}
+
+	return capturePage, nil
 }
 
 func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CreateCapturePage) (*model.CapturePage, error) {
