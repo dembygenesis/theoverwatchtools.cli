@@ -8,14 +8,16 @@ import (
 )
 
 type UpdateCapturePage struct {
-	Id     int         `json:"id" validate:"required,greater_than_zero"`
-	Name   null.String `json:"name"`
-	UserId null.Int    `json:"userId"`
+	Id               int         `json:"id" validate:"required,greater_than_zero"`
+	Name             null.String `json:"name"`
+	UserId           null.Int    `json:"userId"`
+	CapturePageSetId int         `json:"capture_page_set_id"`
 }
 
 type CreateCapturePage struct {
-	Name   string `json:"name" validate:"required"`
-	UserId int    `json:"user_id"`
+	Name             string `json:"name" validate:"required"`
+	UserId           int    `json:"user_id"`
+	CapturePageSetId int    `json:"capture_page_set_id"`
 }
 
 type CapturePage struct {

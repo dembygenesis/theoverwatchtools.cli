@@ -9,6 +9,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -242,4 +243,43 @@ func (m *Repository) GetCapturePageById(ctx context.Context, tx persistence.Tran
 	}
 
 	return &paginated.CapturePages[0], nil
+}
+
+func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CreateCapturePage) (*model.CapturePage, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %w", err)
+	}
+
+	entry := &mysqlmodel.CapturePage{
+		Name:             capturePage.Name,
+		CreatedBy:        null.IntFrom(capturePage.UserId),
+		LastUpdatedBy:    null.IntFrom(capturePage.UserId),
+		CapturePageSetID: capturePage.CapturePageSetId,
+	}
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("insert capture page: %w", err)
+	}
+
+	createdCapturePage, err := m.GetCapturePageById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get capture page by id: %w", err)
+	}
+
+	return createdCapturePage, nil
+}
+
+func (m *Repository) RestoreCapturePage(ctx context.Context, tx persistence.TransactionHandler, id int) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("get ctx exec: %w", err)
+	}
+
+	entry := &mysqlmodel.CapturePage{ID: id, IsActive: true}
+
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.CapturePageColumns.IsActive)); err != nil {
+		return fmt.Errorf("restore: %w", err)
+	}
+
+	return nil
 }
