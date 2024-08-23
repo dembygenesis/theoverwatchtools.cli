@@ -2,7 +2,6 @@ package mysqlstore
 
 import (
 	"context"
-	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/model/modelhelpers"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
@@ -95,20 +94,15 @@ func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 				require.NoError(t, err, "error inserting capture page set into the db")
 
 				var ids []int
-				var names []string
 				for _, capturePage := range args.CapturePages {
-					fmt.Println("the capture page in the mutations --- ", capturePage)
 					err = capturePage.Insert(context.Background(), db, boil.Infer())
 					require.NoError(t, err, "error inserting capture page into the db")
 					ids = append(ids, capturePage.ID)
-					names = append(names, capturePage.Name)
 				}
 
 				filters := &model.CapturePageFilters{
 					IdsIn: ids,
 				}
-
-				fmt.Println("the filters before return --- ", filters)
 
 				return filters
 			},
@@ -161,9 +155,6 @@ func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 				require.NotNil(t, paginated.CapturePages, "unexpected nil capture pages")
 				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
 
-				fmt.Println("the paginated capturePages --- ", paginated.CapturePages)
-				fmt.Println("the filters names in --- ", filters.CapturePageNameIn)
-
 				for index, capturePage := range paginated.CapturePages {
 					assert.Equal(t, filters.CapturePageNameIn[index], capturePage.Name, "unexpected number of capture pages returned")
 				}
@@ -184,20 +175,16 @@ func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting capture page set into the db")
 
-				var ids []int
 				var names []string
 				for _, page := range args.CapturePages {
 					err = page.Insert(context.Background(), db, boil.Infer())
 					require.NoError(t, err, "error inserting capture page into the db")
-					ids = append(ids, page.ID)
 					names = append(names, page.Name)
 				}
 
 				filters := &model.CapturePageFilters{
 					CapturePageNameIn: names,
 				}
-
-				fmt.Println("the filters --- ", filters)
 
 				return filters
 			},
@@ -381,8 +368,6 @@ func Test_GetCapturePages(t *testing.T) {
 
 			filters := testCase.mutations(t, db, testCase.argsMutations)
 			paginated, err := m.GetCapturePages(testCtx, txHandlerDb, filters)
-
-			fmt.Println("the filters id --- ", filters.CapturePageNameIn)
 
 			testCase.assertions(t, db, paginated, err, filters)
 		})
@@ -777,9 +762,9 @@ func getDeleteCapturePageTestCases() []testCaseDeleteCapturePage {
 				},
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-				_, err = mysqlmodel.FindCapturePage(context.TODO(), db, id)
-				require.Error(t, err, "expected an error for non-existent capture page")
-				require.Contains(t, err.Error(), "no rows", "error should indicate that the capture page was not found")
+				_, errFind := mysqlmodel.FindCapturePage(context.TODO(), db, id)
+				require.Error(t, errFind, "expected an error for non-existent capture page")
+				require.Contains(t, errFind.Error(), "no rows", "error should indicate that the capture page was not found")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsDeleteCapturePage) int {
 				err := args.User.Insert(context.Background(), db, boil.Infer())
