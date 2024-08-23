@@ -174,7 +174,6 @@ func (m *Repository) getCapturePages(ctx context.Context,
 
 	if filters != nil {
 		if len(filters.IdsIn) > 0 {
-			fmt.Println("the filters --- ", filters.IdsIn)
 			queryMods = append(queryMods, mysqlmodel.CapturePageWhere.ID.IN(filters.IdsIn))
 		}
 
@@ -225,6 +224,8 @@ func (m *Repository) getCapturePages(ctx context.Context,
 	pagination.RowCount = len(res)
 	paginated.CapturePages = res
 	paginated.Pagination = pagination
+
+	fmt.Println("the paginated --- ", strutil.GetAsJson(&paginated))
 
 	return &paginated, nil
 }

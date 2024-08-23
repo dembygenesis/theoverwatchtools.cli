@@ -2,6 +2,7 @@ package mysqlstore
 
 import (
 	"context"
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/model/modelhelpers"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
@@ -12,211 +13,258 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"strings"
 	"testing"
 	"time"
 )
 
+type argsMutationsGetCapturePage struct {
+	User           mysqlmodel.User
+	Organization   mysqlmodel.Organization
+	CapturePageSet mysqlmodel.CapturePageSet
+	CapturePages   []mysqlmodel.CapturePage
+}
+
 type testCaseGetCapturePages struct {
-	name       string
-	filter     *model.CapturePageFilters
-	mutations  func(t *testing.T, db *sqlx.DB) []int
-	assertions func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, ids []int)
+	name          string
+	argsMutations *argsMutationsGetCapturePage
+	mutations     func(t *testing.T, db *sqlx.DB, args *argsMutationsGetCapturePage) *model.CapturePageFilters
+	assertions    func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, filters *model.CapturePageFilters)
 }
 
 func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 	return []testCaseGetCapturePages{
 		{
 			name: "success-filter-ids-in",
-			filter: &model.CapturePageFilters{
-				IdsIn: []int{4},
+			argsMutations: &argsMutationsGetCapturePage{
+				User: mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            1,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
+					Name:              "Example Capture Page Set",
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
+				CapturePages: []mysqlmodel.CapturePage{
+					{
+						ID:               1,
+						Name:             "CapturePage A",
+						CapturePageSetID: 1,
+						CreatedBy:        null.IntFrom(1),
+						LastUpdatedBy:    null.IntFrom(1),
+						IsActive:         true,
+					},
+				},
 			},
-			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, ids []int) {
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, filters *model.CapturePageFilters) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.CapturePages, "unexpected nil CapturePages")
 				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-				assert.Equal(t, len(ids), len(paginated.CapturePages), "unexpected number of capture pages returned")
+				assert.Equal(t, len(filters.IdsIn), len(paginated.CapturePages), "unexpected number of capture pages returned")
 
-				for _, capP := range paginated.CapturePages {
-					assert.Contains(t, ids, capP.Id, "returned capture page ID not found in expected IDs")
+				for _, capturePage := range paginated.CapturePages {
+					assert.Contains(t, filters.IdsIn, capturePage.Id, "returned capture page ID not found in expected IDs")
 				}
 
-				assert.Equal(t, len(ids), paginated.Pagination.RowCount, "unexpected row count")
+				assert.Equal(t, len(filters.IdsIn), paginated.Pagination.RowCount, "unexpected row count")
 
 				modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
-				entryOrganization := mysqlmodel.Organization{
-					Name: "Test Organization",
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsGetCapturePage) *model.CapturePageFilters {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting user into the db")
+
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization into the db")
+
+				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page set into the db")
+
+				var ids []int
+				var names []string
+				for _, capturePage := range args.CapturePages {
+					fmt.Println("the capture page in the mutations --- ", capturePage)
+					err = capturePage.Insert(context.Background(), db, boil.Infer())
+					require.NoError(t, err, "error inserting capture page into the db")
+					ids = append(ids, capturePage.ID)
+					names = append(names, capturePage.Name)
 				}
-				err := entryOrganization.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting organization in the db")
 
-				capturePageSet := mysqlmodel.CapturePageSet{
-					ID: 1,
+				filters := &model.CapturePageFilters{
+					IdsIn: ids,
 				}
-				err = capturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting capture page set")
 
-				entryUser := mysqlmodel.User{
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					Email:             "demby@test.com",
-					Password:          "password",
-					CategoryTypeRefID: 1,
-					OrganizationRefID: null.IntFrom(entryOrganization.ID),
-				}
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
+				fmt.Println("the filters before return --- ", filters)
 
-				entry := mysqlmodel.CapturePage{
-					ID:               4,
-					Name:             "TEST",
-					Clicks:           4,
-					CreatedBy:        null.IntFrom(entryUser.ID),
-					LastUpdatedBy:    null.IntFrom(entryUser.ID),
-					CapturePageSetID: capturePageSet.ID,
-					IsActive:         true,
-				}
-				err = entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
-				Ids := []int{entryUser.ID}
-
-				return Ids
+				return filters
 			},
 		},
 		{
 			name: "success-filter-names-in",
-			filter: &model.CapturePageFilters{
-				CapturePageNameIn: []string{"Lawrence", "Younes"},
+			argsMutations: &argsMutationsGetCapturePage{
+				User: mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            1,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
+					Name:              "Example Capture Page Set",
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
+				CapturePages: []mysqlmodel.CapturePage{
+					{
+						Name:             "CapturePage A",
+						CapturePageSetID: 1,
+						CreatedBy:        null.IntFrom(1),
+						LastUpdatedBy:    null.IntFrom(1),
+						IsActive:         true,
+					},
+					{
+						Name:             "CapturePage B",
+						CapturePageSetID: 1,
+						CreatedBy:        null.IntFrom(1),
+						LastUpdatedBy:    null.IntFrom(1),
+						IsActive:         true,
+					},
+				},
 			},
-			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, ids []int) {
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, filters *model.CapturePageFilters) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.CapturePages, "unexpected nil capture pages")
 				require.NotNil(t, paginated.Pagination, "unexpected nil pagination")
-				assert.Equal(t, len(ids), len(paginated.CapturePages), "unexpected number of capture pages returned")
 
-				for _, capP := range paginated.CapturePages {
-					assert.Contains(t, ids, capP.Id, "returned capture page ID not found in expected IDs")
+				fmt.Println("the paginated capturePages --- ", paginated.CapturePages)
+				fmt.Println("the filters names in --- ", filters.CapturePageNameIn)
+
+				for index, capturePage := range paginated.CapturePages {
+					assert.Equal(t, filters.CapturePageNameIn[index], capturePage.Name, "unexpected number of capture pages returned")
 				}
 
-				assert.Equal(t, len(ids), paginated.Pagination.RowCount, "unexpected row count")
+				for index, capturePage := range paginated.CapturePages {
+					assert.Contains(t, filters.CapturePageNameIn[index], capturePage.Name, "returned capture page name not found in expected names")
+				}
 
 				modelhelpers.AssertNonEmptyCapturePages(t, paginated.CapturePages)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsGetCapturePage) *model.CapturePageFilters {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting user into the db")
 
-				entryOrganization := mysqlmodel.Organization{
-					Name: "Test Organization",
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization into the db")
+
+				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page set into the db")
+
+				var ids []int
+				var names []string
+				for _, page := range args.CapturePages {
+					err = page.Insert(context.Background(), db, boil.Infer())
+					require.NoError(t, err, "error inserting capture page into the db")
+					ids = append(ids, page.ID)
+					names = append(names, page.Name)
 				}
-				err := entryOrganization.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting organization in the db")
 
-				capturePageSet := mysqlmodel.CapturePageSet{
-					Name: "lawrence",
-					ID:   1,
+				filters := &model.CapturePageFilters{
+					CapturePageNameIn: names,
 				}
-				err = capturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting capture page set")
 
-				capturePageSet2 := mysqlmodel.CapturePageSet{
-					Name: "younes",
-					ID:   2,
-				}
-				err = capturePageSet2.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting capture page set")
+				fmt.Println("the filters --- ", filters)
 
-				entryUser := mysqlmodel.User{
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					Email:             "demby@test.com",
-					Password:          "password",
-					CategoryTypeRefID: 1,
-					OrganizationRefID: null.IntFrom(entryOrganization.ID),
-				}
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entryCap1 := mysqlmodel.CapturePage{
-					ID:               1,
-					Name:             "Lawrence",
-					Clicks:           4,
-					CreatedBy:        null.IntFrom(entryUser.ID),
-					LastUpdatedBy:    null.IntFrom(entryUser.ID),
-					CapturePageSetID: capturePageSet.ID,
-					IsActive:         true,
-				}
-				err = entryCap1.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
-				entryCap2 := mysqlmodel.CapturePage{
-					ID:               2,
-					Name:             "Younes",
-					Clicks:           4,
-					CreatedBy:        null.IntFrom(entryUser.ID),
-					LastUpdatedBy:    null.IntFrom(entryUser.ID),
-					CapturePageSetID: capturePageSet2.ID,
-					IsActive:         true,
-				}
-				err = entryCap2.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
-				Ids := []int{entryCap1.ID, entryCap2.ID}
-
-				return Ids
+				return filters
 			},
 		},
 		{
 			name: "success-multiple-filters",
-			filter: &model.CapturePageFilters{
-				CapturePageNameIn: []string{"Demby"},
-				IdsIn:             []int{1},
-				CreatedBy:         null.IntFrom(4),
-			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
-				entryOrganization := mysqlmodel.Organization{
-					Name: "Test Organization",
-				}
-				err := entryOrganization.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting organization in the db")
-
-				capturePageSet := mysqlmodel.CapturePageSet{
-					ID: 1,
-				}
-				err = capturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting capture page set")
-
-				entryUser := mysqlmodel.User{
+			argsMutations: &argsMutationsGetCapturePage{
+				User: mysqlmodel.User{
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-					OrganizationRefID: null.IntFrom(entryOrganization.ID),
-				}
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entry := mysqlmodel.CapturePage{
-					ID:               1,
-					Name:             "Demby",
-					Clicks:           4,
-					CreatedBy:        null.IntFrom(entryUser.ID),
-					LastUpdatedBy:    null.IntFrom(entryUser.ID),
-					CapturePageSetID: capturePageSet.ID,
-					IsActive:         true,
-				}
-				err = entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
-				Ids := []int{entry.ID}
-
-				return Ids
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            1,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
+					Name:              "Example Capture Page Set",
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
+				CapturePages: []mysqlmodel.CapturePage{
+					{
+						Name:             "CapturePage A",
+						CapturePageSetID: 1,
+						CreatedBy:        null.IntFrom(4),
+						LastUpdatedBy:    null.IntFrom(4),
+						IsActive:         true,
+					},
+				},
 			},
-			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, ids []int) {
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsGetCapturePage) *model.CapturePageFilters {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting user into the db")
+
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization into the db")
+
+				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page set into the db")
+
+				var ids []int
+				var names []string
+				for _, page := range args.CapturePages {
+					err = page.Insert(context.Background(), db, boil.Infer())
+					require.NoError(t, err, "error inserting capture page into the db")
+					ids = append(ids, page.ID)
+					names = append(names, page.Name)
+				}
+
+				filters := &model.CapturePageFilters{
+					CapturePageNameIn: names,
+					IdsIn:             ids,
+					CreatedBy:         null.IntFrom(args.User.ID),
+				}
+
+				return filters
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, filters *model.CapturePageFilters) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.CapturePages, "unexpected nil capture pages")
@@ -229,15 +277,67 @@ func getTestCasesGetCapturePages() []testCaseGetCapturePages {
 		},
 		{
 			name: "empty-results",
-			filter: &model.CapturePageFilters{
-				CapturePageNameIn:   []string{"Saul Goodman"},
-				IdsIn:               []int{1},
-				CapturePageIsActive: null.BoolFrom(false),
+			argsMutations: &argsMutationsGetCapturePage{
+				User: mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            1,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
+					Name:              "Example Capture Page Set",
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
+				CapturePages: []mysqlmodel.CapturePage{
+					{
+						Name:             "CapturePage A",
+						CapturePageSetID: 1,
+						CreatedBy:        null.IntFrom(1),
+						LastUpdatedBy:    null.IntFrom(1),
+						IsActive:         true,
+					},
+				},
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
-				return nil
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsGetCapturePage) *model.CapturePageFilters {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting user into the db")
+
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization into the db")
+
+				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page set into the db")
+
+				var ids []int
+				var names []string
+				for _, page := range args.CapturePages {
+					err = page.Insert(context.Background(), db, boil.Infer())
+					require.NoError(t, err, "error inserting capture page into the db")
+					ids = append(ids, page.ID+page.ID*page.ID*page.ID)
+					names = append(names, page.Name+page.Name)
+				}
+
+				filters := &model.CapturePageFilters{
+					CapturePageNameIn: names,
+					IdsIn:             ids,
+					CreatedBy:         null.IntFrom(args.User.ID + args.User.ID*args.User.ID),
+				}
+
+				return filters
 			},
-			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, ids []int) {
+			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCapturePages, err error, filters *model.CapturePageFilters) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
 				require.NotNil(t, paginated.CapturePages, "unexpected nil capture pages")
@@ -279,64 +379,74 @@ func Test_GetCapturePages(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			id := testCase.mutations(t, db)
-			paginated, err := m.GetCapturePages(testCtx, txHandlerDb, testCase.filter)
-			testCase.assertions(t, db, paginated, err, id)
+			filters := testCase.mutations(t, db, testCase.argsMutations)
+			paginated, err := m.GetCapturePages(testCtx, txHandlerDb, filters)
+
+			fmt.Println("the filters id --- ", filters.CapturePageNameIn)
+
+			testCase.assertions(t, db, paginated, err, filters)
 		})
 	}
 }
 
+type argsMutationsAddCapturePage struct {
+	User           mysqlmodel.User
+	Organization   mysqlmodel.Organization
+	CapturePageSet mysqlmodel.CapturePageSet
+	CapturePage    model.CreateCapturePage
+}
+
 type testCaseAddCapturePage struct {
-	name            string
-	capturePageName string
-	assertions      func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage, err error)
-	mutations       func(t *testing.T, db *sqlx.DB) *model.CreateCapturePage
+	name          string
+	argsMutations *argsMutationsAddCapturePage
+	assertions    func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage, err error)
+	mutations     func(t *testing.T, db *sqlx.DB, args *argsMutationsAddCapturePage) *model.CreateCapturePage
 }
 
 func getAddCapturePageTestCases() []testCaseAddCapturePage {
 	return []testCaseAddCapturePage{
 		{
-			name:            "success",
-			capturePageName: "Example Capture Page",
-			mutations: func(t *testing.T, db *sqlx.DB) *model.CreateCapturePage {
-				entryUser := mysqlmodel.User{
+			name: "success",
+			argsMutations: &argsMutationsAddCapturePage{
+				User: mysqlmodel.User{
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entryOrganization := mysqlmodel.Organization{
+				},
+				Organization: mysqlmodel.Organization{
 					ID:            1,
 					Name:          "TEST",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
-				}
-				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
-				entryCapturePageSet := mysqlmodel.CapturePageSet{
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
 					Name:              "Example Capture Page Set",
-					OrganizationRefID: null.IntFrom(entryOrganization.ID),
-					CreatedBy:         null.IntFrom(entryUser.ID),
-					LastUpdatedBy:     null.IntFrom(entryUser.ID),
-				}
-				err = entryCapturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting capture page set to db")
-
-				createCapturePage := &model.CreateCapturePage{
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
+				CapturePage: model.CreateCapturePage{
 					Name:             "DembyCapturePage",
 					UserId:           1,
 					CapturePageSetId: 1,
-				}
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsAddCapturePage) *model.CreateCapturePage {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting user into the db")
 
-				return createCapturePage
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization into the db")
+
+				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page set into the db")
+
+				return &args.CapturePage
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage, err error) {
 				assert.NotNil(t, capturePage, "unexpected nil capture page")
@@ -346,37 +456,46 @@ func getAddCapturePageTestCases() []testCaseAddCapturePage {
 			},
 		},
 		{
-			name:            "fail-name-too-long",
-			capturePageName: strings.Repeat("Demby", 256),
-			mutations: func(t *testing.T, db *sqlx.DB) *model.CreateCapturePage {
-				entry := mysqlmodel.User{
-					Firstname:         "DembyYounesLawrence",
+			name: "fail-name-too-long",
+			argsMutations: &argsMutationsAddCapturePage{
+				User: mysqlmodel.User{
+					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entry1 := mysqlmodel.Organization{
-					ID:            4,
-					Name:          "DembyYounesLawrence",
-					CreatedBy:     null.IntFrom(entry.ID),
-					LastUpdatedBy: null.IntFrom(entry.ID),
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            1,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
-				}
-				err = entry1.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
-				createCapturePageData := model.CreateCapturePage{
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
+					Name:              "Example Capture Page Set",
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
+				CapturePage: model.CreateCapturePage{
 					Name:   "DembyYounesLawrence",
 					UserId: 1,
-				}
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsAddCapturePage) *model.CreateCapturePage {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting user into the db")
 
-				return &createCapturePageData
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization into the db")
+
+				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page set into the db")
+
+				return &args.CapturePage
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage, err error) {
 				assert.Nil(t, capturePage, "unexpected non-nil organization")
@@ -413,7 +532,7 @@ func Test_AddCapturePage(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			capturePageData := testCase.mutations(t, db)
+			capturePageData := testCase.mutations(t, db, testCase.argsMutations)
 
 			createdCapturePage, err := m.AddCapturePage(testCtx, txHandlerDb, capturePageData)
 			testCase.assertions(t, db, createdCapturePage, err)
@@ -421,23 +540,55 @@ func Test_AddCapturePage(t *testing.T) {
 	}
 }
 
+type argsMutationsRestoreCapturePage struct {
+	User           mysqlmodel.User
+	Organization   mysqlmodel.Organization
+	CapturePageSet mysqlmodel.CapturePageSet
+	CapturePage    mysqlmodel.CapturePage
+}
+
 type testCaseRestoreCapturePage struct {
-	name               string
-	id                 int
-	restoreCapturePage model.CapturePage
-	assertions         func(t *testing.T, db *sqlx.DB, id int, err error)
-	mutations          func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage) int
+	name          string
+	id            int
+	argsMutations *argsMutationsRestoreCapturePage
+	assertions    func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations     func(t *testing.T, db *sqlx.DB, args *argsMutationsRestoreCapturePage) int
 }
 
 func getRestoreCapturePageTestCases() []testCaseRestoreCapturePage {
 	return []testCaseRestoreCapturePage{
 		{
 			name: "success",
-			restoreCapturePage: model.CapturePage{
-				Id:               1,
-				Name:             "CapturePage A",
-				CapturePageSetId: 1,
-				IsActive:         false,
+			argsMutations: &argsMutationsRestoreCapturePage{
+				User: mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            1,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
+					Name:              "Example Capture Page Set",
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
+				CapturePage: mysqlmodel.CapturePage{
+					Name:             "CapturePage A",
+					CapturePageSetID: 1,
+					CreatedBy:        null.IntFrom(1),
+					LastUpdatedBy:    null.IntFrom(1),
+					IsActive:         true,
+				},
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				require.Nil(t, err, "unexpected non-nil error")
@@ -445,64 +596,54 @@ func getRestoreCapturePageTestCases() []testCaseRestoreCapturePage {
 				require.NoError(t, err, "unexpected error fetching the capture page")
 				assert.Equal(t, true, entry.IsActive)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage) int {
-				entryUser := mysqlmodel.User{
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsRestoreCapturePage) int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting user into the db")
+
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization into the db")
+
+				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page set into the db")
+
+				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page into the db")
+
+				return args.CapturePage.ID
+			},
+		},
+		{
+			name: "fail-missing-entry-to-update",
+			argsMutations: &argsMutationsRestoreCapturePage{
+				User: mysqlmodel.User{
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entryOrganization := mysqlmodel.Organization{
+				},
+				Organization: mysqlmodel.Organization{
 					ID:            1,
 					Name:          "TEST",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
-				}
-				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
-				entryCapturePageSet := mysqlmodel.CapturePageSet{
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
 					Name:              "Example Capture Page Set",
-					OrganizationRefID: null.IntFrom(entryOrganization.ID),
-					CreatedBy:         null.IntFrom(entryUser.ID),
-					LastUpdatedBy:     null.IntFrom(entryUser.ID),
-				}
-				err = entryCapturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting capture page set to db")
-
-				entry := mysqlmodel.CapturePage{
-					Name:             capturePage.Name,
-					CreatedBy:        entryUser.CreatedBy,
-					LastUpdatedBy:    entryUser.CreatedBy,
-					CapturePageSetID: capturePage.CapturePageSetId,
-					IsActive:         false,
-				}
-				err = entry.Insert(context.TODO(), db, boil.Infer())
-				assert.NoError(t, err, "unexpected insert error")
-
-				return entry.ID
-			},
-		},
-		{
-			name: "fail-missing-entry-to-update",
-			restoreCapturePage: model.CapturePage{
-				Id:       99999,
-				Name:     "Non-existent capture page",
-				IsActive: false,
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				_, fetchErr := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				assert.Error(t, fetchErr, "organization should not exist")
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage) int {
-				return capturePage.Id
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsRestoreCapturePage) int {
+				return args.Organization.ID * args.Organization.ID * args.Organization.ID
 			},
 		},
 	}
@@ -536,102 +677,118 @@ func Test_RestoreCapturePage(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			id := testCase.mutations(t, db, &testCase.restoreCapturePage)
+			id := testCase.mutations(t, db, testCase.argsMutations)
 			err = m.RestoreCapturePage(testCtx, txHandlerDb, id)
 			testCase.assertions(t, db, id, err)
 		})
 	}
 }
 
+type argsMutationsDeleteCapturePage struct {
+	User           mysqlmodel.User
+	Organization   mysqlmodel.Organization
+	CapturePageSet mysqlmodel.CapturePageSet
+	CapturePage    mysqlmodel.CapturePage
+}
+
 type testCaseDeleteCapturePage struct {
-	name              string
-	deleteCapturePage model.CapturePage
-	assertions        func(t *testing.T, db *sqlx.DB, id int)
-	mutations         func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage) int
+	name          string
+	argsMutations *argsMutationsDeleteCapturePage
+	assertions    func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations     func(t *testing.T, db *sqlx.DB, capturePage *argsMutationsDeleteCapturePage) int
 }
 
 func getDeleteCapturePageTestCases() []testCaseDeleteCapturePage {
 	return []testCaseDeleteCapturePage{
 		{
 			name: "success",
-			deleteCapturePage: model.CapturePage{
-				Id:               1,
-				Name:             "CapturePage A",
-				CapturePageSetId: 1,
-				IsActive:         true,
+			argsMutations: &argsMutationsDeleteCapturePage{
+				User: mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            1,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
+					Name:              "Example Capture Page Set",
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
+				CapturePage: mysqlmodel.CapturePage{
+					Name:             "CapturePage A",
+					CapturePageSetID: 1,
+					CreatedBy:        null.IntFrom(1),
+					LastUpdatedBy:    null.IntFrom(1),
+					IsActive:         true,
+				},
 			},
-			assertions: func(t *testing.T, db *sqlx.DB, id int) {
-				entry, err := mysqlmodel.FindCapturePage(context.TODO(), db, id)
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				require.Nil(t, err, "unexpected non-nil error")
+				entry, err := mysqlmodel.FindCapturePage(context.TODO(), db, id)
 				require.NoError(t, err, "unexpected error fetching the capture page")
 
 				assert.Equal(t, false, entry.IsActive)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage) int {
-				entryUser := mysqlmodel.User{
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					Email:             "demby@test.com",
-					Password:          "password",
-					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsDeleteCapturePage) int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting user into the db")
 
-				entryOrganization := mysqlmodel.Organization{
-					ID:            1,
-					Name:          "TEST",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
-				}
-				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization into the db")
 
-				entryCapturePageSet := mysqlmodel.CapturePageSet{
-					Name:              "Example Capture Page Set",
-					OrganizationRefID: null.IntFrom(entryOrganization.ID),
-					CreatedBy:         null.IntFrom(entryUser.ID),
-					LastUpdatedBy:     null.IntFrom(entryUser.ID),
-				}
-				err = entryCapturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting capture page set to db")
+				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page set into the db")
 
-				entry := mysqlmodel.CapturePage{
-					Name:             capturePage.Name,
-					CreatedBy:        entryUser.CreatedBy,
-					LastUpdatedBy:    entryUser.CreatedBy,
-					CapturePageSetID: capturePage.CapturePageSetId,
-					IsActive:         capturePage.IsActive,
-				}
-				err = entry.Insert(context.TODO(), db, boil.Infer())
-				assert.NoError(t, err, "unexpected insert error")
+				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page into the db")
 
-				return entry.ID
+				return args.CapturePage.ID
 			},
 		},
 		{
 			name: "failure-non-existent-capture-page",
-			assertions: func(t *testing.T, db *sqlx.DB, id int) {
-				_, err := mysqlmodel.FindCapturePage(context.TODO(), db, id)
-				require.Error(t, err, "expected an error for non-existent capture page")
-				require.Contains(t, err.Error(), "no rows", "error should indicate that the capture page was not found")
-			},
-			mutations: func(t *testing.T, db *sqlx.DB, capturePage *model.CapturePage) int {
-				entryUser := mysqlmodel.User{
-					ID:                931,
+			argsMutations: &argsMutationsDeleteCapturePage{
+				User: mysqlmodel.User{
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            4,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				_, err = mysqlmodel.FindCapturePage(context.TODO(), db, id)
+				require.Error(t, err, "expected an error for non-existent capture page")
+				require.Contains(t, err.Error(), "no rows", "error should indicate that the capture page was not found")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsDeleteCapturePage) int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting user into the db")
 
-				return entryUser.ID
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization into the db")
+
+				return args.Organization.ID + args.Organization.ID*args.Organization.ID
 			},
 		},
 	}
@@ -665,25 +822,72 @@ func Test_DeleteCapturePage(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			id := testCase.mutations(t, db, &testCase.deleteCapturePage)
+			id := testCase.mutations(t, db, testCase.argsMutations)
 			err = m.DeleteCapturePage(testCtx, txHandlerDb, id)
 			require.NoError(t, err, "error deleting capture page")
-			testCase.assertions(t, db, id)
+			testCase.assertions(t, db, id, err)
 		})
 	}
+}
+
+type argsMutationsUpdateCapturePage struct {
+	User              mysqlmodel.User
+	Organization      mysqlmodel.Organization
+	CapturePageSet    mysqlmodel.CapturePageSet
+	CapturePage       mysqlmodel.CapturePage
+	UpdateCapturePage model.UpdateCapturePage
 }
 
 type testCaseUpdateCapturePage struct {
 	name              string
 	updateCapturePage model.CapturePage
+	argsMutations     *argsMutationsUpdateCapturePage
 	assertions        func(t *testing.T, db *sqlx.DB, id int, err error)
-	mutations         func(t *testing.T, db *sqlx.DB) model.UpdateCapturePage
+	mutations         func(t *testing.T, db *sqlx.DB, args *argsMutationsUpdateCapturePage) model.UpdateCapturePage
 }
 
 func getUpdateCapturePageTestCases() []testCaseUpdateCapturePage {
 	return []testCaseUpdateCapturePage{
 		{
 			name: "success",
+			argsMutations: &argsMutationsUpdateCapturePage{
+				User: mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            1,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+				CapturePageSet: mysqlmodel.CapturePageSet{
+					Name:              "Example Capture Page Set",
+					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(1),
+					LastUpdatedBy:     null.IntFrom(1),
+				},
+				CapturePage: mysqlmodel.CapturePage{
+					ID:               4,
+					Name:             "Lawrence Michael",
+					CapturePageSetID: 1,
+					LastUpdatedAt:    null.TimeFrom(time.Now()),
+					CreatedBy:        null.IntFrom(1),
+					LastUpdatedBy:    null.IntFrom(1),
+				},
+				UpdateCapturePage: model.UpdateCapturePage{
+					Id:               4,
+					Name:             null.StringFrom("Virtue"),
+					UserId:           null.IntFrom(1),
+					CapturePageSetId: 1,
+				},
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				require.Nil(t, err, "unexpected non-nil error")
 				entry, err := mysqlmodel.FindCapturePage(context.TODO(), db, id)
@@ -691,93 +895,58 @@ func getUpdateCapturePageTestCases() []testCaseUpdateCapturePage {
 
 				assert.Equal(t, true, entry.IsActive)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) model.UpdateCapturePage {
-				entryUser := mysqlmodel.User{
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					Email:             "demby@test.com",
-					Password:          "password",
-					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsUpdateCapturePage) model.UpdateCapturePage {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				entryOrganization := mysqlmodel.Organization{
-					ID:            1,
-					Name:          "TEST",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
-				}
-				err = entryOrganization.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization")
 
-				entryCapturePageSet := mysqlmodel.CapturePageSet{
-					Name:              "Example Capture Page Set",
-					OrganizationRefID: null.IntFrom(entryOrganization.ID),
-					CreatedBy:         null.IntFrom(entryUser.ID),
-					LastUpdatedBy:     null.IntFrom(entryUser.ID),
-				}
-				err = entryCapturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting capture page set to db")
+				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page set")
 
-				entryCapturePage := mysqlmodel.CapturePage{
-					ID:               4,
-					Name:             "Lawrence Michael",
-					CapturePageSetID: 1,
-					LastUpdatedAt:    null.TimeFrom(time.Now()),
-					CreatedBy:        null.IntFrom(entryUser.ID),
-					LastUpdatedBy:    null.IntFrom(entryUser.ID),
-				}
-				err = entryCapturePage.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting capture page into db")
+				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting capture page")
 
-				updateCapturePageData := model.UpdateCapturePage{
-					Id:               4,
-					Name:             null.StringFrom("Virtue"),
-					UserId:           null.IntFrom(1),
-					CapturePageSetId: 1,
-				}
-
-				return updateCapturePageData
+				return args.UpdateCapturePage
 			},
 		},
 		{
 			name: "fail",
-			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-				require.Error(t, err, "expected error when updating a non-existent capture page")
-				assert.Contains(t, err.Error(), "expected exactly one entry for entity: 32123")
-			},
-			mutations: func(t *testing.T, db *sqlx.DB) model.UpdateCapturePage {
-				entryUser := mysqlmodel.User{
+			argsMutations: &argsMutationsUpdateCapturePage{
+				User: mysqlmodel.User{
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entry := mysqlmodel.Organization{
+				},
+				Organization: mysqlmodel.Organization{
 					ID:            4,
 					Name:          "TEST",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
+					CreatedBy:     null.IntFrom(1),
+					LastUpdatedBy: null.IntFrom(1),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
-				}
-				err = entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
-				updateData := model.UpdateCapturePage{
+				},
+				UpdateCapturePage: model.UpdateCapturePage{
 					Id:   32123,
 					Name: null.StringFrom("Wrong Name"),
-				}
-				return updateData
+				},
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Error(t, err, "expected error when updating a non-existent capture page")
+				assert.Contains(t, err.Error(), "expected exactly one entry for entity: 32123")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsUpdateCapturePage) model.UpdateCapturePage {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting organization")
+
+				return args.UpdateCapturePage
 			},
 		},
 	}
@@ -808,7 +977,7 @@ func Test_UpdateCapturePage(t *testing.T) {
 		require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 		require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-		updateData := testCase.mutations(t, db)
+		updateData := testCase.mutations(t, db, testCase.argsMutations)
 
 		_, err = m.UpdateCapturePage(testCtx, txHandlerDb, &updateData)
 		testCase.assertions(t, db, updateData.Id, err)
