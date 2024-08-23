@@ -38,19 +38,6 @@ type dependencies struct {
 	Cleanup    func(ignoreErrors ...bool)
 }
 
-type argsGetCategories struct {
-	ctx    context.Context
-	filter *model.CategoryFilters
-}
-
-type testCaseGetCategories struct {
-	name            string
-	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
-	args            argsGetCategories
-	mutations       func(t *testing.T, db *sqlx.DB)
-	assertions      func(t *testing.T, categories *model.PaginatedCategories, err error)
-}
-
 func getConcreteDependencies(t *testing.T) (*dependencies, func(ignoreErrors ...bool)) {
 	db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 
@@ -83,6 +70,19 @@ func getConcreteDependencies(t *testing.T) (*dependencies, func(ignoreErrors ...
 		Cleanup:    cleanup,
 		Db:         db,
 	}, cleanup
+}
+
+type argsGetCategories struct {
+	ctx    context.Context
+	filter *model.CategoryFilters
+}
+
+type testCaseGetCategories struct {
+	name            string
+	getDependencies func(t *testing.T) (*dependencies, func(ignoreErrors ...bool))
+	args            argsGetCategories
+	mutations       func(t *testing.T, db *sqlx.DB)
+	assertions      func(t *testing.T, categories *model.PaginatedCategories, err error)
 }
 
 // getGetCategoryTestCases returns a list of test cases for the ListCategories method.
@@ -185,27 +185,6 @@ type testCaseCreateCategory struct {
 	args            argsCreateCategory
 	mutations       func(t *testing.T, db *sqlx.DB)
 	assertions      func(t *testing.T, category *model.Category, err error)
-}
-
-func TestService_CreateCategory(t *testing.T) {
-	for _, tt := range getTestCasesCreateCategory() {
-		t.Run(tt.name, func(t *testing.T) {
-			_dependencies, cleanup := tt.getDependencies(t)
-			defer cleanup()
-
-			svc, err := New(&Config{
-				TxProvider: _dependencies.TxProvider,
-				Logger:     _dependencies.Logger,
-				Persistor:  _dependencies.Persistor,
-			})
-			require.NoError(t, err, "unexpected new error")
-
-			tt.mutations(t, _dependencies.Db)
-
-			category, err := svc.CreateCategory(tt.args.ctx, tt.args.category)
-			tt.assertions(t, category, err)
-		})
-	}
 }
 
 func getTestCasesCreateCategory() []testCaseCreateCategory {
@@ -342,6 +321,27 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 
 			},
 		},
+	}
+}
+
+func TestService_CreateCategory(t *testing.T) {
+	for _, tt := range getTestCasesCreateCategory() {
+		t.Run(tt.name, func(t *testing.T) {
+			_dependencies, cleanup := tt.getDependencies(t)
+			defer cleanup()
+
+			svc, err := New(&Config{
+				TxProvider: _dependencies.TxProvider,
+				Logger:     _dependencies.Logger,
+				Persistor:  _dependencies.Persistor,
+			})
+			require.NoError(t, err, "unexpected new error")
+
+			tt.mutations(t, _dependencies.Db)
+
+			category, err := svc.CreateCategory(tt.args.ctx, tt.args.category)
+			tt.assertions(t, category, err)
+		})
 	}
 }
 

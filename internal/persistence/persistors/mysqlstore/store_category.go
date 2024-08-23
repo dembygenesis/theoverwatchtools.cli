@@ -103,7 +103,7 @@ func (m *Repository) CreateCategory(ctx context.Context, tx persistence.Transact
 		return nil, fmt.Errorf("extract context executor: %v", err)
 	}
 
-	entry := &mysqlmodel.Category{
+	entry := mysqlmodel.Category{
 		Name:              category.Name,
 		CategoryTypeRefID: category.CategoryTypeRefId,
 	}
@@ -111,12 +111,13 @@ func (m *Repository) CreateCategory(ctx context.Context, tx persistence.Transact
 		return nil, fmt.Errorf("insert category: %v", err)
 	}
 
-	createdCategory, err := m.GetCategoryById(ctx, tx, entry.ID)
+	category, err = m.GetCategoryById(ctx, tx, entry.ID)
+
 	if err != nil {
 		return nil, fmt.Errorf("get category by id: %v", err)
 	}
 
-	return createdCategory, nil
+	return category, nil
 }
 
 // GetCategoryById attempts to fetch the category.

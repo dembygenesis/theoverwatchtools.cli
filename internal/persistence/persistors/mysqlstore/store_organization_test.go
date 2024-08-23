@@ -482,28 +482,6 @@ func getAddOrganizationTestCases() []testCaseCreateOrganization {
 			organizationName: "Example Organization",
 			createdBy:        null.IntFrom(3),
 			mutations: func(t *testing.T, db *sqlx.DB) (organization *model.CreateOrganization) {
-				entry := mysqlmodel.User{
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					Email:             "demby@test.com",
-					Password:          "password",
-					CategoryTypeRefID: 1,
-				}
-				err := entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entry1 := mysqlmodel.Organization{
-					ID:            4,
-					Name:          "TEST",
-					CreatedBy:     null.IntFrom(entry.ID),
-					LastUpdatedBy: null.IntFrom(entry.ID),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
-				}
-				err = entry1.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
 				createOrganizationData := model.CreateOrganization{
 					Name:   "Demby",
 					UserId: 1,
