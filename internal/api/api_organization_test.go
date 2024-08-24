@@ -431,10 +431,16 @@ func Test_ListOrganizations(t *testing.T) {
 	}
 }
 
+type argsDeleteOrganization struct {
+	User               mysqlmodel.User
+	CreateOrganization *model.CreateOrganization
+}
+
 type testCaseDeleteOrganization struct {
 	name         string
 	getContainer func(t *testing.T) (*testassets.Container, func())
-	mutations    func(t *testing.T, db *sqlx.DB, modules *testassets.Container) int
+	args         *argsDeleteOrganization
+	mutations    func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsDeleteOrganization) int
 	body         map[string]interface{}
 	assertions   func(t *testing.T, resp []byte, respCode int)
 }
@@ -443,9 +449,8 @@ func getTestCasesDeleteOrganization() []testCaseDeleteOrganization {
 	return []testCaseDeleteOrganization{
 		{
 			name: "success",
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) int {
-
-				entryUser := mysqlmodel.User{
+			args: &argsDeleteOrganization{
+				User: mysqlmodel.User{
 					ID:                4,
 					CreatedBy:         null.IntFrom(2),
 					LastUpdatedBy:     null.IntFrom(2),
@@ -454,16 +459,17 @@ func getTestCasesDeleteOrganization() []testCaseDeleteOrganization {
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				},
+				CreateOrganization: &model.CreateOrganization{
+					Name:   "demby",
+					UserId: 2,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsDeleteOrganization) int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				organizationModel := &model.CreateOrganization{
-					Name:   "demby",
-					UserId: entryUser.CreatedBy.Int,
-				}
-
-				organization, err := modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				organization, err := modules.OrganizationService.AddOrganization(context.Background(), args.CreateOrganization)
 				require.NoError(t, err, "error adding the organization")
 
 				id := organization.Id
@@ -503,7 +509,7 @@ func Test_DeleteOrganization(t *testing.T) {
 				Logger:              logger.New(context.TODO()),
 			}
 
-			orgId := testCase.mutations(t, db, handlers)
+			orgId := testCase.mutations(t, db, handlers, testCase.args)
 
 			api, err := New(cfg)
 			require.NoError(t, err, "unexpected error instantiating api")
@@ -528,10 +534,16 @@ func Test_DeleteOrganization(t *testing.T) {
 	}
 }
 
+type argsUpdateOrganization struct {
+	User               mysqlmodel.User
+	CreateOrganization *model.CreateOrganization
+}
+
 type testCaseUpdateOrganization struct {
 	name         string
 	getContainer func(t *testing.T) (*testassets.Container, func())
-	mutations    func(t *testing.T, db *sqlx.DB, modules *testassets.Container)
+	args         *argsUpdateOrganization
+	mutations    func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsUpdateOrganization)
 	body         map[string]interface{}
 	assertions   func(t *testing.T, resp []byte, respCode int)
 }
@@ -540,8 +552,8 @@ func getTestCasesUpdateOrganization() []testCaseUpdateOrganization {
 	return []testCaseUpdateOrganization{
 		{
 			name: "success",
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
-				entryUser := mysqlmodel.User{
+			args: &argsUpdateOrganization{
+				User: mysqlmodel.User{
 					ID:                4,
 					CreatedBy:         null.IntFrom(2),
 					LastUpdatedBy:     null.IntFrom(2),
@@ -550,16 +562,17 @@ func getTestCasesUpdateOrganization() []testCaseUpdateOrganization {
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				},
+				CreateOrganization: &model.CreateOrganization{
+					Name:   "demby",
+					UserId: 2,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsUpdateOrganization) {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				organizationModel := &model.CreateOrganization{
-					Name:   "demby",
-					UserId: entryUser.CreatedBy.Int,
-				}
-
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), args.CreateOrganization)
 				require.NoError(t, err, "error adding the organization")
 			},
 			body: map[string]interface{}{
@@ -613,7 +626,7 @@ func Test_UpdateOrganization(t *testing.T) {
 				"Accept-Encoding": {"gzip", "deflate", "br"},
 			}
 
-			testCase.mutations(t, db, handlers)
+			testCase.mutations(t, db, handlers, testCase.args)
 
 			resp, err := api.app.Test(req, 100)
 			require.NoError(t, err, "unexpected error executing test")
@@ -625,10 +638,16 @@ func Test_UpdateOrganization(t *testing.T) {
 	}
 }
 
+type argsRestoreOrganization struct {
+	User         mysqlmodel.User
+	Organization mysqlmodel.Organization
+}
+
 type testCaseRestoreOrganization struct {
 	name         string
 	getContainer func(t *testing.T) (*testassets.Container, func())
-	mutations    func(t *testing.T, db *sqlx.DB, modules *testassets.Container) int
+	args         *argsRestoreOrganization
+	mutations    func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsRestoreOrganization) int
 	body         map[string]interface{}
 	assertions   func(t *testing.T, resp []byte, respCode int, orgID int, db *sqlx.DB)
 }
@@ -637,9 +656,8 @@ func getTestCasesRestoreOrganization() []testCaseRestoreOrganization {
 	return []testCaseRestoreOrganization{
 		{
 			name: "success",
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) int {
-
-				entryUser := mysqlmodel.User{
+			args: &argsRestoreOrganization{
+				User: mysqlmodel.User{
 					ID:                4,
 					CreatedBy:         null.IntFrom(1),
 					LastUpdatedBy:     null.IntFrom(1),
@@ -648,20 +666,22 @@ func getTestCasesRestoreOrganization() []testCaseRestoreOrganization {
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				},
+				Organization: mysqlmodel.Organization{
+					ID:        1,
+					Name:      "demby",
+					CreatedBy: null.IntFrom(1),
+					IsActive:  false,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsRestoreOrganization) int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				organizationModel := mysqlmodel.Organization{
-					ID:        1,
-					Name:      "Demby",
-					CreatedBy: entryUser.CreatedBy,
-					IsActive:  false,
-				}
-				err = organizationModel.Insert(context.TODO(), db, boil.Infer())
+				err = args.Organization.Insert(context.TODO(), db, boil.Infer())
 				require.NoError(t, err, "error inserting organization into organization table")
 
-				id := organizationModel.ID
+				id := args.Organization.ID
 				return id
 			},
 			getContainer: func(t *testing.T) (*testassets.Container, func()) {
@@ -703,7 +723,7 @@ func Test_RestoreOrganization(t *testing.T) {
 				Logger:              logger.New(context.TODO()),
 			}
 
-			orgId := testCase.mutations(t, db, handlers)
+			orgId := testCase.mutations(t, db, handlers, testCase.args)
 
 			api, err := New(cfg)
 			require.NoError(t, err, "unexpected error instantiating api")
