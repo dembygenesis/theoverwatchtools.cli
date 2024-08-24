@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"github.com/dembygenesis/local.tools/internal/api/testassets"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
@@ -24,10 +23,16 @@ import (
 	"testing"
 )
 
+type argsCreateOrganization struct {
+	User               mysqlmodel.User
+	CreateOrganization *model.CreateOrganization
+}
+
 type testCaseCreateOrganization struct {
 	name              string
 	fnGetTestServices func(t *testing.T) (*testassets.Container, func())
-	mutations         func(t *testing.T, db *sqlx.DB, modules *testassets.Container) *model.CreateOrganization
+	args              *argsCreateOrganization
+	mutations         func(t *testing.T, db *sqlx.DB, args *argsCreateOrganization)
 	assertions        func(t *testing.T, resp []byte, respCode int)
 }
 
@@ -41,15 +46,8 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 					cleanup()
 				}
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) *model.CreateOrganization {
-				tx, err := db.Begin()
-				require.NoError(t, err, "unexpected error starting a transaction")
-				defer func(tx *sql.Tx) {
-					err := tx.Rollback()
-					require.NoError(t, err, "error rolling back")
-				}(tx)
-
-				entryUser := mysqlmodel.User{
+			args: &argsCreateOrganization{
+				User: mysqlmodel.User{
 					ID:                4,
 					CreatedBy:         null.IntFrom(2),
 					LastUpdatedBy:     null.IntFrom(2),
@@ -58,16 +56,15 @@ func getTestCasesCreateOrganization() []testCaseCreateOrganization {
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				createdOrganization := &model.CreateOrganization{
-					Name:   "mohamed",
-					UserId: entryUser.CreatedBy.Int,
-				}
-
-				return createdOrganization
+				},
+				CreateOrganization: &model.CreateOrganization{
+					Name:   "Mohamed",
+					UserId: 1,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsCreateOrganization) {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err)
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				respStr := string(resp)
@@ -101,13 +98,13 @@ func Test_CreateOrganization(t *testing.T) {
 				Logger:              logger.New(context.TODO()),
 			}
 
-			organization := testCase.mutations(t, db, handlers)
+			testCase.mutations(t, db, testCase.args)
 
 			api, err := New(cfg)
 			require.NoError(t, err, "unexpected error instantiating api")
 			require.NotNil(t, api, "unexpected api nil instance")
 
-			reqB, err := json.Marshal(organization)
+			reqB, err := json.Marshal(testCase.args.CreateOrganization)
 			require.NoError(t, err, "unexpected error marshalling parameters")
 
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/organization", bytes.NewBuffer(reqB))
@@ -127,24 +124,31 @@ func Test_CreateOrganization(t *testing.T) {
 	}
 }
 
+type argsListOrganizations struct {
+	User                    mysqlmodel.User
+	CreateOrganization      *model.CreateOrganization
+	CreateOrganizationTwo   *model.CreateOrganization
+	CreateOrganizationThree *model.CreateOrganization
+}
+
 type testCaseListOrganizations struct {
 	name            string
 	getContainer    func(t *testing.T) (*testassets.Container, func())
-	mutations       func(t *testing.T, db *sqlx.DB, modules *testassets.Container)
+	args            *argsListOrganizations
+	mutations       func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsListOrganizations)
 	queryParameters map[string]interface{}
 	assertions      func(t *testing.T, resp []byte, respCode int)
 }
 
 func getTestCasesListOrganizations() []testCaseListOrganizations {
-	testCases := []testCaseListOrganizations{
+	return []testCaseListOrganizations{
 		{
 			name: "success",
 			queryParameters: map[string]interface{}{
 				"ids_in": []int{1},
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
-
-				entryUser := mysqlmodel.User{
+			args: &argsListOrganizations{
+				User: mysqlmodel.User{
 					ID:                4,
 					CreatedBy:         null.IntFrom(2),
 					LastUpdatedBy:     null.IntFrom(2),
@@ -153,16 +157,18 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				},
+				CreateOrganization: &model.CreateOrganization{
+					Name:   "mohamed",
+					UserId: 2,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsListOrganizations) {
+
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				organizationModel := &model.CreateOrganization{
-					Name:   "demby",
-					UserId: entryUser.CreatedBy.Int,
-				}
-
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), args.CreateOrganization)
 				require.NoError(t, err, "error adding the organization")
 			},
 			getContainer: func(t *testing.T) (*testassets.Container, func()) {
@@ -191,16 +197,8 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 				"page":     1,
 				"max_rows": 1,
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
-				tx, err := db.Begin()
-				require.NoError(t, err, "unexpected error starting a transaction")
-				defer func() {
-					if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
-						require.NoError(t, err, "error rolling back")
-					}
-				}()
-
-				entryUser := mysqlmodel.User{
+			args: &argsListOrganizations{
+				User: mysqlmodel.User{
 					ID:                4,
 					CreatedBy:         null.IntFrom(2),
 					LastUpdatedBy:     null.IntFrom(2),
@@ -209,26 +207,26 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
+				},
+				CreateOrganization: &model.CreateOrganization{
+					Name:   "mohamed",
+					UserId: 2,
+				},
+				CreateOrganizationTwo: &model.CreateOrganization{
+					Name:   "younes",
+					UserId: 2,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsListOrganizations) {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				organizationModel := &model.CreateOrganization{
-					Name:   "demby",
-					UserId: entryUser.CreatedBy.Int,
-				}
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), args.CreateOrganization)
 				require.NoError(t, err, "error inserting organization into organization table")
 
-				organizationModel1 := &model.CreateOrganization{
-					Name:   "younes",
-					UserId: entryUser.CreatedBy.Int,
-				}
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel1)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), args.CreateOrganizationTwo)
 				require.NoError(t, err, "error adding the organization")
 
-				err = tx.Commit()
-				require.NoError(t, err, "unexpected error committing the transaction")
 			},
 			getContainer: func(t *testing.T) (*testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
@@ -255,51 +253,42 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 				"page":     2,
 				"max_rows": 2,
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
-				tx, err := db.Begin()
-				require.NoError(t, err, "unexpected error starting a transaction")
-				defer func() {
-					if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
-						require.NoError(t, err, "error rolling back")
-					}
-				}()
-
-				entryUser := mysqlmodel.User{
+			args: &argsListOrganizations{
+				User: mysqlmodel.User{
 					ID:                4,
-					CreatedBy:         null.IntFrom(1),
-					LastUpdatedBy:     null.IntFrom(1),
+					CreatedBy:         null.IntFrom(2),
+					LastUpdatedBy:     null.IntFrom(2),
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
+				},
+				CreateOrganization: &model.CreateOrganization{
+					Name:   "mohamed",
+					UserId: 2,
+				},
+				CreateOrganizationTwo: &model.CreateOrganization{
+					Name:   "younes",
+					UserId: 2,
+				},
+				CreateOrganizationThree: &model.CreateOrganization{
+					Name:   "lawrence",
+					UserId: 2,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsListOrganizations) {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				organizationModel := &model.CreateOrganization{
-					Name:   "demby",
-					UserId: entryUser.CreatedBy.Int,
-				}
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), args.CreateOrganization)
 				require.NoError(t, err, "error inserting organization into organization table")
 
-				organizationModel1 := &model.CreateOrganization{
-					Name:   "younes",
-					UserId: entryUser.CreatedBy.Int,
-				}
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel1)
-				require.NoError(t, err, "error inserting organization into organization table")
-
-				organizationModel2 := &model.CreateOrganization{
-					Name:   "lawrence",
-					UserId: entryUser.CreatedBy.Int,
-				}
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel2)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), args.CreateOrganizationTwo)
 				require.NoError(t, err, "error adding the organization")
 
-				err = tx.Commit()
-				require.NoError(t, err, "unexpected error committing the transaction")
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), args.CreateOrganizationThree)
+				require.NoError(t, err, "error adding the organization")
 			},
 			getContainer: func(t *testing.T) (*testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
@@ -326,16 +315,8 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 				"category_type_name_in": []string{"User Types"},
 				"category_name_in":      []string{"Admin"},
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
-				tx, err := db.Begin()
-				require.NoError(t, err, "unexpected error starting a transaction")
-				defer func() {
-					if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
-						require.NoError(t, err, "error rolling back")
-					}
-				}()
-
-				entryUser := mysqlmodel.User{
+			args: &argsListOrganizations{
+				User: mysqlmodel.User{
 					ID:                4,
 					CreatedBy:         null.IntFrom(1),
 					LastUpdatedBy:     null.IntFrom(1),
@@ -344,19 +325,19 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err = entryUser.Insert(context.Background(), db, boil.Infer())
+				},
+				CreateOrganization: &model.CreateOrganization{
+					Name:   "demby",
+					UserId: 1,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsListOrganizations) {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				organizationModel := &model.CreateOrganization{
-					Name:   "demby",
-					UserId: entryUser.CreatedBy.Int,
-				}
-				_, err = modules.OrganizationService.AddOrganization(context.Background(), organizationModel)
+				_, err = modules.OrganizationService.AddOrganization(context.Background(), args.CreateOrganization)
 				require.NoError(t, err, "error adding the organization")
 
-				err = tx.Commit()
-				require.NoError(t, err, "unexpected error committing the transaction")
 			},
 			getContainer: func(t *testing.T) (*testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
@@ -379,7 +360,7 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 		{
 			name:            "empty_store",
 			queryParameters: map[string]interface{}{},
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container) {
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsListOrganizations) {
 				store := modules.MySQLStore
 				require.NotNil(t, store, "unexpected nil: store")
 
@@ -406,8 +387,6 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 			},
 		},
 	}
-
-	return testCases
 }
 
 func Test_ListOrganizations(t *testing.T) {
@@ -440,7 +419,7 @@ func Test_ListOrganizations(t *testing.T) {
 				"Accept-Encoding": {"gzip", "deflate", "br"},
 			}
 
-			testCase.mutations(t, db, handlers)
+			testCase.mutations(t, db, handlers, testCase.args)
 
 			resp, err := api.app.Test(req, 100)
 			require.NoError(t, err, "unexpected error executing test")
