@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/dembygenesis/local.tools/internal/api/apifakes"
 	"github.com/dembygenesis/local.tools/internal/api/testassets"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
@@ -21,6 +22,7 @@ import (
 
 type testServices struct {
 	catService categoryService
+	orgService organizationService
 }
 
 type testCaseCreateCategory struct {
@@ -40,7 +42,7 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 			},
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
+				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService}, func() {
 					cleanup()
 				}
 			},
@@ -62,7 +64,7 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 			body: map[string]interface{}{},
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
+				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService}, func() {
 					cleanup()
 				}
 			},
@@ -80,7 +82,7 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 			},
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
+				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService}, func() {
 					cleanup()
 				}
 			},
@@ -99,7 +101,9 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				fakeCategoryService := apifakes.FakeCategoryService{}
 				fakeCategoryService.CreateCategoryReturns(nil, errors.New("mock error"))
-				return &testServices{catService: &fakeCategoryService}, func() {}
+				fakeOrgService := apifakes.FakeOrganizationService{}
+				fakeOrgService.CreateOrganizationReturns(nil, errors.New("mock error"))
+				return &testServices{catService: &fakeCategoryService, orgService: &fakeOrgService}, func() {}
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				require.NotNil(t, resp, "unexpected nil response")
@@ -116,10 +120,11 @@ func Test_CreateCategory(t *testing.T) {
 			defer cleanup()
 
 			cfg := &Config{
-				BaseUrl:         testassets.MockBaseUrl,
-				Port:            3000,
-				CategoryService: handlers.catService,
-				Logger:          logger.New(context.TODO()),
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CategoryService:     handlers.catService,
+				OrganizationService: handlers.orgService,
+				Logger:              logger.New(context.TODO()),
 			}
 
 			api, err := New(cfg)
@@ -173,6 +178,8 @@ func getTestCasesListCategories() []testCaseListCategory {
 				var respPaginated model.PaginatedCategories
 				err := json.Unmarshal(resp, &respPaginated)
 				require.NoError(t, err, "unexpected error unmarshalling the response")
+
+				fmt.Println("the res cats ---- ", strutil.GetAsJson(respPaginated))
 
 				assert.Equal(t, http.StatusOK, respCode, "unexpected non-equal response code")
 				assert.True(t, len(respPaginated.Categories) == 3, "unexpected empty categories")
@@ -312,10 +319,11 @@ func Test_ListCategories(t *testing.T) {
 			defer cleanup()
 
 			cfg := &Config{
-				BaseUrl:         testassets.MockBaseUrl,
-				Port:            3000,
-				CategoryService: handlers.CategoryService,
-				Logger:          logger.New(context.TODO()),
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CategoryService:     handlers.CategoryService,
+				OrganizationService: handlers.OrganizationService,
+				Logger:              logger.New(context.TODO()),
 			}
 
 			api, err := New(cfg)
@@ -355,7 +363,7 @@ func getTestCasesUpdateCategory() []testCaseUpdateCategory {
 			name: "success",
 			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
 				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
+				return &testServices{catService: container.CategoryService, orgService: container.OrganizationService}, func() {
 					cleanup()
 				}
 			},
@@ -384,10 +392,11 @@ func Test_UpdateCategory(t *testing.T) {
 			defer cleanup()
 
 			cfg := &Config{
-				BaseUrl:         testassets.MockBaseUrl,
-				Port:            3000,
-				CategoryService: handlers.catService,
-				Logger:          logger.New(context.TODO()),
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CategoryService:     handlers.catService,
+				OrganizationService: handlers.orgService,
+				Logger:              logger.New(context.TODO()),
 			}
 
 			api, err := New(cfg)

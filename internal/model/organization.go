@@ -2,14 +2,38 @@ package model
 
 import (
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
+	"strings"
 	"time"
 )
 
 type UpdateOrganization struct {
-	Id   int         `json:"id" validate:"required,greater_than_zero"`
-	Name null.String `json:"name"`
+	Id     int         `json:"id" validate:"required,greater_than_zero"`
+	UserId null.Int    `json:"userId"`
+	Name   null.String `json:"name"`
+}
+
+func (c *UpdateOrganization) Validate() error {
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %w", err)
+	}
+
+	hasAtLeastOneUpdateParameters := false
+
+	if c.Name.Valid {
+		if c.Name.Valid && strings.TrimSpace(c.Name.String) != "" {
+			hasAtLeastOneUpdateParameters = true
+		}
+	}
+
+	if !hasAtLeastOneUpdateParameters {
+		return errors.New(sysconsts.ErrHasNotASingleValidateUpdateParameter)
+	}
+
+	return nil
 }
 
 type CreateOrganization struct {
@@ -41,6 +65,14 @@ type OrganizationFilters struct {
 	PaginationQueryFilters `swaggerignore:"true"`
 }
 
+type DeleteOrganization struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
+}
+
+type RestoreOrganization struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
+}
+
 func (c *CreateOrganization) Validate() error {
 	if err := validationutils.Validate(c); err != nil {
 		return fmt.Errorf("validate: %v", err)
@@ -54,4 +86,15 @@ func (c *CreateOrganization) ToOrganization() *Organization {
 		CreatedBy: fmt.Sprint(c.UserId),
 	}
 	return organization
+}
+
+func (c *OrganizationFilters) Validate() error {
+	if err := c.ValidatePagination(); err != nil {
+		return fmt.Errorf("pagination: %v", err)
+	}
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("organization filters: %v", err)
+	}
+
+	return nil
 }

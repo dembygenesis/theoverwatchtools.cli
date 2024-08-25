@@ -8,11 +8,38 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"strconv"
 )
+
+func (m *Repository) DropOrganizationTable(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("extract context executor: %v", err)
+	}
+
+	dropStmts := []string{
+		"SET FOREIGN_KEY_CHECKS = 0;",
+		"DROP TABLE organization;",
+		"SET FOREIGN_KEY_CHECKS = 1;",
+	}
+
+	for _, stmt := range dropStmts {
+		if _, err := queries.Raw(stmt).Exec(ctxExec); err != nil {
+			return fmt.Errorf("dropping organization table sql stmt: %v", err)
+		}
+	}
+
+	return nil
+}
 
 func (m *Repository) DeleteOrganization(
 	ctx context.Context,
@@ -69,6 +96,9 @@ func (m *Repository) GetOrganizationById(ctx context.Context, tx persistence.Tra
 	paginated, err := m.GetOrganizations(ctx, tx, &model.OrganizationFilters{
 		IdsIn: []int{id},
 	})
+
+	fmt.Println("the paginated --- ", strutil.GetAsJson(paginated))
+
 	if err != nil {
 		return nil, fmt.Errorf("organization filtered by id: %w", err)
 	}
@@ -105,6 +135,8 @@ func (m *Repository) GetOrganizations(ctx context.Context, tx persistence.Transa
 	if err != nil {
 		return nil, fmt.Errorf("read organizations: %w", err)
 	}
+
+	fmt.Println("the res at store orgs concrete --- ", strutil.GetAsJson(res))
 
 	return res, nil
 }
@@ -175,10 +207,12 @@ func (m *Repository) getOrganizations(ctx context.Context,
 
 	if filters != nil {
 		if len(filters.IdsIn) > 0 {
+			fmt.Println("the filters --- ", filters.IdsIn)
 			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.ID.IN(filters.IdsIn))
 		}
 
 		if filters.OrganizationIsActive.Valid {
+			fmt.Println("the filters valid --- ", filters.OrganizationIsActive)
 			queryMods = append(queryMods, mysqlmodel.OrganizationWhere.IsActive.EQ(filters.OrganizationIsActive.Bool))
 		}
 
@@ -234,8 +268,12 @@ func (m *Repository) CreateOrganization(ctx context.Context, tx persistence.Tran
 		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
+	createdBY, _ := strconv.Atoi(organization.CreatedBy)
+	lastUpdateBY, _ := strconv.Atoi(organization.LastUpdatedBy)
 	entry := mysqlmodel.Organization{
-		Name: organization.Name,
+		Name:          organization.Name,
+		CreatedBy:     null.IntFrom(createdBY),
+		LastUpdatedBy: null.IntFrom(lastUpdateBY),
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert organization: %w", err)
@@ -283,6 +321,9 @@ func (m *Repository) RestoreOrganization(
 	}
 
 	entry := &mysqlmodel.Organization{ID: id, IsActive: true}
+
+	fmt.Println("the entry --- ", strutil.GetAsJson(entry))
+
 	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.OrganizationColumns.IsActive)); err != nil {
 		return fmt.Errorf("restore: %w", err)
 	}

@@ -11,6 +11,7 @@ import (
 	authlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
 	categorylogic "github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
 	marketinglogic "github.com/dembygenesis/local.tools/internal/logic_handlers/marketinglogic"
+	organizationlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/organizationlogic"
 	userlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/userlogic"
 	mysqlconn "github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlconn"
 	mysqltx "github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
@@ -246,6 +247,64 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					return eo, errors.New("could not cast build function to func(*config.App, *logrus.Entry, *mysqlconn.Provider) (*marketinglogic.Impl, error)")
 				}
 				return b(p0, p1, p2)
+			},
+			Unshared: false,
+		},
+		{
+			Name:  "logic_organization",
+			Scope: "",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("logic_organization")
+				if err != nil {
+					var eo *organizationlogic.Service
+					return eo, err
+				}
+				pi0, err := ctn.SafeGet("config_layer")
+				if err != nil {
+					var eo *organizationlogic.Service
+					return eo, err
+				}
+				p0, ok := pi0.(*config.App)
+				if !ok {
+					var eo *organizationlogic.Service
+					return eo, errors.New("could not cast parameter 0 to *config.App")
+				}
+				pi1, err := ctn.SafeGet("logger_logrus")
+				if err != nil {
+					var eo *organizationlogic.Service
+					return eo, err
+				}
+				p1, ok := pi1.(*logrus.Entry)
+				if !ok {
+					var eo *organizationlogic.Service
+					return eo, errors.New("could not cast parameter 1 to *logrus.Entry")
+				}
+				pi2, err := ctn.SafeGet("tx_provider")
+				if err != nil {
+					var eo *organizationlogic.Service
+					return eo, err
+				}
+				p2, ok := pi2.(*mysqlconn.Provider)
+				if !ok {
+					var eo *organizationlogic.Service
+					return eo, errors.New("could not cast parameter 2 to *mysqlconn.Provider")
+				}
+				pi3, err := ctn.SafeGet("persistence_mysql")
+				if err != nil {
+					var eo *organizationlogic.Service
+					return eo, err
+				}
+				p3, ok := pi3.(*mysqlstore.Repository)
+				if !ok {
+					var eo *organizationlogic.Service
+					return eo, errors.New("could not cast parameter 3 to *mysqlstore.Repository")
+				}
+				b, ok := d.Build.(func(*config.App, *logrus.Entry, *mysqlconn.Provider, *mysqlstore.Repository) (*organizationlogic.Service, error))
+				if !ok {
+					var eo *organizationlogic.Service
+					return eo, errors.New("could not cast build function to func(*config.App, *logrus.Entry, *mysqlconn.Provider, *mysqlstore.Repository) (*organizationlogic.Service, error)")
+				}
+				return b(p0, p1, p2, p3)
 			},
 			Unshared: false,
 		},
