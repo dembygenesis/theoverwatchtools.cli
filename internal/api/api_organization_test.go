@@ -164,7 +164,6 @@ func getTestCasesListOrganizations() []testCaseListOrganizations {
 				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsListOrganizations) {
-
 				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
