@@ -247,8 +247,6 @@ func (m *Repository) getCategories(
 		}
 	}
 
-	fmt.Println("the queryMods ----- ", queryMods)
-
 	q := mysqlmodel.Categories(queryMods...)
 	totalCount, err := q.Count(ctx, ctxExec)
 	if err != nil {

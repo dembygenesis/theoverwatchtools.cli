@@ -42,6 +42,7 @@ export THEOVERWATCHTOOLS_DB_EXEC_TIMEOUT="10s"
 - `sh ./scripts/build-di.sh`: Compiles the container.
 - `sh ./scripts/build-sqlboiler.sh`: Generates sqlboiler ORM files.
 - `sh ./scripts/migrate.sh`: Performs database migration.
+- `sh ./scripts/docker-start`: Starts a dockerized env.
 
 # Convenience Commands
 - `clear_all && go test ./... -parallel=100 -count=1`: Runs tests with parallel execution and no-cache.

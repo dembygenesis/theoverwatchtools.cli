@@ -101,9 +101,7 @@ func New() (*App, error) {
 	viper.SetDefault("API_PORT", 3000)
 	viper.SetDefault("API_LISTEN_TIMEOUT_SECS", "10s")
 	viper.SetDefault("API_REQUEST_TIMEOUT_SECS", "10s")
-	viper.SetDefault("API_BASE_URL", "localhost")
-
-	// Do some additional logic
+	viper.SetDefault("API_BASE_URL", "http://localhost")
 
 	viper.AutomaticEnv()
 

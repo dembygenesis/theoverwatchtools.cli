@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/global"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
@@ -12,6 +13,9 @@ import (
 	"github.com/gofiber/template/html/v2"
 	"github.com/sirupsen/logrus"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 type Api struct {
@@ -21,7 +25,7 @@ type Api struct {
 
 type Config struct {
 	// BaseUrl is the base URL of your API.
-	BaseUrl string `json:"base_url" validate:"is_url"`
+	BaseUrl string `json:"api_base_url" validate:"is_url"`
 
 	// WriteDocs is a flag to write the docs to the public folder.
 	WriteDocs bool `json:"write_docs"`
@@ -95,9 +99,31 @@ func (a *Api) Listen() error {
 		return fmt.Errorf("routes: %v", err)
 	}
 
-	if err := a.app.Listen(fmt.Sprintf(":%v", a.cfg.Port)); err != nil {
-		return fmt.Errorf("listen: %v", err)
+	// Channel to listen for termination signals
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start server in a goroutine
+	go func() {
+		if err := a.app.Listen(fmt.Sprintf(":%v", a.cfg.Port)); err != nil {
+			a.cfg.Logger.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+	a.cfg.Logger.Infof("Server is listening on port %v", a.cfg.Port)
+
+	// Wait for termination signal
+	<-quit
+	a.cfg.Logger.Info("Shutting down server...")
+
+	// Create a deadline to wait for
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Shutdown the server gracefully
+	if err := a.app.ShutdownWithContext(ctx); err != nil {
+		return fmt.Errorf("server shutdown failed: %v", err)
 	}
 
+	a.cfg.Logger.Info("Server stopped gracefully")
 	return nil
 }

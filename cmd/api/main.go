@@ -1,10 +1,36 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"github.com/dembygenesis/local.tools/di/ctn/dic"
 	"github.com/dembygenesis/local.tools/internal/api"
+	"github.com/dembygenesis/local.tools/internal/config"
+	"github.com/dembygenesis/local.tools/internal/database/migration"
+	"github.com/dembygenesis/local.tools/internal/lib/logger"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
+	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlutil"
 	"log"
 )
+
+func migrate(cfg *config.App) error {
+	c := &mysqlutil.ConnectionSettings{
+		Host:     cfg.MysqlDatabaseCredentials.Host,
+		User:     cfg.MysqlDatabaseCredentials.User,
+		Pass:     cfg.MysqlDatabaseCredentials.Pass,
+		Port:     cfg.MysqlDatabaseCredentials.Port,
+		Database: cfg.MysqlDatabaseCredentials.Database,
+	}
+
+	_log := logger.New(context.Background())
+	_log.Info("Migrating...")
+	ctx := context.Background()
+	_, err := mysqlhelper.MigrateEmbedded(ctx, c, migration.Migrations, mysqlhelper.CreateIfNotExists)
+	if err != nil {
+		return fmt.Errorf("migrate: %v", err)
+	}
+	return nil
+}
 
 func main() {
 	builder, err := dic.NewBuilder()
@@ -34,6 +60,10 @@ func main() {
 		Logger:          _logger,
 		Port:            cfg.API.Port,
 		CategoryService: categoryMgr,
+	}
+
+	if err := migrate(cfg); err != nil {
+		log.Fatalf("migrate: %v", err)
 	}
 
 	_api, err := api.New(apiCfg)
