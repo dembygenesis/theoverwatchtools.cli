@@ -1,0 +1,47 @@
+version: "3.7"
+
+services:
+  db:
+    container_name: "mysql_container"
+    networks:
+      - default
+    restart: always
+    image: mysql:8.0
+    ports:
+      - "${THEOVERWATCHTOOLS_DB_PORT}:${THEOVERWATCHTOOLS_DB_PORT}"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${THEOVERWATCHTOOLS_DB_PASS}"
+      MYSQL_TCP_PORT: "${THEOVERWATCHTOOLS_DB_PORT}"
+      MYSQL_DATABASE: "${THEOVERWATCHTOOLS_DB_DATABASE}"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --sql_mode=""
+
+  controller:
+    command: sh -c "wait-for db:${THEOVERWATCHTOOLS_DB_PORT} -- /bin/bash -c \"CompileDaemon -build='go build -o=/tmp/api ./cmd/api/' -command='/tmp/api' -graceful-kill=true\""
+    build:
+      dockerfile: api.dockerfile
+      context: ./docker
+      args:
+        ENTRYPOINT: "entrypoint.sh"
+    ports:
+      - "${THEOVERWATCHTOOLS_API_PORT}:${THEOVERWATCHTOOLS_API_PORT}"
+    networks:
+      - default
+    environment:
+      THEOVERWATCHTOOLS_APP_DIR: "./"
+      THEOVERWATCHTOOLS_DB_HOST: "db"
+      THEOVERWATCHTOOLS_DB_PORT: "${THEOVERWATCHTOOLS_DB_PORT}"
+      THEOVERWATCHTOOLS_DB_USER: "${THEOVERWATCHTOOLS_DB_USER}"
+      THEOVERWATCHTOOLS_DB_PASS: "${THEOVERWATCHTOOLS_DB_PASS}"
+      THEOVERWATCHTOOLS_DB_DATABASE: "${THEOVERWATCHTOOLS_DB_DATABASE}"
+    working_dir: /src
+    volumes:
+      - ../:/src
+
+networks:
+  default:
+
+volumes:
+  controller:
+  mysql_data:

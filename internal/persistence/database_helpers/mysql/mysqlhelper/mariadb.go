@@ -93,8 +93,6 @@ func NewMariaDB(cfg *MariaDBConfig) (*dockerenv.DockerEnv, error) {
 		return nil, fmt.Errorf("validate: %v", err)
 	}
 
-	fmt.Println("===== NewMariaDB: start")
-
 	const (
 		// image = "mariadb:latest"
 		image = "mysql:8.0"
