@@ -8,7 +8,6 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
-	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -103,8 +102,6 @@ func (m *Repository) GetCapturePages(ctx context.Context, tx persistence.Transac
 		return nil, fmt.Errorf("read capture pages: %w", err)
 	}
 
-	fmt.Println("the res at store cp concrete --- ", strutil.GetAsJson(res))
-
 	return res, nil
 }
 
@@ -178,7 +175,6 @@ func (m *Repository) getCapturePages(ctx context.Context,
 		}
 
 		if filters.CapturePageIsActive.Valid {
-			fmt.Println("the filters valid --- ", filters.CapturePageIsActive)
 			queryMods = append(queryMods, mysqlmodel.CapturePageWhere.IsActive.EQ(filters.CapturePageIsActive.Bool))
 		}
 
@@ -225,8 +221,6 @@ func (m *Repository) getCapturePages(ctx context.Context,
 	paginated.CapturePages = res
 	paginated.Pagination = pagination
 
-	fmt.Println("the paginated --- ", strutil.GetAsJson(&paginated))
-
 	return &paginated, nil
 }
 
@@ -234,8 +228,6 @@ func (m *Repository) GetCapturePageById(ctx context.Context, tx persistence.Tran
 	paginated, err := m.GetCapturePages(ctx, tx, &model.CapturePageFilters{
 		IdsIn: []int{id},
 	})
-
-	fmt.Println("the paginated --- ", strutil.GetAsJson(paginated))
 
 	if err != nil {
 		return nil, fmt.Errorf("capture page filtered by id: %w", err)
