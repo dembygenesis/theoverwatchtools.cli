@@ -22,6 +22,7 @@ func getServices() ([]dingo.Def, error) {
 		dependencies.GetLogicHandlers(),
 		dependencies.GetServicesLayer(),
 		dependencies.GetPersistence(),
+		dependencies.GetResourceGetter(),
 	}
 
 	for _, layer := range layers {

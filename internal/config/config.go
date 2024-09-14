@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/errutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/sliceutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/spf13/viper"
@@ -143,7 +143,7 @@ func New() (*App, error) {
 		config.Timeouts,
 	}
 
-	var errs errs.List
+	var errs errutil.List
 	for _, cfgProperty := range cfgProperties {
 		err = validationutils.Validate(cfgProperty)
 		if err != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/di/ctn/dic"
 	"github.com/dembygenesis/local.tools/internal/api"
+	"github.com/dembygenesis/local.tools/internal/api/resource"
 	"github.com/dembygenesis/local.tools/internal/config"
 	"github.com/dembygenesis/local.tools/internal/database/migration"
 	"github.com/dembygenesis/local.tools/internal/lib/logger"
@@ -25,7 +26,7 @@ func migrate(cfg *config.App) error {
 	_log := logger.New(context.Background())
 	_log.Info("Migrating...")
 	ctx := context.Background()
-	_, err := mysqlhelper.MigrateEmbedded(ctx, c, migration.Migrations, mysqlhelper.CreateIfNotExists)
+	_, err := mysqlhelper.MigrateEmbedded(ctx, c, migration.Migrations, mysqlhelper.CreateIfNotExists, false)
 	if err != nil {
 		return fmt.Errorf("migrate: %v", err)
 	}
@@ -55,11 +56,17 @@ func main() {
 		log.Fatalf("category mgr: %v", err)
 	}
 
+	resourceGetter, err := resource.New(categoryMgr)
+	if err != nil {
+		log.Fatalf("resource getter: %v", err)
+	}
+
 	apiCfg := &api.Config{
 		BaseUrl:         cfg.API.BaseUrl,
 		Logger:          _logger,
 		Port:            cfg.API.Port,
 		CategoryService: categoryMgr,
+		Resource:        resourceGetter,
 	}
 
 	if err := migrate(cfg); err != nil {

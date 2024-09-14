@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
-	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/errutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	// "github.com/volatiletech/null/v8"
 	"github.com/volatiletech/null"
@@ -26,7 +26,7 @@ type RestoreCategory struct {
 }
 
 func (c *UpdateCategory) Validate() error {
-	var errList errs.List
+	var errList errutil.List
 	if err := validationutils.Validate(c); err != nil {
 		return fmt.Errorf("validate: %w", err)
 	}
@@ -123,6 +123,7 @@ type CategoryFilters struct {
 	CategoryTypeNameIn     []string `query:"category_type_name_in" json:"category_type_name_in"`
 	CategoryTypeIdIn       []int    `query:"category_type_id_in" json:"category_type_id_in"`
 	CategoryIsActive       []int    `query:"is_active" json:"is_active"`
+	CreatedByIdIn          []int    `query:"created_by" json:"created_by"`
 	IdsIn                  []int    `query:"ids_in" json:"ids_in"`
 	PaginationQueryFilters `swaggerignore:"true"`
 }

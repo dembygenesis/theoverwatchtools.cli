@@ -231,7 +231,10 @@ func (m *Repository) getCategories(
 
 		if len(filters.CategoryTypeIdIn) > 0 {
 			queryMods = append(queryMods, mysqlmodel.CategoryTypeWhere.ID.IN(filters.CategoryTypeIdIn))
-			fmt.Println("the cat query mods dude --- ", queryMods)
+		}
+
+		if len(filters.CreatedByIdIn) > 0 {
+			queryMods = append(queryMods, mysqlmodel.CategoryWhere.CreatedBy.IN(filters.CreatedByIdIn))
 		}
 
 		if len(filters.CategoryTypeNameIn) > 0 {

@@ -6,8 +6,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/persistence"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
-	"github.com/dembygenesis/local.tools/internal/utilities/errs"
-	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
+	"github.com/dembygenesis/local.tools/internal/utilities/errutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -46,7 +45,7 @@ func (i *Service) validateCategoryTypeId(ctx context.Context, handler persistenc
 // CreateCategory creates a new category.
 func (i *Service) CreateCategory(ctx context.Context, params *model.CreateCategory) (*model.Category, error) {
 	if err := params.Validate(); err != nil {
-		return nil, errs.New(&errs.Cfg{
+		return nil, errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusBadRequest,
 			Err:        fmt.Errorf("validate: %v", err),
 		})
@@ -54,7 +53,7 @@ func (i *Service) CreateCategory(ctx context.Context, params *model.CreateCatego
 
 	tx, err := i.cfg.TxProvider.Tx(ctx)
 	if err != nil {
-		return nil, errs.New(&errs.Cfg{
+		return nil, errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("get db: %v", err),
 		})
@@ -65,7 +64,7 @@ func (i *Service) CreateCategory(ctx context.Context, params *model.CreateCatego
 
 	_, err = i.cfg.Persistor.GetCategoryTypeById(ctx, tx, category.CategoryTypeRefId)
 	if err != nil {
-		return nil, errs.New(&errs.Cfg{
+		return nil, errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusBadRequest,
 			Err:        fmt.Errorf("invalid category_type_id: %v", err),
 		})
@@ -74,14 +73,14 @@ func (i *Service) CreateCategory(ctx context.Context, params *model.CreateCatego
 	exists, err := i.cfg.Persistor.GetCategoryByName(ctx, tx, category.Name)
 	if err != nil {
 		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
-			return nil, errs.New(&errs.Cfg{
+			return nil, errutil.New(&errutil.Cfg{
 				StatusCode: http.StatusBadRequest,
 				Err:        fmt.Errorf("check category unique: %v", err),
 			})
 		}
 	}
 	if exists != nil {
-		return nil, errs.New(&errs.Cfg{
+		return nil, errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusBadRequest,
 			Err:        fmt.Errorf("category already exists"),
 		})
@@ -89,20 +88,35 @@ func (i *Service) CreateCategory(ctx context.Context, params *model.CreateCatego
 
 	category, err = i.cfg.Persistor.CreateCategory(ctx, tx, category)
 	if err != nil {
-		return nil, errs.New(&errs.Cfg{
+		return nil, errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("create: %v", err),
 		})
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		return nil, errs.New(&errs.Cfg{
+		return nil, errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("commit: %v", err),
 		})
 	}
 
 	return category, nil
+}
+
+func (i *Service) GetByName(ctx context.Context, name string, userId int) (*model.Category, error) {
+	paginatedCategories, err := i.ListCategories(ctx, &model.CategoryFilters{
+		CategoryNameIn: []string{name},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("list categories: %w", err)
+	}
+
+	if paginatedCategories.Pagination.TotalCount != 1 {
+		return nil, fmt.Errorf("expected single category, %v found", paginatedCategories.Pagination.TotalCount)
+	}
+
+	return &paginatedCategories.Categories[0], nil
 }
 
 // ListCategories returns paginated categories
@@ -112,16 +126,15 @@ func (i *Service) ListCategories(
 ) (*model.PaginatedCategories, error) {
 	db, err := i.cfg.TxProvider.Db(ctx)
 	if err != nil {
-		return nil, errs.New(&errs.Cfg{
+		return nil, errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("get db: %v", err),
 		})
 	}
 
-	fmt.Println("the filter at the service --- ", strutil.GetAsJson(filter))
 	paginated, err := i.cfg.Persistor.GetCategories(ctx, db, filter)
 	if err != nil {
-		return nil, errs.New(&errs.Cfg{
+		return nil, errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("get categories: %v", err),
 		})
@@ -134,7 +147,7 @@ func (i *Service) ListCategories(
 func (i *Service) UpdateCategory(ctx context.Context, params *model.UpdateCategory) (*model.Category, error) {
 	tx, err := i.cfg.TxProvider.Tx(ctx)
 	if err != nil {
-		return nil, errs.New(&errs.Cfg{
+		return nil, errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("get db: %v", err),
 		})
@@ -163,7 +176,7 @@ func (i *Service) UpdateCategory(ctx context.Context, params *model.UpdateCatego
 func (s *Service) DeleteCategory(ctx context.Context, params *model.DeleteCategory) error {
 	tx, err := s.cfg.TxProvider.Tx(ctx)
 	if err != nil {
-		return errs.New(&errs.Cfg{
+		return errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("get db: %v", err),
 		})
@@ -173,14 +186,14 @@ func (s *Service) DeleteCategory(ctx context.Context, params *model.DeleteCatego
 	fmt.Println("the params id ---- ", params.ID)
 	err = s.cfg.Persistor.DeleteCategory(ctx, tx, params.ID)
 	if err != nil {
-		return errs.New(&errs.Cfg{
+		return errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("delete category: %v", err),
 		})
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return errs.New(&errs.Cfg{
+		return errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("commit transaction: %v", err),
 		})
@@ -193,7 +206,7 @@ func (s *Service) DeleteCategory(ctx context.Context, params *model.DeleteCatego
 func (s *Service) RestoreCategory(ctx context.Context, params *model.RestoreCategory) error {
 	tx, err := s.cfg.TxProvider.Tx(ctx)
 	if err != nil {
-		return errs.New(&errs.Cfg{
+		return errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("get db: %v", err),
 		})
@@ -202,14 +215,14 @@ func (s *Service) RestoreCategory(ctx context.Context, params *model.RestoreCate
 
 	err = s.cfg.Persistor.RestoreCategory(ctx, tx, params.ID)
 	if err != nil {
-		return errs.New(&errs.Cfg{
+		return errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("restore category: %v", err),
 		})
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return errs.New(&errs.Cfg{
+		return errutil.New(&errutil.Cfg{
 			StatusCode: http.StatusInternalServerError,
 			Err:        fmt.Errorf("commit transaction: %v", err),
 		})

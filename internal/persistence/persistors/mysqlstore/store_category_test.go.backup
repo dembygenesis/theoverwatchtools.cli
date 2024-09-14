@@ -43,12 +43,8 @@ func TestNew(t *testing.T) {
 }
 
 type testCaseGetCategories struct {
-	name        string
-	filter      *model.CategoryFilters
-	getFilterFn func(t *testing.T,
-		categoryTypes []*mysqlmodel.CategoryType,
-		categories []*mysqlmodel.Category,
-	) *model.CategoryFilters
+	name       string
+	filter     *model.CategoryFilters
 	mutations  func(t *testing.T, db *sqlx.DB)
 	assertions func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedCategories, err error)
 }

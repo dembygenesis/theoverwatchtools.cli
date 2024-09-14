@@ -27,9 +27,13 @@ func GetConcreteContainer(t *testing.T) (*Container, mysqlhelper.CleanFn) {
 	mysqlTxProvider, err := ctn.SafeGetTxProvider()
 	require.NoError(t, err, "unexpected error: SafeGetTxProvider")
 
+	resourceGetter, err := ctn.SafeGetResourceGetter()
+	require.NoError(t, err, "unexpected error: SafeGetResourceGetter")
+
 	return &Container{
 		CategoryService: category,
 		MySQLStore:      mysqlStore,
 		ConnProvider:    mysqlTxProvider,
+		ResourceGetter:  resourceGetter,
 	}, cleanup
 }

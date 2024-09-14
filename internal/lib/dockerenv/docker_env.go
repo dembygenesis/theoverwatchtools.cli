@@ -93,6 +93,18 @@ func (dm *DockerEnv) UpsertContainer(ctx context.Context, recreate bool) (string
 		}
 
 		if hasContainerNameCollision || hasPortBindingCollision {
+			hasPortMatch := false
+			for i := range ctn.Ports {
+				if int(ctn.Ports[i].PublicPort) == dm.cfg.ExposedPort {
+					hasPortMatch = true
+					break
+				}
+			}
+
+			if hasContainerNameCollision && !hasPortMatch {
+				recreate = true
+			}
+
 			if !recreate {
 				dm.ContainerID = ctn.ID
 				return ctn.ID, nil

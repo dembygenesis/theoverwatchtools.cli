@@ -5,6 +5,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/docs"
 	"github.com/dembygenesis/local.tools/internal/global"
 	"github.com/dembygenesis/local.tools/internal/lib/fslib"
+	"github.com/gofiber/fiber/v2"
 	"os"
 	"regexp"
 )
@@ -37,16 +38,41 @@ func (a *Api) loadStaticRoutes() error {
 
 // Routes applies all routing/endpoint configurations.
 func (a *Api) Routes() error {
-	apiV1 := a.app.Group("/api")
-	v1 := apiV1.Group("/v1")
+	api := a.app.Group("/api")
+	v1 := api.Group("/v1")
+
+	/*res, err := a.cfg.Resource.Load(context.Background(), []apiresource.Resource{
+		{
+			Type:  apiresource.CategoryResource,
+			Param: "id",
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("load resources: %w", err)
+	}
+
+	fmt.Println("==== res:", res)
+	*/
+
+	// Load middleware resource test
+	fnNames := func(ctx *fiber.Ctx) error {
+		name := ctx.Params("name")
+		return ctx.SendString(name)
+	}
+
+	v1.Get("/test/:name", a.resourceCategory(), fnNames)
+	v1.Get("/test2/:name", a.resourceOwnCategory(), fnNames)
 
 	// Category
-	groupCategory := v1.Group("/category")
-	groupCategory.Name("List Categories").Get("", a.ListCategories)
-	groupCategory.Name("Create Category").Post("", a.CreateCategory)
-	groupCategory.Name("Update Category").Patch("", a.UpdateCategory)
-	groupCategory.Name("Delete Category").Delete("/:id", a.DeleteCategory)
-	groupCategory.Name("Restore Category").Patch("/:id", a.RestoreCategory)
+	gCat := v1.Group("/category")
+	gCat.Name("List Categories").Get("", a.ListCategories)
+	gCat.Name("Create Category").Post("", a.CreateCategory)
+	// gCat.Name("Update Category").Patch("", a.UpdateCategory)
+	gCat.Name("Delete Category").Delete("/:id", a.DeleteCategory)
+	gCat.Name("Restore Category").Patch("/:id", a.RestoreCategory)
+
+	// Category V2
+	gCat.Name("Update Category2").Patch("/:name", a.resourceOwnCategory(), a.UpdateCategory2)
 
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {

@@ -3,7 +3,7 @@ package validationutils
 import (
 	"errors"
 	"fmt"
-	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/errutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/interfaceutil"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -33,7 +33,7 @@ func Validate(p interface{}, exclusions ...string) error {
 		return ErrStructNil
 	}
 
-	var errList errs.List
+	var errList errutil.List
 
 	structVal, err := interfaceutil.GetStructAsValue(p)
 	if err != nil {

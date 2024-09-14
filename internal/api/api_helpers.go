@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
-	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/errutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/resputil"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
@@ -56,7 +56,7 @@ func (a *Api) WriteResponse(ctx *fiber.Ctx, statusCode int, data interface{}, re
 		return nil
 	}
 
-	errUtil, ok := errs.ErrAsUtil(respErr)
+	errUtil, ok := errutil.ErrAsUtil(respErr)
 	if !ok {
 		a.cfg.Logger.Error(logrus.Fields{
 			"err":            errors.New(sysconsts.ErrNotUtilErr),

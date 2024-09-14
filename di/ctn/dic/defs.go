@@ -6,6 +6,7 @@ import (
 	"github.com/sarulabs/di/v2"
 	"github.com/sarulabs/dingo/v4"
 
+	resource "github.com/dembygenesis/local.tools/internal/api/resource"
 	cli "github.com/dembygenesis/local.tools/internal/cli"
 	config "github.com/dembygenesis/local.tools/internal/config"
 	authlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
@@ -352,6 +353,54 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					return eo, errors.New("could not cast build function to func(*config.App, *logrus.Entry, *sqlx.DB, *mysqltx.Handler) (*mysqlstore.Repository, error)")
 				}
 				return b(p0, p1, p2, p3)
+			},
+			Unshared: false,
+		},
+		{
+			Name:  "resource_getter",
+			Scope: "",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("resource_getter")
+				if err != nil {
+					var eo *resource.Provider
+					return eo, err
+				}
+				pi0, err := ctn.SafeGet("config_layer")
+				if err != nil {
+					var eo *resource.Provider
+					return eo, err
+				}
+				p0, ok := pi0.(*config.App)
+				if !ok {
+					var eo *resource.Provider
+					return eo, errors.New("could not cast parameter 0 to *config.App")
+				}
+				pi1, err := ctn.SafeGet("logger_logrus")
+				if err != nil {
+					var eo *resource.Provider
+					return eo, err
+				}
+				p1, ok := pi1.(*logrus.Entry)
+				if !ok {
+					var eo *resource.Provider
+					return eo, errors.New("could not cast parameter 1 to *logrus.Entry")
+				}
+				pi2, err := ctn.SafeGet("logic_category")
+				if err != nil {
+					var eo *resource.Provider
+					return eo, err
+				}
+				p2, ok := pi2.(*categorylogic.Service)
+				if !ok {
+					var eo *resource.Provider
+					return eo, errors.New("could not cast parameter 2 to *categorylogic.Service")
+				}
+				b, ok := d.Build.(func(*config.App, *logrus.Entry, *categorylogic.Service) (*resource.Provider, error))
+				if !ok {
+					var eo *resource.Provider
+					return eo, errors.New("could not cast build function to func(*config.App, *logrus.Entry, *categorylogic.Service) (*resource.Provider, error)")
+				}
+				return b(p0, p1, p2)
 			},
 			Unshared: false,
 		},

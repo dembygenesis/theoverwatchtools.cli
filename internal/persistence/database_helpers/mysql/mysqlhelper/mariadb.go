@@ -93,8 +93,9 @@ func NewMariaDB(cfg *MariaDBConfig) (*dockerenv.DockerEnv, error) {
 		return nil, fmt.Errorf("validate: %v", err)
 	}
 
+	fmt.Println("=== hello cfg.ContainerName:", cfg.ContainerName)
+
 	const (
-		// image = "mariadb:latest"
 		image = "mysql:8.0"
 	)
 
@@ -104,8 +105,7 @@ func NewMariaDB(cfg *MariaDBConfig) (*dockerenv.DockerEnv, error) {
 		Env:         cfg.GetEnvVars(),
 		ExposedPort: cfg.ExposedInternalPort,
 		HostPort:    cfg.ExposedInternalPort,
-		// WaitFor:     "mariadbd: ready for connections.",
-		WaitFor: fmt.Sprintf("port: %v", cfg.ExposedInternalPort),
+		WaitFor:     fmt.Sprintf("port: %v", cfg.ExposedInternalPort),
 		Cmd: []string{
 			"--default-authentication-plugin=mysql_native_password",
 			"--sql-mode=STRICT_TRANS_TABLES",

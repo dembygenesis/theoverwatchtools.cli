@@ -93,7 +93,7 @@ func Migrate(ctx context.Context, cp *mysqlutil.ConnectionSettings, mode CreateM
 	return tables, nil
 }
 
-func MigrateEmbedded(ctx context.Context, cp *mysqlutil.ConnectionSettings, fs embed.FS, mode CreateMode) (Tables, error) {
+func MigrateEmbedded(ctx context.Context, cp *mysqlutil.ConnectionSettings, fs embed.FS, mode CreateMode, wipeAllData bool) (Tables, error) {
 	if err := cp.Validate(true); err != nil {
 		return nil, fmt.Errorf("validate conn parameters: %v", err)
 	}
@@ -154,6 +154,33 @@ func MigrateEmbedded(ctx context.Context, cp *mysqlutil.ConnectionSettings, fs e
 	})
 	if err != nil {
 		return nil, fmt.Errorf("query into struct: %v", err)
+	}
+
+	if wipeAllData {
+		_, err = conn.Exec(ctx, "SET FOREIGN_KEY_CHECKS = 0")
+		if err != nil {
+			return nil, fmt.Errorf("set foreign key checks off: %v", err)
+		}
+
+		for i := range tables {
+			if i == 0 {
+				continue
+			}
+
+			if len(tables[i]) != 1 {
+				return nil, fmt.Errorf("expected one table name, got %v", len(tables[i]))
+			}
+
+			_, err := conn.Exec(ctx, fmt.Sprintf("TRUNCATE %s", tables[i][0]))
+			if err != nil {
+				return nil, fmt.Errorf("truncate: %v", err)
+			}
+		}
+
+		_, err = conn.Exec(ctx, "SET FOREIGN_KEY_CHECKS = 1")
+		if err != nil {
+			return nil, fmt.Errorf("set foreign key checks on: %v", err)
+		}
 	}
 
 	return tables, nil

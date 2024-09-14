@@ -80,7 +80,7 @@ func testExistingMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.
 	})
 	require.NoError(t, err, "unexpected error getting client from database")
 
-	tables, err := MigrateEmbedded(context.TODO(), cp, migration.Migrations, CreateIfNotExists)
+	tables, err := MigrateEmbedded(context.TODO(), cp, migration.Migrations, CreateIfNotExists, true)
 	require.NoError(t, err, "unexpected error during migration")
 	require.NotEmpty(t, tables, "unexpected empty tables after migration")
 
@@ -106,7 +106,7 @@ func testExistingMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.
 // testSpawnMariaDB spawns a MariaDB instance from Docker.
 // The main use-case for this function is to dynamically
 // create an integration testing sandbox for MariaDB.
-func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
+func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings, wipeDb bool) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -133,58 +133,61 @@ func testSpawnMariaDB(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB,
 	db, cleanup := TestCreateDatabase(t, cp)
 	require.NoError(t, err, "unexpected error creating database")
 
-	db.SetMaxIdleConns(100)
-	db.SetMaxIdleConns(10)
-	db.SetConnMaxLifetime(time.Minute * 30)
-
-	tables, err := MigrateEmbedded(context.TODO(), cp, migration.Migrations, CreateIfNotExists)
+	tables, err := MigrateEmbedded(context.TODO(), cp, migration.Migrations, CreateIfNotExists, wipeDb)
 	require.NoError(t, err, "unexpected error during migration")
 	require.NotEmpty(t, tables, "unexpected empty tables after migration")
 
 	return db, cp, cleanup
 }
 
-func applyMigration(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
-	db, err := NewDbClient(context.TODO(), &ClientOptions{
-		ConnString: cp.GetConnectionString(true),
-		Close:      false,
-	})
-	require.NoError(t, err, "unexpected error creating test database for localDB")
+func testSpawnMariaDBOld(t *testing.T, cp *mysqlutil.ConnectionSettings) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
+	m.Lock()
+	defer m.Unlock()
 
-	createStmt := fmt.Sprintf("CREATE DATABASE `%s`;", cp.Database)
-	_, err = db.Exec(createStmt)
-	require.NoError(t, err, "unexpected error creating test database for localDB")
+	boil.DebugMode = true
+	mariaDBContainerName := "test_mariadb"
 
-	db, err = NewDbClient(context.TODO(), &ClientOptions{
-		ConnString: cp.GetConnectionString(false),
-		Close:      false,
-	})
-	require.NoError(t, err, "unexpected error getting client from database")
-
-	tables, err := Migrate(context.TODO(), cp, Recreate)
-	require.NoError(t, err, "unexpected error during migration")
-	require.NotEmpty(t, tables, "unexpected empty tables after migration")
-
-	cleanup := func(ignoreFailures ...bool) {
-		/*willIgnoreFailures := false
-		if len(ignoreFailures) == 1 {
-			willIgnoreFailures = ignoreFailures[0]
-		}
-		_, err = db.Exec(fmt.Sprintf("DROP DATABASE `%s`", cp.Database))
-		if !willIgnoreFailures {
-			require.NoError(t, err, "unexpected error dropping test database from localDB")
-		}*/
+	cfg := MariaDBConfig{
+		RecreateContainer:   false,
+		ContainerName:       mariaDBContainerName,
+		Host:                cp.Host,
+		Pass:                cp.Pass,
+		Database:            cp.Database,
+		ExposedInternalPort: cp.Port,
+		ExposedExternalPort: cp.Port,
 	}
 
-	require.NoError(t, err, "unexpected error connecting to existing maria db")
+	// This will create the mariadb container, and the database specified in the env
+	_, err := NewMariaDB(&cfg)
+	require.NoError(t, err, "unexpected error spawning mariaDB")
+
+	cp.Database = strutil.GetUuidUnderscore()
+
+	// This will create the new database inside it
+	db, cleanup := TestCreateDatabase(t, cp)
+	require.NoError(t, err, "unexpected error creating database")
+
+	tables, err := MigrateEmbedded(context.TODO(), cp, migration.Migrations, CreateIfNotExists, true)
+	require.NoError(t, err, "unexpected error during migration")
+	require.NotEmpty(t, tables, "unexpected empty tables after migration")
+
 	return db, cp, cleanup
 }
 
-// TestGetMockMariaDB returns a live database instance for integration testing purposes.
+func TestGetMockMariaDB(t *testing.T, _wipeDb ...bool) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
+	if len(_wipeDb) > 1 {
+		t.Fatalf("unexpected number of arguments, expected 0 or 1, got %d", len(_wipeDb))
+	}
+
+	wipeDb := len(_wipeDb) == 1 && _wipeDb[0]
+	return testGetMockMariaDB(t, wipeDb)
+}
+
+// testGetMockMariaDB returns a live database instance for integration testing purposes.
 // It first attempts to fetch an already running database if certain env variables,
 // are set, and if it can't find them - it will spawn a new test container via the
 // `testcontainer` library.
-func TestGetMockMariaDB(t *testing.T) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
+func testGetMockMariaDB(t *testing.T, wipeDb bool) (*sqlx.DB, *mysqlutil.ConnectionSettings, CleanFn) {
 	osTestCreds := []string{
 		global.OsEnvDbTestHost,
 		global.OsEnvDbTestPort,
@@ -211,9 +214,27 @@ func TestGetMockMariaDB(t *testing.T) (*sqlx.DB, *mysqlutil.ConnectionSettings, 
 		Port:     port,
 	}
 
+	var (
+		db       *sqlx.DB
+		settings *mysqlutil.ConnectionSettings
+		cleanup  CleanFn
+	)
+
 	if os.Getenv("THEOVERWATCHTOOLS_DB_USE_EXISTING_MARIADB") == "1" {
-		return testExistingMariaDB(t, cp)
+		db, settings, cleanup = testExistingMariaDB(t, cp)
+	} else {
+		db, settings, cleanup = testSpawnMariaDB(t, cp, wipeDb)
 	}
 
-	return testSpawnMariaDB(t, cp)
+	configureDb(t, db)
+
+	return db, settings, cleanup
+}
+
+func configureDb(t *testing.T, db *sqlx.DB) {
+	db.SetMaxIdleConns(100)
+	db.SetMaxIdleConns(10)
+	db.SetConnMaxLifetime(time.Minute * 30)
+	_, err := db.Exec(`SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES';`)
+	require.NoError(t, err, "unexpected error setting sql_mode")
 }

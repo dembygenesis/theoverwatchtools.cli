@@ -19,15 +19,16 @@ import (
 	"testing"
 )
 
-type testServices struct {
-	catService categoryService
+type testApiCfg struct {
+	catService     categoryManager
+	resourceGetter resourceManager
 }
 
 type testCaseCreateCategory struct {
-	name              string
-	fnGetTestServices func(t *testing.T) (*testServices, func())
-	body              map[string]interface{}
-	assertions        func(t *testing.T, resp []byte, respCode int)
+	name       string
+	fnGetDeps  func(t *testing.T) (*testApiCfg, *testassets.Container, func())
+	body       map[string]interface{}
+	assertions func(t *testing.T, resp []byte, respCode int)
 }
 
 func getTestCasesCreateCategory() []testCaseCreateCategory {
@@ -38,11 +39,14 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 				"name":                 "Example",
 				"category_type_ref_id": 1,
 			},
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
-					cleanup()
-				}
+			fnGetDeps: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
+				ctn, cleanup := testassets.GetConcreteContainer(t)
+				return &testApiCfg{
+						catService:     ctn.CategoryService,
+						resourceGetter: ctn.ResourceGetter,
+					}, ctn, func() {
+						cleanup()
+					}
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				respStr := string(resp)
@@ -60,9 +64,9 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 		{
 			name: "fail-empty-body",
 			body: map[string]interface{}{},
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
+			fnGetDeps: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
+				ctn, cleanup := testassets.GetConcreteContainer(t)
+				return &testApiCfg{catService: ctn.CategoryService, resourceGetter: ctn.ResourceGetter}, ctn, func() {
 					cleanup()
 				}
 			},
@@ -78,9 +82,9 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 				"name":                 "Example",
 				"category_type_ref_id": 19999,
 			},
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
+			fnGetDeps: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
+				ctn, cleanup := testassets.GetConcreteContainer(t)
+				return &testApiCfg{catService: ctn.CategoryService, resourceGetter: ctn.ResourceGetter}, ctn, func() {
 					cleanup()
 				}
 			},
@@ -96,10 +100,10 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 				"name":                 "Example",
 				"category_type_ref_id": 1,
 			},
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				fakeCategoryService := apifakes.FakeCategoryService{}
+			fnGetDeps: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
+				fakeCategoryService := apifakes.FakeCategoryManager{}
 				fakeCategoryService.CreateCategoryReturns(nil, errors.New("mock error"))
-				return &testServices{catService: &fakeCategoryService}, func() {}
+				return &testApiCfg{catService: &fakeCategoryService, resourceGetter: &apifakes.FakeResourceManager{}}, nil, func() {}
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				require.NotNil(t, resp, "unexpected nil response")
@@ -112,7 +116,7 @@ func getTestCasesCreateCategory() []testCaseCreateCategory {
 func Test_CreateCategory(t *testing.T) {
 	for _, testCase := range getTestCasesCreateCategory() {
 		t.Run(testCase.name, func(t *testing.T) {
-			handlers, cleanup := testCase.fnGetTestServices(t)
+			handlers, _, cleanup := testCase.fnGetDeps(t)
 			defer cleanup()
 
 			cfg := &Config{
@@ -120,6 +124,7 @@ func Test_CreateCategory(t *testing.T) {
 				Port:            3000,
 				CategoryService: handlers.catService,
 				Logger:          logger.New(context.TODO()),
+				Resource:        handlers.resourceGetter,
 			}
 
 			api, err := New(cfg)
@@ -147,25 +152,25 @@ func Test_CreateCategory(t *testing.T) {
 
 type testCaseListCategory struct {
 	name            string
-	getContainer    func(t *testing.T) (*testassets.Container, func())
-	mutations       func(t *testing.T, modules *testassets.Container)
+	getApiCfg       func(t *testing.T) (*testApiCfg, *testassets.Container, func())
+	mutations       func(t *testing.T, ctn *testassets.Container)
 	queryParameters map[string]interface{}
 	assertions      func(t *testing.T, resp []byte, respCode int)
 }
 
 func getTestCasesListCategories() []testCaseListCategory {
-	testCases := []testCaseListCategory{
+	return []testCaseListCategory{
 		{
 			name: "success",
 			queryParameters: map[string]interface{}{
 				"ids_in": []int{1, 2, 3},
 			},
-			mutations: func(t *testing.T, modules *testassets.Container) {
+			mutations: func(t *testing.T, ctn *testassets.Container) {
 
 			},
-			getContainer: func(t *testing.T) (*testassets.Container, func()) {
+			getApiCfg: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
-				return ctn, func() {
+				return &testApiCfg{catService: ctn.CategoryService, resourceGetter: ctn.ResourceGetter}, ctn, func() {
 					cleanup()
 				}
 			},
@@ -188,12 +193,12 @@ func getTestCasesListCategories() []testCaseListCategory {
 				"page":     1,
 				"max_rows": 1,
 			},
-			mutations: func(t *testing.T, modules *testassets.Container) {
+			mutations: func(t *testing.T, ctn *testassets.Container) {
 
 			},
-			getContainer: func(t *testing.T) (*testassets.Container, func()) {
+			getApiCfg: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
-				return ctn, func() {
+				return &testApiCfg{catService: ctn.CategoryService, resourceGetter: ctn.ResourceGetter}, ctn, func() {
 					cleanup()
 				}
 			},
@@ -216,12 +221,12 @@ func getTestCasesListCategories() []testCaseListCategory {
 				"page":     2,
 				"max_rows": 2,
 			},
-			mutations: func(t *testing.T, modules *testassets.Container) {
+			mutations: func(t *testing.T, ctn *testassets.Container) {
 
 			},
-			getContainer: func(t *testing.T) (*testassets.Container, func()) {
+			getApiCfg: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
-				return ctn, func() {
+				return &testApiCfg{catService: ctn.CategoryService, resourceGetter: ctn.ResourceGetter}, ctn, func() {
 					cleanup()
 				}
 			},
@@ -237,19 +242,19 @@ func getTestCasesListCategories() []testCaseListCategory {
 			},
 		},
 		{
-			name: "success-all-filters",
+			name: "success-all-filtered",
 			queryParameters: map[string]interface{}{
 				"ids_in":                []int{1, 2, 3},
 				"category_type_id_in":   []int{1},
 				"category_type_name_in": []string{"User Types"},
 				"category_name_in":      []string{"Admin"},
 			},
-			mutations: func(t *testing.T, modules *testassets.Container) {
+			mutations: func(t *testing.T, ctn *testassets.Container) {
 
 			},
-			getContainer: func(t *testing.T) (*testassets.Container, func()) {
+			getApiCfg: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
-				return ctn, func() {
+				return &testApiCfg{catService: ctn.CategoryService, resourceGetter: ctn.ResourceGetter}, ctn, func() {
 					cleanup()
 				}
 			},
@@ -268,12 +273,12 @@ func getTestCasesListCategories() []testCaseListCategory {
 		{
 			name:            "empty_store",
 			queryParameters: map[string]interface{}{},
-			mutations: func(t *testing.T, modules *testassets.Container) {
-				store := modules.MySQLStore
+			mutations: func(t *testing.T, ctn *testassets.Container) {
+				store := ctn.MySQLStore
 				require.NotNil(t, store, "unexpected nil: store")
 
-				connProvider := modules.ConnProvider
-				require.NotNil(t, store, "unexpected nil: txProvider")
+				connProvider := ctn.ConnProvider
+				require.NotNil(t, store, "unexpected nil: txProvider(*testApiCfg, func())")
 
 				tx, err := connProvider.Tx(context.TODO())
 				require.NoError(t, err, "unexpected err for getting tx")
@@ -284,9 +289,9 @@ func getTestCasesListCategories() []testCaseListCategory {
 				err = tx.Commit(context.TODO())
 				require.NoError(t, err, "unexpected err on commit")
 			},
-			getContainer: func(t *testing.T) (*testassets.Container, func()) {
+			getApiCfg: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
-				return ctn, func() {
+				return &testApiCfg{catService: ctn.CategoryService, resourceGetter: ctn.ResourceGetter}, ctn, func() {
 					cleanup()
 				}
 			},
@@ -295,8 +300,6 @@ func getTestCasesListCategories() []testCaseListCategory {
 			},
 		},
 	}
-
-	return testCases
 }
 
 func Test_ListCategories(t *testing.T) {
@@ -308,14 +311,15 @@ func Test_ListCategories(t *testing.T) {
 				testCase.queryParameters = make(map[string]interface{})
 			}
 
-			handlers, cleanup := testCase.getContainer(t)
+			apiCfg, ctn, cleanup := testCase.getApiCfg(t)
 			defer cleanup()
 
 			cfg := &Config{
 				BaseUrl:         testassets.MockBaseUrl,
 				Port:            3000,
-				CategoryService: handlers.CategoryService,
+				CategoryService: apiCfg.catService,
 				Logger:          logger.New(context.TODO()),
+				Resource:        apiCfg.resourceGetter,
 			}
 
 			api, err := New(cfg)
@@ -329,7 +333,7 @@ func Test_ListCategories(t *testing.T) {
 				"Accept-Encoding": {"gzip", "deflate", "br"},
 			}
 
-			testCase.mutations(t, handlers)
+			testCase.mutations(t, ctn)
 
 			resp, err := api.app.Test(req, 100)
 			require.NoError(t, err, "unexpected error executing test")
@@ -342,24 +346,24 @@ func Test_ListCategories(t *testing.T) {
 }
 
 type testCaseUpdateCategory struct {
-	name              string
-	fnGetTestServices func(t *testing.T) (*testServices, func())
-	mutations         func(t *testing.T, modules *testassets.Container)
-	body              map[string]interface{}
-	assertions        func(t *testing.T, resp []byte, respCode int)
+	name        string
+	fnGetApiCfg func(t *testing.T) (*testApiCfg, *testassets.Container, func())
+	mutations   func(t *testing.T, ctn *testassets.Container)
+	body        map[string]interface{}
+	assertions  func(t *testing.T, resp []byte, respCode int)
 }
 
 func getTestCasesUpdateCategory() []testCaseUpdateCategory {
 	return []testCaseUpdateCategory{
 		{
 			name: "success",
-			fnGetTestServices: func(t *testing.T) (*testServices, func()) {
-				container, cleanup := testassets.GetConcreteContainer(t)
-				return &testServices{catService: container.CategoryService}, func() {
+			fnGetApiCfg: func(t *testing.T) (*testApiCfg, *testassets.Container, func()) {
+				ctn, cleanup := testassets.GetConcreteContainer(t)
+				return &testApiCfg{catService: ctn.CategoryService, resourceGetter: ctn.ResourceGetter}, ctn, func() {
 					cleanup()
 				}
 			},
-			mutations: func(t *testing.T, modules *testassets.Container) {
+			mutations: func(t *testing.T, ctn *testassets.Container) {
 
 			},
 			body: map[string]interface{}{
@@ -380,14 +384,15 @@ func getTestCasesUpdateCategory() []testCaseUpdateCategory {
 func Test_UpdateCategory(t *testing.T) {
 	for _, testCase := range getTestCasesUpdateCategory() {
 		t.Run(testCase.name, func(t *testing.T) {
-			handlers, cleanup := testCase.fnGetTestServices(t)
+			ctn, _, cleanup := testCase.fnGetApiCfg(t)
 			defer cleanup()
 
 			cfg := &Config{
 				BaseUrl:         testassets.MockBaseUrl,
 				Port:            3000,
-				CategoryService: handlers.catService,
+				CategoryService: ctn.catService,
 				Logger:          logger.New(context.TODO()),
+				Resource:        ctn.resourceGetter,
 			}
 
 			api, err := New(cfg)
@@ -403,6 +408,7 @@ func Test_UpdateCategory(t *testing.T) {
 				"Accept-Encoding": {"gzip", "deflate", "br"},
 			}
 
+			// resp, err := api.app.Test(req, 100)
 			resp, err := api.app.Test(req, 100)
 			require.NoError(t, err, "unexpected error executing test")
 

@@ -10,6 +10,7 @@ import (
 
 	providerPkg "github.com/dembygenesis/local.tools/di/cfg"
 
+	resource "github.com/dembygenesis/local.tools/internal/api/resource"
 	cli "github.com/dembygenesis/local.tools/internal/cli"
 	config "github.com/dembygenesis/local.tools/internal/config"
 	authlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
@@ -1318,6 +1319,146 @@ func (c *Container) UnscopedGetPersistenceMysql() *mysqlstore.Repository {
 // If the container can not be retrieved, it panics.
 func PersistenceMysql(i interface{}) *mysqlstore.Repository {
 	return C(i).GetPersistenceMysql()
+}
+
+// SafeGetResourceGetter retrieves the "resource_getter" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "resource_getter"
+//	type: *resource.Provider
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*categorylogic.Service) ["logic_category"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetResourceGetter() (*resource.Provider, error) {
+	i, err := c.ctn.SafeGet("resource_getter")
+	if err != nil {
+		var eo *resource.Provider
+		return eo, err
+	}
+	o, ok := i.(*resource.Provider)
+	if !ok {
+		return o, errors.New("could get 'resource_getter' because the object could not be cast to *resource.Provider")
+	}
+	return o, nil
+}
+
+// GetResourceGetter retrieves the "resource_getter" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "resource_getter"
+//	type: *resource.Provider
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*categorylogic.Service) ["logic_category"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetResourceGetter() *resource.Provider {
+	o, err := c.SafeGetResourceGetter()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetResourceGetter retrieves the "resource_getter" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "resource_getter"
+//	type: *resource.Provider
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*categorylogic.Service) ["logic_category"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetResourceGetter() (*resource.Provider, error) {
+	i, err := c.ctn.UnscopedSafeGet("resource_getter")
+	if err != nil {
+		var eo *resource.Provider
+		return eo, err
+	}
+	o, ok := i.(*resource.Provider)
+	if !ok {
+		return o, errors.New("could get 'resource_getter' because the object could not be cast to *resource.Provider")
+	}
+	return o, nil
+}
+
+// UnscopedGetResourceGetter retrieves the "resource_getter" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "resource_getter"
+//	type: *resource.Provider
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*categorylogic.Service) ["logic_category"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetResourceGetter() *resource.Provider {
+	o, err := c.UnscopedSafeGetResourceGetter()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// ResourceGetter retrieves the "resource_getter" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "resource_getter"
+//	type: *resource.Provider
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*categorylogic.Service) ["logic_category"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetResourceGetter method.
+// If the container can not be retrieved, it panics.
+func ResourceGetter(i interface{}) *resource.Provider {
+	return C(i).GetResourceGetter()
 }
 
 // SafeGetServiceCli retrieves the "service_cli" object from the main scope.

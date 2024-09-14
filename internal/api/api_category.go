@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/dembygenesis/local.tools/internal/model"
-	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/errutil"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"strconv"
@@ -26,11 +26,11 @@ func (a *Api) ListCategories(ctx *fiber.Ctx) error {
 		CategoryIsActive: []int{1},
 	}
 	if err := ctx.QueryParser(&filter); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+		return ctx.Status(http.StatusBadRequest).JSON(errutil.ToArr(err))
 	}
 
 	if err := filter.Validate(); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+		return ctx.Status(http.StatusBadRequest).JSON(errutil.ToArr(err))
 	}
 	filter.SetPaginationDefaults()
 
@@ -58,7 +58,7 @@ func (a *Api) GetCategory(ctx *fiber.Ctx) error {
 func (a *Api) CreateCategory(ctx *fiber.Ctx) error {
 	var body model.CreateCategory
 	if err := ctx.BodyParser(&body); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+		return ctx.Status(http.StatusBadRequest).JSON(errutil.ToArr(err))
 	}
 	category, err := a.cfg.CategoryService.CreateCategory(ctx.Context(), &body)
 	return a.WriteResponse(ctx, http.StatusCreated, category, err)
@@ -80,8 +80,20 @@ func (a *Api) CreateCategory(ctx *fiber.Ctx) error {
 func (a *Api) UpdateCategory(ctx *fiber.Ctx) error {
 	var body model.UpdateCategory
 	if err := ctx.BodyParser(&body); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+		return ctx.Status(http.StatusBadRequest).JSON(errutil.ToArr(err))
 	}
+	category, err := a.cfg.CategoryService.UpdateCategory(ctx.Context(), &body)
+	return a.WriteResponse(ctx, http.StatusOK, category, err)
+}
+
+func (a *Api) UpdateCategory2(ctx *fiber.Ctx) error {
+	var body model.UpdateCategory
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errutil.ToArr(err))
+	}
+
+	// resource loading here boi hah
+
 	category, err := a.cfg.CategoryService.UpdateCategory(ctx.Context(), &body)
 	return a.WriteResponse(ctx, http.StatusOK, category, err)
 }
@@ -102,14 +114,14 @@ func (a *Api) DeleteCategory(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	categoryId, err := strconv.Atoi(id)
 	if err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+		return ctx.Status(http.StatusBadRequest).JSON(errutil.ToArr(err))
 	}
 
 	deleteParams := &model.DeleteCategory{ID: categoryId}
 
 	err = a.cfg.CategoryService.DeleteCategory(ctx.Context(), deleteParams)
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(errutil.ToArr(err))
 	}
 
 	return ctx.SendStatus(http.StatusNoContent)
@@ -132,14 +144,14 @@ func (a *Api) RestoreCategory(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	categoryID, err := strconv.Atoi(id)
 	if err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+		return ctx.Status(http.StatusBadRequest).JSON(errutil.ToArr(err))
 	}
 
 	restoreParams := &model.RestoreCategory{ID: categoryID}
 
 	err = a.cfg.CategoryService.RestoreCategory(ctx.Context(), restoreParams)
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(errs.ToArr(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(errutil.ToArr(err))
 	}
 
 	return ctx.SendStatus(http.StatusNoContent)

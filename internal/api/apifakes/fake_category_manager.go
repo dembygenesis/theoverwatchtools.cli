@@ -8,7 +8,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/model"
 )
 
-type FakeCategoryService struct {
+type FakeCategoryManager struct {
 	CreateCategoryStub        func(context.Context, *model.CreateCategory) (*model.Category, error)
 	createCategoryMutex       sync.RWMutex
 	createCategoryArgsForCall []struct {
@@ -34,6 +34,21 @@ type FakeCategoryService struct {
 	}
 	deleteCategoryReturnsOnCall map[int]struct {
 		result1 error
+	}
+	GetByNameStub        func(context.Context, string, int) (*model.Category, error)
+	getByNameMutex       sync.RWMutex
+	getByNameArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 int
+	}
+	getByNameReturns struct {
+		result1 *model.Category
+		result2 error
+	}
+	getByNameReturnsOnCall map[int]struct {
+		result1 *model.Category
+		result2 error
 	}
 	ListCategoriesStub        func(context.Context, *model.CategoryFilters) (*model.PaginatedCategories, error)
 	listCategoriesMutex       sync.RWMutex
@@ -79,7 +94,7 @@ type FakeCategoryService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCategoryService) CreateCategory(arg1 context.Context, arg2 *model.CreateCategory) (*model.Category, error) {
+func (fake *FakeCategoryManager) CreateCategory(arg1 context.Context, arg2 *model.CreateCategory) (*model.Category, error) {
 	fake.createCategoryMutex.Lock()
 	ret, specificReturn := fake.createCategoryReturnsOnCall[len(fake.createCategoryArgsForCall)]
 	fake.createCategoryArgsForCall = append(fake.createCategoryArgsForCall, struct {
@@ -99,26 +114,26 @@ func (fake *FakeCategoryService) CreateCategory(arg1 context.Context, arg2 *mode
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCategoryService) CreateCategoryCallCount() int {
+func (fake *FakeCategoryManager) CreateCategoryCallCount() int {
 	fake.createCategoryMutex.RLock()
 	defer fake.createCategoryMutex.RUnlock()
 	return len(fake.createCategoryArgsForCall)
 }
 
-func (fake *FakeCategoryService) CreateCategoryCalls(stub func(context.Context, *model.CreateCategory) (*model.Category, error)) {
+func (fake *FakeCategoryManager) CreateCategoryCalls(stub func(context.Context, *model.CreateCategory) (*model.Category, error)) {
 	fake.createCategoryMutex.Lock()
 	defer fake.createCategoryMutex.Unlock()
 	fake.CreateCategoryStub = stub
 }
 
-func (fake *FakeCategoryService) CreateCategoryArgsForCall(i int) (context.Context, *model.CreateCategory) {
+func (fake *FakeCategoryManager) CreateCategoryArgsForCall(i int) (context.Context, *model.CreateCategory) {
 	fake.createCategoryMutex.RLock()
 	defer fake.createCategoryMutex.RUnlock()
 	argsForCall := fake.createCategoryArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCategoryService) CreateCategoryReturns(result1 *model.Category, result2 error) {
+func (fake *FakeCategoryManager) CreateCategoryReturns(result1 *model.Category, result2 error) {
 	fake.createCategoryMutex.Lock()
 	defer fake.createCategoryMutex.Unlock()
 	fake.CreateCategoryStub = nil
@@ -128,7 +143,7 @@ func (fake *FakeCategoryService) CreateCategoryReturns(result1 *model.Category, 
 	}{result1, result2}
 }
 
-func (fake *FakeCategoryService) CreateCategoryReturnsOnCall(i int, result1 *model.Category, result2 error) {
+func (fake *FakeCategoryManager) CreateCategoryReturnsOnCall(i int, result1 *model.Category, result2 error) {
 	fake.createCategoryMutex.Lock()
 	defer fake.createCategoryMutex.Unlock()
 	fake.CreateCategoryStub = nil
@@ -144,7 +159,7 @@ func (fake *FakeCategoryService) CreateCategoryReturnsOnCall(i int, result1 *mod
 	}{result1, result2}
 }
 
-func (fake *FakeCategoryService) DeleteCategory(arg1 context.Context, arg2 *model.DeleteCategory) error {
+func (fake *FakeCategoryManager) DeleteCategory(arg1 context.Context, arg2 *model.DeleteCategory) error {
 	fake.deleteCategoryMutex.Lock()
 	ret, specificReturn := fake.deleteCategoryReturnsOnCall[len(fake.deleteCategoryArgsForCall)]
 	fake.deleteCategoryArgsForCall = append(fake.deleteCategoryArgsForCall, struct {
@@ -164,26 +179,26 @@ func (fake *FakeCategoryService) DeleteCategory(arg1 context.Context, arg2 *mode
 	return fakeReturns.result1
 }
 
-func (fake *FakeCategoryService) DeleteCategoryCallCount() int {
+func (fake *FakeCategoryManager) DeleteCategoryCallCount() int {
 	fake.deleteCategoryMutex.RLock()
 	defer fake.deleteCategoryMutex.RUnlock()
 	return len(fake.deleteCategoryArgsForCall)
 }
 
-func (fake *FakeCategoryService) DeleteCategoryCalls(stub func(context.Context, *model.DeleteCategory) error) {
+func (fake *FakeCategoryManager) DeleteCategoryCalls(stub func(context.Context, *model.DeleteCategory) error) {
 	fake.deleteCategoryMutex.Lock()
 	defer fake.deleteCategoryMutex.Unlock()
 	fake.DeleteCategoryStub = stub
 }
 
-func (fake *FakeCategoryService) DeleteCategoryArgsForCall(i int) (context.Context, *model.DeleteCategory) {
+func (fake *FakeCategoryManager) DeleteCategoryArgsForCall(i int) (context.Context, *model.DeleteCategory) {
 	fake.deleteCategoryMutex.RLock()
 	defer fake.deleteCategoryMutex.RUnlock()
 	argsForCall := fake.deleteCategoryArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCategoryService) DeleteCategoryReturns(result1 error) {
+func (fake *FakeCategoryManager) DeleteCategoryReturns(result1 error) {
 	fake.deleteCategoryMutex.Lock()
 	defer fake.deleteCategoryMutex.Unlock()
 	fake.DeleteCategoryStub = nil
@@ -192,7 +207,7 @@ func (fake *FakeCategoryService) DeleteCategoryReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeCategoryService) DeleteCategoryReturnsOnCall(i int, result1 error) {
+func (fake *FakeCategoryManager) DeleteCategoryReturnsOnCall(i int, result1 error) {
 	fake.deleteCategoryMutex.Lock()
 	defer fake.deleteCategoryMutex.Unlock()
 	fake.DeleteCategoryStub = nil
@@ -206,7 +221,73 @@ func (fake *FakeCategoryService) DeleteCategoryReturnsOnCall(i int, result1 erro
 	}{result1}
 }
 
-func (fake *FakeCategoryService) ListCategories(arg1 context.Context, arg2 *model.CategoryFilters) (*model.PaginatedCategories, error) {
+func (fake *FakeCategoryManager) GetByName(arg1 context.Context, arg2 string, arg3 int) (*model.Category, error) {
+	fake.getByNameMutex.Lock()
+	ret, specificReturn := fake.getByNameReturnsOnCall[len(fake.getByNameArgsForCall)]
+	fake.getByNameArgsForCall = append(fake.getByNameArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 int
+	}{arg1, arg2, arg3})
+	stub := fake.GetByNameStub
+	fakeReturns := fake.getByNameReturns
+	fake.recordInvocation("GetByName", []interface{}{arg1, arg2, arg3})
+	fake.getByNameMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCategoryManager) GetByNameCallCount() int {
+	fake.getByNameMutex.RLock()
+	defer fake.getByNameMutex.RUnlock()
+	return len(fake.getByNameArgsForCall)
+}
+
+func (fake *FakeCategoryManager) GetByNameCalls(stub func(context.Context, string, int) (*model.Category, error)) {
+	fake.getByNameMutex.Lock()
+	defer fake.getByNameMutex.Unlock()
+	fake.GetByNameStub = stub
+}
+
+func (fake *FakeCategoryManager) GetByNameArgsForCall(i int) (context.Context, string, int) {
+	fake.getByNameMutex.RLock()
+	defer fake.getByNameMutex.RUnlock()
+	argsForCall := fake.getByNameArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeCategoryManager) GetByNameReturns(result1 *model.Category, result2 error) {
+	fake.getByNameMutex.Lock()
+	defer fake.getByNameMutex.Unlock()
+	fake.GetByNameStub = nil
+	fake.getByNameReturns = struct {
+		result1 *model.Category
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCategoryManager) GetByNameReturnsOnCall(i int, result1 *model.Category, result2 error) {
+	fake.getByNameMutex.Lock()
+	defer fake.getByNameMutex.Unlock()
+	fake.GetByNameStub = nil
+	if fake.getByNameReturnsOnCall == nil {
+		fake.getByNameReturnsOnCall = make(map[int]struct {
+			result1 *model.Category
+			result2 error
+		})
+	}
+	fake.getByNameReturnsOnCall[i] = struct {
+		result1 *model.Category
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCategoryManager) ListCategories(arg1 context.Context, arg2 *model.CategoryFilters) (*model.PaginatedCategories, error) {
 	fake.listCategoriesMutex.Lock()
 	ret, specificReturn := fake.listCategoriesReturnsOnCall[len(fake.listCategoriesArgsForCall)]
 	fake.listCategoriesArgsForCall = append(fake.listCategoriesArgsForCall, struct {
@@ -226,26 +307,26 @@ func (fake *FakeCategoryService) ListCategories(arg1 context.Context, arg2 *mode
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCategoryService) ListCategoriesCallCount() int {
+func (fake *FakeCategoryManager) ListCategoriesCallCount() int {
 	fake.listCategoriesMutex.RLock()
 	defer fake.listCategoriesMutex.RUnlock()
 	return len(fake.listCategoriesArgsForCall)
 }
 
-func (fake *FakeCategoryService) ListCategoriesCalls(stub func(context.Context, *model.CategoryFilters) (*model.PaginatedCategories, error)) {
+func (fake *FakeCategoryManager) ListCategoriesCalls(stub func(context.Context, *model.CategoryFilters) (*model.PaginatedCategories, error)) {
 	fake.listCategoriesMutex.Lock()
 	defer fake.listCategoriesMutex.Unlock()
 	fake.ListCategoriesStub = stub
 }
 
-func (fake *FakeCategoryService) ListCategoriesArgsForCall(i int) (context.Context, *model.CategoryFilters) {
+func (fake *FakeCategoryManager) ListCategoriesArgsForCall(i int) (context.Context, *model.CategoryFilters) {
 	fake.listCategoriesMutex.RLock()
 	defer fake.listCategoriesMutex.RUnlock()
 	argsForCall := fake.listCategoriesArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCategoryService) ListCategoriesReturns(result1 *model.PaginatedCategories, result2 error) {
+func (fake *FakeCategoryManager) ListCategoriesReturns(result1 *model.PaginatedCategories, result2 error) {
 	fake.listCategoriesMutex.Lock()
 	defer fake.listCategoriesMutex.Unlock()
 	fake.ListCategoriesStub = nil
@@ -255,7 +336,7 @@ func (fake *FakeCategoryService) ListCategoriesReturns(result1 *model.PaginatedC
 	}{result1, result2}
 }
 
-func (fake *FakeCategoryService) ListCategoriesReturnsOnCall(i int, result1 *model.PaginatedCategories, result2 error) {
+func (fake *FakeCategoryManager) ListCategoriesReturnsOnCall(i int, result1 *model.PaginatedCategories, result2 error) {
 	fake.listCategoriesMutex.Lock()
 	defer fake.listCategoriesMutex.Unlock()
 	fake.ListCategoriesStub = nil
@@ -271,7 +352,7 @@ func (fake *FakeCategoryService) ListCategoriesReturnsOnCall(i int, result1 *mod
 	}{result1, result2}
 }
 
-func (fake *FakeCategoryService) RestoreCategory(arg1 context.Context, arg2 *model.RestoreCategory) error {
+func (fake *FakeCategoryManager) RestoreCategory(arg1 context.Context, arg2 *model.RestoreCategory) error {
 	fake.restoreCategoryMutex.Lock()
 	ret, specificReturn := fake.restoreCategoryReturnsOnCall[len(fake.restoreCategoryArgsForCall)]
 	fake.restoreCategoryArgsForCall = append(fake.restoreCategoryArgsForCall, struct {
@@ -291,26 +372,26 @@ func (fake *FakeCategoryService) RestoreCategory(arg1 context.Context, arg2 *mod
 	return fakeReturns.result1
 }
 
-func (fake *FakeCategoryService) RestoreCategoryCallCount() int {
+func (fake *FakeCategoryManager) RestoreCategoryCallCount() int {
 	fake.restoreCategoryMutex.RLock()
 	defer fake.restoreCategoryMutex.RUnlock()
 	return len(fake.restoreCategoryArgsForCall)
 }
 
-func (fake *FakeCategoryService) RestoreCategoryCalls(stub func(context.Context, *model.RestoreCategory) error) {
+func (fake *FakeCategoryManager) RestoreCategoryCalls(stub func(context.Context, *model.RestoreCategory) error) {
 	fake.restoreCategoryMutex.Lock()
 	defer fake.restoreCategoryMutex.Unlock()
 	fake.RestoreCategoryStub = stub
 }
 
-func (fake *FakeCategoryService) RestoreCategoryArgsForCall(i int) (context.Context, *model.RestoreCategory) {
+func (fake *FakeCategoryManager) RestoreCategoryArgsForCall(i int) (context.Context, *model.RestoreCategory) {
 	fake.restoreCategoryMutex.RLock()
 	defer fake.restoreCategoryMutex.RUnlock()
 	argsForCall := fake.restoreCategoryArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCategoryService) RestoreCategoryReturns(result1 error) {
+func (fake *FakeCategoryManager) RestoreCategoryReturns(result1 error) {
 	fake.restoreCategoryMutex.Lock()
 	defer fake.restoreCategoryMutex.Unlock()
 	fake.RestoreCategoryStub = nil
@@ -319,7 +400,7 @@ func (fake *FakeCategoryService) RestoreCategoryReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeCategoryService) RestoreCategoryReturnsOnCall(i int, result1 error) {
+func (fake *FakeCategoryManager) RestoreCategoryReturnsOnCall(i int, result1 error) {
 	fake.restoreCategoryMutex.Lock()
 	defer fake.restoreCategoryMutex.Unlock()
 	fake.RestoreCategoryStub = nil
@@ -333,7 +414,7 @@ func (fake *FakeCategoryService) RestoreCategoryReturnsOnCall(i int, result1 err
 	}{result1}
 }
 
-func (fake *FakeCategoryService) UpdateCategory(arg1 context.Context, arg2 *model.UpdateCategory) (*model.Category, error) {
+func (fake *FakeCategoryManager) UpdateCategory(arg1 context.Context, arg2 *model.UpdateCategory) (*model.Category, error) {
 	fake.updateCategoryMutex.Lock()
 	ret, specificReturn := fake.updateCategoryReturnsOnCall[len(fake.updateCategoryArgsForCall)]
 	fake.updateCategoryArgsForCall = append(fake.updateCategoryArgsForCall, struct {
@@ -353,26 +434,26 @@ func (fake *FakeCategoryService) UpdateCategory(arg1 context.Context, arg2 *mode
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCategoryService) UpdateCategoryCallCount() int {
+func (fake *FakeCategoryManager) UpdateCategoryCallCount() int {
 	fake.updateCategoryMutex.RLock()
 	defer fake.updateCategoryMutex.RUnlock()
 	return len(fake.updateCategoryArgsForCall)
 }
 
-func (fake *FakeCategoryService) UpdateCategoryCalls(stub func(context.Context, *model.UpdateCategory) (*model.Category, error)) {
+func (fake *FakeCategoryManager) UpdateCategoryCalls(stub func(context.Context, *model.UpdateCategory) (*model.Category, error)) {
 	fake.updateCategoryMutex.Lock()
 	defer fake.updateCategoryMutex.Unlock()
 	fake.UpdateCategoryStub = stub
 }
 
-func (fake *FakeCategoryService) UpdateCategoryArgsForCall(i int) (context.Context, *model.UpdateCategory) {
+func (fake *FakeCategoryManager) UpdateCategoryArgsForCall(i int) (context.Context, *model.UpdateCategory) {
 	fake.updateCategoryMutex.RLock()
 	defer fake.updateCategoryMutex.RUnlock()
 	argsForCall := fake.updateCategoryArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCategoryService) UpdateCategoryReturns(result1 *model.Category, result2 error) {
+func (fake *FakeCategoryManager) UpdateCategoryReturns(result1 *model.Category, result2 error) {
 	fake.updateCategoryMutex.Lock()
 	defer fake.updateCategoryMutex.Unlock()
 	fake.UpdateCategoryStub = nil
@@ -382,7 +463,7 @@ func (fake *FakeCategoryService) UpdateCategoryReturns(result1 *model.Category, 
 	}{result1, result2}
 }
 
-func (fake *FakeCategoryService) UpdateCategoryReturnsOnCall(i int, result1 *model.Category, result2 error) {
+func (fake *FakeCategoryManager) UpdateCategoryReturnsOnCall(i int, result1 *model.Category, result2 error) {
 	fake.updateCategoryMutex.Lock()
 	defer fake.updateCategoryMutex.Unlock()
 	fake.UpdateCategoryStub = nil
@@ -398,13 +479,15 @@ func (fake *FakeCategoryService) UpdateCategoryReturnsOnCall(i int, result1 *mod
 	}{result1, result2}
 }
 
-func (fake *FakeCategoryService) Invocations() map[string][][]interface{} {
+func (fake *FakeCategoryManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.createCategoryMutex.RLock()
 	defer fake.createCategoryMutex.RUnlock()
 	fake.deleteCategoryMutex.RLock()
 	defer fake.deleteCategoryMutex.RUnlock()
+	fake.getByNameMutex.RLock()
+	defer fake.getByNameMutex.RUnlock()
 	fake.listCategoriesMutex.RLock()
 	defer fake.listCategoriesMutex.RUnlock()
 	fake.restoreCategoryMutex.RLock()
@@ -418,7 +501,7 @@ func (fake *FakeCategoryService) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeCategoryService) recordInvocation(key string, args []interface{}) {
+func (fake *FakeCategoryManager) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {

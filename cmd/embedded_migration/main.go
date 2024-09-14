@@ -34,7 +34,7 @@ func migrate() {
 
 	_log.Info("Migrating")
 	ctx := context.Background()
-	tables, err := mysqlhelper.MigrateEmbedded(ctx, c, migration.Migrations, mysqlhelper.CreateIfNotExists)
+	tables, err := mysqlhelper.MigrateEmbedded(ctx, c, migration.Migrations, mysqlhelper.CreateIfNotExists, false)
 	if err != nil {
 		_log.Fatalf("migrate: %v", err)
 	}
